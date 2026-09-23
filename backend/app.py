@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 from dotenv import dotenv_values
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("hackathon_starter")
+
 dotenv_path = Path(__file__).parent.parent / ".env"
 dotenv_example_path = Path(__file__).parent.parent / ".env.example"
 
@@ -148,9 +151,6 @@ from pydantic import BaseModel
 
 from .signals_client import SignalsClient
 from .ai_client import AIClient
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("hackathon_starter")
 
 app = FastAPI(
     title="Revvity Signals EMEA Hackathon 2026 Starter",
