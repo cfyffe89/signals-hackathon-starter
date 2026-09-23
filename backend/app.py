@@ -11,6 +11,7 @@ if dotenv_path.exists():
 else:
     load_dotenv()
 
+import json
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -29,11 +30,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
+def sync_continue_config():
+    """Automatically populates Continue.dev config with the API key from .env."""
+    try:
+        gemini_key = os.getenv("GEMINI_API_KEY", "")
+        gateway_key = os.getenv("AI_GATEWAY_KEY", "")
+        continue_path = Path(__file__).parent.parent / ".continue" / "config.json"
+        if continue_path.exists() and (gemini_key or gateway_key):
+            with open(continue_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            changed = False
+            for m in data.get("models", []):
+                if m.get("provider") == "gemini" and gemini_key and "your-" not in gemini_key:
+                    if m.get("apiKey") != gemini_key:
+                        m["apiKey"] = gemini_key
+                        changed = True
+                elif m.get("provider") == "openai" and gateway_key and "your-" not in gateway_key:
+                    if m.get("apiKey") != gateway_key:
+                        m["apiKey"] = gateway_key
+                        changed = True
+            if changed:
+                with open(continue_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                logger.info("Automatically synced API credentials into .continue/config.json")
+    except Exception as e:
+        logger.warning(f"Continue config sync note: {e}")
+
+sync_continue_config()
+
 # Auto-reload .env whenever a request arrives so editing .env in VS Code takes effect immediately
 @app.middleware("http")
 async def auto_reload_env(request: Request, call_next):
     if dotenv_path.exists():
         load_dotenv(dotenv_path, override=True)
+        sync_continue_config()
     return await call_next(request)
 
 app.add_middleware(
