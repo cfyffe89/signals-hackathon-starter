@@ -159,57 +159,92 @@ app = FastAPI(
 )
 
 def sync_continue_config():
-    """Automatically populates Continue.dev config in both workspace and user home with API key from .env."""
+    """Automatically populates Continue.dev config (YAML & JSON) in workspace and user home with API key from .env."""
     try:
         gemini_key = os.getenv("GEMINI_API_KEY", "")
         gateway_key = os.getenv("AI_GATEWAY_KEY", "")
         if not (gemini_key or gateway_key):
             return
 
-        targets = [
-            Path(__file__).parent.parent / ".continue" / "config.json",
-            Path.home() / ".continue" / "config.json"
+        is_valid_gemini = bool(gemini_key and "your-" not in gemini_key and "your_" not in gemini_key)
+        is_valid_gateway = bool(gateway_key and "your-" not in gateway_key and "your_" not in gateway_key)
+
+        continue_dirs = [
+            Path(__file__).parent.parent / ".continue",
+            Path.home() / ".continue"
         ]
 
-        for target in targets:
-            data = {}
-            if target.exists():
-                try:
-                    with open(target, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                except Exception:
-                    data = {}
-            else:
-                target.parent.mkdir(parents=True, exist_ok=True)
+        # 1. Modern Continue config.yaml
+        yaml_content = f"""models:
+  - name: Gemini 2.5 Flash (Signals Copilot)
+    provider: gemini
+    model: gemini-2.5-flash
+    apiKey: "{gemini_key if is_valid_gemini else ''}"
+  - name: Gemini 1.5 Flash
+    provider: gemini
+    model: gemini-1.5-flash
+    apiKey: "{gemini_key if is_valid_gemini else ''}"
+customCommands:
+  - name: signals
+    description: Generate Signals Notebook API code
+    prompt: >-
+      You are an expert on Revvity Signals Notebook REST APIs. Consult docs/signals-api/
+      and docs/SIGNALS_DEVELOPER_CHEAT_SHEET.md to generate clean, production-ready
+      Python code with proper headers and error handling for: {{{{{{ input }}}}}}
+contextProviders:
+  - name: diff
+  - name: terminal
+  - name: codebase
+"""
 
-            models = data.get("models", [])
+        for cdir in continue_dirs:
+            cdir.mkdir(parents=True, exist_ok=True)
+
+            # Write config.yaml
+            yaml_path = cdir / "config.yaml"
+            if not yaml_path.exists() or yaml_path.read_text(encoding="utf-8").strip() != yaml_content.strip():
+                yaml_path.write_text(yaml_content, encoding="utf-8")
+                logger.info(f"Synced Continue YAML config into {yaml_path}")
+
+            # Write config.json (backward compatibility)
+            json_path = cdir / "config.json"
+            json_data = {}
+            if json_path.exists():
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        json_data = json.load(f)
+                except Exception:
+                    json_data = {}
+
+            models = json_data.get("models", [])
             if not models:
                 models = [
                     {
-                        "title": "Gemini 3.5 Flash (Signals Copilot)",
+                        "title": "Gemini 2.5 Flash (Signals Copilot)",
                         "provider": "gemini",
-                        "model": "gemini-3.5-flash",
-                        "apiKey": gemini_key if "your-" not in gemini_key else ""
+                        "model": "gemini-2.5-flash",
+                        "apiKey": gemini_key if is_valid_gemini else ""
+                    },
+                    {
+                        "title": "Gemini 1.5 Flash",
+                        "provider": "gemini",
+                        "model": "gemini-1.5-flash",
+                        "apiKey": gemini_key if is_valid_gemini else ""
                     }
                 ]
-                data["models"] = models
+                json_data["models"] = models
             else:
                 for m in models:
-                    if m.get("provider") == "gemini" and gemini_key and "your-" not in gemini_key:
+                    if m.get("provider") == "gemini" and is_valid_gemini:
                         m["apiKey"] = gemini_key
-                    elif m.get("provider") == "openai" and gateway_key and "your-" not in gateway_key:
+                    elif m.get("provider") == "openai" and is_valid_gateway:
                         m["apiKey"] = gateway_key
 
-            new_text = json.dumps(data, indent=2) + "\n"
-            if target.exists():
-                try:
-                    if target.read_text(encoding="utf-8").strip() == new_text.strip():
-                        continue  # Content already identical, do not touch the file!
-                except Exception:
-                    pass
+            json_text = json.dumps(json_data, indent=2) + "\n"
+            if not json_path.exists() or json_path.read_text(encoding="utf-8").strip() != json_text.strip():
+                json_path.write_text(json_text, encoding="utf-8")
+                logger.info(f"Synced Continue JSON config into {json_path}")
 
-            target.write_text(new_text, encoding="utf-8")
-            logger.info(f"Synced AI credentials into {target}")
     except Exception as e:
         logger.warning(f"Continue config sync note: {e}")
 
