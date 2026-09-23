@@ -27,5 +27,5 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import init_env_file, sync_continue_config; init_env_file(); sync_continue_config()\" || true"
+  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && git update-index --assume-unchanged .continue/config.json || true && python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import init_env_file, sync_continue_config; init_env_file(); sync_continue_config()\" || true"
 }
