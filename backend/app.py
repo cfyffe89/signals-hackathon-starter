@@ -1,15 +1,56 @@
 import os
 import sys
 import logging
+import json
 from pathlib import Path
 from dotenv import dotenv_values
 
 dotenv_path = Path(__file__).parent.parent / ".env"
 dotenv_example_path = Path(__file__).parent.parent / ".env.example"
 
+def parse_secret_bundle(raw_str: str) -> dict:
+    """Parses a multi-line KEY=VAL string or JSON object into a dict."""
+    raw = (raw_str or "").strip()
+    if not raw:
+        return {}
+    if raw.startswith("{") and raw.endswith("}"):
+        try:
+            return json.loads(raw)
+        except Exception:
+            pass
+    res = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        res[k.strip()] = v.strip().strip("'\"")
+    return res
+
+def get_bundle_secret() -> str:
+    """Checks for single bundled secret in common environment variables."""
+    for name in ["ENV_FILE", "APP_ENV", "HACKATHON_ENV", "CODESPACE_ENV", "SECRETS"]:
+        val = os.getenv(name)
+        if val and val.strip():
+            return val
+    return ""
+
 def init_env_file():
-    """Seeds .env from .env.example, filling in any environment secrets (e.g. from GitHub Codespaces)."""
+    """Seeds .env from single secret bundle (ENV_FILE) or .env.example with individual secrets."""
     try:
+        # 1. Single-secret bundle support
+        bundle = get_bundle_secret()
+        if bundle:
+            parsed = parse_secret_bundle(bundle)
+            if parsed:
+                lines = [f"{k}={v}" for k, v in parsed.items()]
+                dotenv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+                for k, v in parsed.items():
+                    os.environ[k] = str(v)
+                logger.info("Initialized .env from single secret bundle.")
+                return
+
+        # 2. Individual secrets from .env.example
         if not dotenv_path.exists() and dotenv_example_path.exists():
             content = dotenv_example_path.read_text(encoding="utf-8")
             for var in ["SIGNALS_BASE_URL", "SIGNALS_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_URL", "AI_GATEWAY_KEY"]:
@@ -29,17 +70,24 @@ def init_env_file():
 
 def smart_load_env(path: Path):
     """
-    Intelligently merges .env with the system environment:
-    - Never overwrites real system environment variables (e.g. GitHub Codespaces Secrets) with placeholder dummy values ('your-...').
+    Intelligently merges .env and secret bundles with the system environment:
+    - Never overwrites real system environment variables with placeholder dummy values ('your-...').
     - Allows user edits in .env (real non-dummy values) to update the environment.
     """
+    bundle = get_bundle_secret()
+    if bundle:
+        parsed = parse_secret_bundle(bundle)
+        for k, v in parsed.items():
+            if v and "your-" not in str(v):
+                os.environ[k] = str(v)
+
     if not path.exists():
         return
     values = dotenv_values(path)
     for k, v in values.items():
         if v is None:
             continue
-        v_str = str(v).strip()
+        v_str = str(v).strip().strip("'\"")
         current = os.environ.get(k)
         if current and "your-" not in current and ("your-" in v_str or not v_str):
             continue
@@ -48,7 +96,6 @@ def smart_load_env(path: Path):
 init_env_file()
 smart_load_env(dotenv_path)
 
-import json
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
