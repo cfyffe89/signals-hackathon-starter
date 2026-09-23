@@ -31,28 +31,50 @@ app = FastAPI(
 )
 
 def sync_continue_config():
-    """Automatically populates Continue.dev config with the API key from .env."""
+    """Automatically populates Continue.dev config in both workspace and user home with API key from .env."""
     try:
         gemini_key = os.getenv("GEMINI_API_KEY", "")
         gateway_key = os.getenv("AI_GATEWAY_KEY", "")
-        continue_path = Path(__file__).parent.parent / ".continue" / "config.json"
-        if continue_path.exists() and (gemini_key or gateway_key):
-            with open(continue_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            changed = False
-            for m in data.get("models", []):
-                if m.get("provider") == "gemini" and gemini_key and "your-" not in gemini_key:
-                    if m.get("apiKey") != gemini_key:
+        if not (gemini_key or gateway_key):
+            return
+
+        targets = [
+            Path(__file__).parent.parent / ".continue" / "config.json",
+            Path.home() / ".continue" / "config.json"
+        ]
+
+        for target in targets:
+            data = {}
+            if target.exists():
+                try:
+                    with open(target, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    data = {}
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+
+            models = data.get("models", [])
+            if not models:
+                models = [
+                    {
+                        "title": "Gemini 3.5 Flash (Signals Copilot)",
+                        "provider": "gemini",
+                        "model": "gemini-3.5-flash",
+                        "apiKey": gemini_key if "your-" not in gemini_key else ""
+                    }
+                ]
+                data["models"] = models
+            else:
+                for m in models:
+                    if m.get("provider") == "gemini" and gemini_key and "your-" not in gemini_key:
                         m["apiKey"] = gemini_key
-                        changed = True
-                elif m.get("provider") == "openai" and gateway_key and "your-" not in gateway_key:
-                    if m.get("apiKey") != gateway_key:
+                    elif m.get("provider") == "openai" and gateway_key and "your-" not in gateway_key:
                         m["apiKey"] = gateway_key
-                        changed = True
-            if changed:
-                with open(continue_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2)
-                logger.info("Automatically synced API credentials into .continue/config.json")
+
+            with open(target, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            logger.info(f"Synced AI credentials into {target}")
     except Exception as e:
         logger.warning(f"Continue config sync note: {e}")
 
