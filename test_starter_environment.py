@@ -3,6 +3,13 @@ import sys
 from pathlib import Path
 
 def test_bundle():
+    # Load environment
+    try:
+        from backend.app import smart_load_env, dotenv_path
+        smart_load_env(dotenv_path)
+    except Exception:
+        pass
+
     print('=' * 60)
     print('[VERIFY] SIGNALS EMEA HACKATHON 2026 STARTER ENVIRONMENT')
     print('=' * 60)

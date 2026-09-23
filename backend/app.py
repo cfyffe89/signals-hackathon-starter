@@ -2,14 +2,51 @@ import os
 import sys
 import logging
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
-# Load .env
 dotenv_path = Path(__file__).parent.parent / ".env"
-if dotenv_path.exists():
-    load_dotenv(dotenv_path)
-else:
-    load_dotenv()
+dotenv_example_path = Path(__file__).parent.parent / ".env.example"
+
+def init_env_file():
+    """Seeds .env from .env.example, filling in any environment secrets (e.g. from GitHub Codespaces)."""
+    try:
+        if not dotenv_path.exists() and dotenv_example_path.exists():
+            content = dotenv_example_path.read_text(encoding="utf-8")
+            for var in ["SIGNALS_BASE_URL", "SIGNALS_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_URL", "AI_GATEWAY_KEY"]:
+                val = os.getenv(var)
+                if val and "your-" not in val:
+                    lines = content.splitlines()
+                    new_lines = []
+                    for line in lines:
+                        if line.startswith(f"{var}="):
+                            new_lines.append(f"{var}={val}")
+                        else:
+                            new_lines.append(line)
+                    content = "\n".join(new_lines) + "\n"
+            dotenv_path.write_text(content, encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"Note creating .env: {e}")
+
+def smart_load_env(path: Path):
+    """
+    Intelligently merges .env with the system environment:
+    - Never overwrites real system environment variables (e.g. GitHub Codespaces Secrets) with placeholder dummy values ('your-...').
+    - Allows user edits in .env (real non-dummy values) to update the environment.
+    """
+    if not path.exists():
+        return
+    values = dotenv_values(path)
+    for k, v in values.items():
+        if v is None:
+            continue
+        v_str = str(v).strip()
+        current = os.environ.get(k)
+        if current and "your-" not in current and ("your-" in v_str or not v_str):
+            continue
+        os.environ[k] = v_str
+
+init_env_file()
+smart_load_env(dotenv_path)
 
 import json
 from fastapi import FastAPI, HTTPException, Request
@@ -84,7 +121,7 @@ sync_continue_config()
 @app.middleware("http")
 async def auto_reload_env(request: Request, call_next):
     if dotenv_path.exists():
-        load_dotenv(dotenv_path, override=True)
+        smart_load_env(dotenv_path)
         sync_continue_config()
     return await call_next(request)
 
