@@ -183,9 +183,29 @@ def sync_continue_config():
         home_continue.mkdir(parents=True, exist_ok=True)
         yaml_path = home_continue / "config.yaml"
 
+        system_msg = (
+            "You are an expert pair-programmer for the Revvity Signals EMEA Hackathon 2026.\n"
+            "Reference documentation in docs/ (including docs/Full-Guide-Redraft-v3.html, docs/SIGNALS_DEVELOPER_CHEAT_SHEET.md, and docs/signals-api/) "
+            "provides architecture, API schemas, and JSON:API 1.0 patterns.\n"
+            "CRITICAL ARCHITECTURE RULES:\n"
+            "1. docs/Full-Guide-Redraft-v3.html is strictly for architectural reference and payload structures.\n"
+            "2. The guide contains illustrative examples written in Flask. NEVER use or generate Flask code for this project.\n"
+            "3. The project standardizes on FastAPI (backend/app.py) and Streamlit (app_streamlit.py on port 8501) with RDKit and Google GenAI.\n"
+            "4. Always adapt any reference workflows from the guide into FastAPI endpoints or Streamlit components."
+        )
+
         yaml_content = f"""name: Signals Hackathon Copilot
 version: 1.0.0
 schema: v1
+
+systemMessage: |
+  You are an expert pair-programmer for the Revvity Signals EMEA Hackathon 2026.
+  Reference documentation in docs/ (including docs/Full-Guide-Redraft-v3.html, docs/SIGNALS_DEVELOPER_CHEAT_SHEET.md, and docs/signals-api/) provides architecture, API schemas, and JSON:API 1.0 patterns.
+  CRITICAL ARCHITECTURE RULES:
+  1. docs/Full-Guide-Redraft-v3.html is strictly for architectural reference and payload structures.
+  2. The guide contains illustrative examples written in Flask. NEVER use or generate Flask code for this project.
+  3. The project standardizes on FastAPI (backend/app.py) and Streamlit (app_streamlit.py on port 8501) with RDKit and Google GenAI.
+  4. Always adapt any reference workflows from the guide into FastAPI endpoints or Streamlit components.
 
 models:
   - name: Gemini 3.6 Flash
@@ -213,6 +233,7 @@ models:
         # 2. Write config.json for backward compatibility
         json_path = home_continue / "config.json"
         json_data = {
+            "systemMessage": "You are an expert pair-programmer for Revvity Signals Hackathon 2026. Consult docs/ for API schemas. docs/Full-Guide-Redraft-v3.html is for reference only (its examples use Flask). NEVER use or generate Flask code; always use FastAPI and Streamlit.",
             "models": [
                 {
                     "title": "Gemini 3.6 Flash",

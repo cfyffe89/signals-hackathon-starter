@@ -1,5 +1,10 @@
-# Revvity Signals Notebook REST API — Developer Cheat Sheet & LLM Prompt Reference
+# Revvity Signals Notebook REST API â€” Developer Cheat Sheet & LLM Prompt Reference
 *Designed for Frankfurt Signals EMEA Hackathon 2026 participants and AI Copilots*
+
+> âš ï¸ **CRITICAL REFERENCE NOTICE FOR DEVELOPERS & AI ASSISTANTS:**
+> * `docs/Full-Guide-Redraft-v3.html` is provided in this repository as an authoritative reference for Signals tenant architecture, authorization, webhooks, and External Actions.
+> * **DO NOT USE FLASK IN THIS PROJECT:** While older tutorial snippets inside `Full-Guide-Redraft-v3.html` use Flask/Jinja for illustration, our hackathon project stack standardizes on **FastAPI (backend/app.py)** and **Streamlit (app_streamlit.py)** with RDKit and Google GenAI.
+> * Always adapt any concepts or workflows from the reference guide to FastAPI endpoints or Streamlit UI components.
 
 ---
 
@@ -26,13 +31,13 @@ headers = {
 ## 2. Entity Identifiers (EIDs)
 
 Every object in Signals has an id composed of its type prefix and a UUID:
-* experiment:<uuid> — Top-level Experiment Notebook
-* journal:<uuid> — Sub-notebook or Section
-* 	ext:<uuid> — Rich Text Element
-* image:<uuid> — Image Attachment Element
-* chemicalDrawing:<uuid> — ChemDraw / Chemical Structure Element
-* sample:<uuid> — Physical or virtual chemical/biological sample
-* atch:<uuid> — Inventory lot / container batch
+* experiment:<uuid> â€” Top-level Experiment Notebook
+* journal:<uuid> â€” Sub-notebook or Section
+* 	ext:<uuid> â€” Rich Text Element
+* image:<uuid> â€” Image Attachment Element
+* chemicalDrawing:<uuid> â€” ChemDraw / Chemical Structure Element
+* sample:<uuid> â€” Physical or virtual chemical/biological sample
+* atch:<uuid> â€” Inventory lot / container batch
 
 ---
 
@@ -249,11 +254,11 @@ with open("experiment_report.pdf", "wb") as f:
 
 ## 5. OpenAPI YAML Index Map
 All 21 OpenAPI specifications are located in docs/signals-api/:
-* entities.yaml — Experiments, sub-notebooks, text/image elements, and tree structure
-* materials.yaml — Chemicals, reagents, biological samples, containers, and lots
-* inventory.yaml — Storage locations, inventory bars, barcodes, and checkouts
-* chemistry.yaml — Structures, SMILES, ChemDraw drawings, stoichiometry
-* plates.yaml — 96/384-well plates, layouts, well coordinates, and assay data
-* parallelExperiments.yaml — Multi-variable DOE experimentation grids
-* cro.yaml — Contract research organization workflows and submissions
-* dt.yaml — Assay data management tables and curve fitting
+* entities.yaml â€” Experiments, sub-notebooks, text/image elements, and tree structure
+* materials.yaml â€” Chemicals, reagents, biological samples, containers, and lots
+* inventory.yaml â€” Storage locations, inventory bars, barcodes, and checkouts
+* chemistry.yaml â€” Structures, SMILES, ChemDraw drawings, stoichiometry
+* plates.yaml â€” 96/384-well plates, layouts, well coordinates, and assay data
+* parallelExperiments.yaml â€” Multi-variable DOE experimentation grids
+* cro.yaml â€” Contract research organization workflows and submissions
+* dt.yaml â€” Assay data management tables and curve fitting
