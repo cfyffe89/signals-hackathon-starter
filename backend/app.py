@@ -254,6 +254,15 @@ models:
             json_path.write_text(json_text, encoding="utf-8")
             logger.info(f"Synced Continue JSON config into {json_path}")
 
+        # 3. Sync ~/.continue/prompts/signals.prompt for /signals slash command
+        home_prompts = home_continue / "prompts"
+        home_prompts.mkdir(parents=True, exist_ok=True)
+        signals_prompt_target = home_prompts / "signals.prompt"
+        ws_prompt = Path(__file__).parent.parent / ".continue" / "prompts" / "signals.prompt"
+        if ws_prompt.exists():
+            signals_prompt_target.write_text(ws_prompt.read_text(encoding="utf-8"), encoding="utf-8")
+            logger.info(f"Synced /signals prompt into {signals_prompt_target}")
+
     except Exception as e:
         logger.warning(f"Continue config sync note: {e}")
 
