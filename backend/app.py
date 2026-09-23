@@ -11,7 +11,7 @@ if dotenv_path.exists():
 else:
     load_dotenv()
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -28,6 +28,13 @@ app = FastAPI(
     description="Universal template for rapid prototyping with Signals Notebook REST APIs & AI",
     version="1.0.0"
 )
+
+# Auto-reload .env whenever a request arrives so editing .env in VS Code takes effect immediately
+@app.middleware("http")
+async def auto_reload_env(request: Request, call_next):
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path, override=True)
+    return await call_next(request)
 
 app.add_middleware(
     CORSMiddleware,

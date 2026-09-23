@@ -14,17 +14,36 @@ class AIClient:
     3. Intelligent Mock Fallback
     """
     def __init__(self):
-        self.gateway_url = os.getenv("AI_GATEWAY_URL", "https://signals-ai.revvity-hackathon.com/v1")
-        self.api_key = os.getenv("AI_GATEWAY_KEY", "") or os.getenv("GEMINI_API_KEY", "")
-        self.model = os.getenv("AI_MODEL", "gemini-3.5-flash")
-        self.mock_mode = (
+        self._default_gateway_url = "https://signals-ai.revvity-hackathon.com/v1"
+
+    @property
+    def gateway_url(self) -> str:
+        return os.getenv("AI_GATEWAY_URL", self._default_gateway_url)
+
+    @property
+    def api_key(self) -> str:
+        return os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_GATEWAY_KEY", "")
+
+    @property
+    def model(self) -> str:
+        return os.getenv("AI_MODEL", "gemini-3.5-flash")
+
+    @property
+    def mock_mode(self) -> bool:
+        key = self.api_key
+        return (
             os.getenv("MOCK_MODE", "false").lower() == "true"
-            or not self.api_key
-            or ("sk-team" in self.api_key and "revvity-hackathon.com" in self.gateway_url)
+            or not key
+            or "your-" in key
+            or ("sk-team" in key and "revvity-hackathon.com" in self.gateway_url)
         )
-        self.is_gemini_key = (
-            self.api_key.startswith("AQ.")
-            or self.api_key.startswith("AIza")
+
+    @property
+    def is_gemini_key(self) -> bool:
+        key = self.api_key
+        return (
+            key.startswith("AQ.")
+            or key.startswith("AIza")
             or "generativelanguage.googleapis.com" in self.gateway_url
         )
 

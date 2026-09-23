@@ -11,12 +11,24 @@ class SignalsClient:
     Includes mock fallback for offline hackathon development.
     """
     def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None):
-        self.base_url = (base_url or os.getenv("SIGNALS_BASE_URL", "https://hackathon.signalsnotebook.revvitycloud.com/api/rest/v1.0")).rstrip("/")
-        self.api_key = api_key or os.getenv("SIGNALS_API_KEY", "")
-        self.mock_mode = (
+        self._default_base_url = (base_url or "https://hackathon.signalsnotebook.revvitycloud.com/api/rest/v1.0").rstrip("/")
+        self._default_api_key = api_key or ""
+
+    @property
+    def base_url(self) -> str:
+        return (os.getenv("SIGNALS_BASE_URL", self._default_base_url) or self._default_base_url).rstrip("/")
+
+    @property
+    def api_key(self) -> str:
+        return os.getenv("SIGNALS_API_KEY", self._default_api_key) or self._default_api_key
+
+    @property
+    def mock_mode(self) -> bool:
+        key = self.api_key
+        return (
             os.getenv("MOCK_MODE", "false").lower() == "true" 
-            or not self.api_key 
-            or "your-" in self.api_key
+            or not key 
+            or "your-" in key
         )
 
     def _headers(self, content_type: str = "application/vnd.api+json") -> Dict[str, str]:
