@@ -38,10 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       (data.specs || []).forEach(spec => {
         const card = document.createElement('div');
-        card.className = 'bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-brand-500/50 transition cursor-default flex flex-col justify-between';
-        card.innerHTML = '<span class="text-[11px] font-bold text-white truncate">' + spec.name + '</span>' +
+        card.className = 'bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-brand-500 hover:bg-slate-900/80 transition cursor-pointer flex flex-col justify-between group';
+        card.title = 'Click to view raw OpenAPI YAML specification';
+        card.innerHTML = '<div class="flex items-center justify-between"><span class="text-[11px] font-bold text-white group-hover:text-brand-400 transition truncate">' + spec.name + '</span><span class="text-[9px] text-brand-500 font-mono opacity-0 group-hover:opacity-100 transition">↗</span></div>' +
           '<span class="text-[10px] text-slate-500 font-mono mt-1">' + spec.filename + '</span>' +
           '<span class="text-[9px] text-slate-600 mt-0.5">' + spec.sizeKb + ' KB</span>';
+        card.addEventListener('click', () => {
+          window.open('/api/docs/spec/' + spec.filename, '_blank');
+        });
         specsContainer.appendChild(card);
       });
     } catch (err) {

@@ -106,6 +106,22 @@ def list_docs():
             })
     return {"specs": sorted(specs, key=lambda x: x["filename"])}
 
+@app.get("/api/docs/spec/{filename}")
+def get_spec(filename: str):
+    """Returns raw OpenAPI YAML spec for viewing in browser."""
+    spec_path = DOCS_DIR / "signals-api" / filename
+    if not spec_path.exists():
+        raise HTTPException(status_code=404, detail="Spec not found")
+    return FileResponse(spec_path, media_type="text/plain")
+
+@app.get("/api/docs/cheat-sheet")
+def get_cheat_sheet():
+    """Returns the Signals Developer Cheat Sheet markdown."""
+    sheet_path = DOCS_DIR / "SIGNALS_DEVELOPER_CHEAT_SHEET.md"
+    if not sheet_path.exists():
+        raise HTTPException(status_code=404, detail="Cheat sheet not found")
+    return FileResponse(sheet_path, media_type="text/plain")
+
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
