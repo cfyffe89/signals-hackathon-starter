@@ -26,7 +26,7 @@ class AIClient:
 
     @property
     def model(self) -> str:
-        return os.getenv("AI_MODEL", "gemini-3.5-flash")
+        return os.getenv("AI_MODEL", "gemini-3.6-flash")
 
     @property
     def mock_mode(self) -> bool:

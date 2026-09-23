@@ -188,9 +188,9 @@ version: 1.0.0
 schema: v1
 
 models:
-  - name: Gemini 2.5 Flash
+  - name: Gemini 3.6 Flash
     provider: gemini
-    model: gemini-2.5-flash
+    model: gemini-3.6-flash
     apiKey: "{active_key}"
     roles:
       - chat
@@ -215,9 +215,9 @@ models:
         json_data = {
             "models": [
                 {
-                    "title": "Gemini 2.5 Flash",
+                    "title": "Gemini 3.6 Flash",
                     "provider": "gemini",
-                    "model": "gemini-2.5-flash",
+                    "model": "gemini-3.6-flash",
                     "apiKey": active_key
                 },
                 {

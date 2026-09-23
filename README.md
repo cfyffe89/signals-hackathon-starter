@@ -23,7 +23,7 @@ Welcome to the official developer starter template for the **Frankfurt Signals E
      # Or central hackathon gateway:
      AI_GATEWAY_URL=https://signals-ai.revvity-hackathon.com/v1
      AI_GATEWAY_KEY=your-team-gateway-key
-     AI_MODEL=gemini-3.5-flash
+     AI_MODEL=gemini-3.6-flash
      ```
    * *Offline / Testing mode:* If keys are not yet configured, the environment automatically runs in **Mock Simulation Mode** so your team is never blocked.
 
