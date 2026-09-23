@@ -1,0 +1,2139 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+
+paths:
+  /hierarchicalTables/{eid}:
+    get:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch all content of a Hierarchical Table'
+      description: |
+        Fetch all content of a Hierarchical Table including all layers and rows.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd
+
+      operationId: 'fetchHierarchicalTablesContentById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableResponse'
+              examples:
+                hierarchicalTable:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /hierarchicalTables/{eid}/tables/{tableId}:
+    get:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch all content of a Hierarchical Table Layer'
+      description: |
+        Fetch all content of a specific Hierarchical Table Layer.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1
+
+      operationId: 'fetchHierarchicalTablesLayerById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableLayerResponse'
+              examples:
+                hierarchicalTableLayer:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesLayerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - HierarchicalTables
+      summary: 'Add a new row to a Hierarchical Table Layer'
+      description: |
+        Add a new row to a Hierarchical Table Layer. And the parentRowId should be omitted if add operation is in a top-level table.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1?digest=xxx&force=false
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types:
+          - number {"value": 3.0 }
+          - date  {"value":"2019-09-06T15:22:47.309Z"}
+          - text  {"value":"text1"}
+          - list  {"value": "list1"}
+          - multiSelect {"value": "select1, select2"}
+          - attributeList(multiple option) {"values": ["select1", "select2"]}
+          - ontologyList(single select) {"value": {"id": 1234}}
+          - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+          - boolean {"value": true}
+          - unit {"value": 3 } or {"display": "3 g"} or {"user": "3 g"}
+        
+            Note: "value" is stored in the system's base unit (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+            molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+            Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+          - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          ]}
+          - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        Available units for different measurements:
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'addHierarchicalTablesLayerRows'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AddRowRequest'
+            examples:
+              addARowInTopTableRequestBody:
+                $ref: '#/components/examples/addARowInTopTableRequestBody'
+              addARowInNonTopTableRequestBody:
+                $ref: '#/components/examples/addARowInNonTopTableRequestBody'
+
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableOneRowResponse'
+              examples:
+                hierarchicalTableRow:
+                  $ref: '#/components/examples/addHierarchicalTablesOneRowResponse'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - HierarchicalTables
+      summary: 'Bulk update content of a Hierarchical Table Layer'
+      description: |
+        Bulk update(including update/create/delete) multiple rows in a Hierarchical Table Layer. Updating column definition is NOT supported.
+        Specify expected 'action' values in request body while updating/creating/deleting rows.
+        And the parentRowId should be omitted if create operation is in a top-level table.
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1?digest=xxx&force=false
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types:
+          - number {"value": 3.0 }
+          - date  {"value":"2019-09-06T15:22:47.309Z"}
+          - text  {"value":"text1"}
+          - list  {"value": "list1"}
+          - multiSelect {"value": "select1, select2"}
+          - attributeList(multiple option) {"values": ["select1", "select2"]}
+          - ontologyList(single select) {"value": {"id": 1234}}
+          - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+          - boolean {"value": true}
+          - unit {"value": 3 } or {"display": "3 g" } or {"user": "3 g" }
+        
+            Note: "value" is stored in the system's base unit (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+            molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+            Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+          - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          ]}
+          - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        If want to remove the value of one cell, set the content to null.
+
+        Available units for different measurements:
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'bulkUpdateHierarchicalTablesLayerRows'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateRowRequest'
+            examples:
+              BulkUpdateRowValueBody:
+                $ref: '#/components/examples/bulkPatchRowsRequestBody'
+              BulkUpdateFormulationRowValueBody:
+                $ref: '#/components/examples/bulkPatchFormulaRowsRequestBody'
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableRowsResponse'
+              examples:
+                hierarchicalTableRows:
+                  $ref: '#/components/examples/bulkUpdateHierarchicalTablesRowsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /hierarchicalTables/{eid}/tables/{tableId}/rows/search:
+    post:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch all rows of a Hierarchical Table Layer from specified parent rows'
+      description: |
+        Fetch all rows of a Hierarchical Table Layer from specified parent rows.
+        Request body requires a list of parent row ids.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-2/rows
+
+      operationId: 'fetchHierarchicalTablesRowsByParentIds'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [parentRowIds]
+                  properties:
+                    parentRowIds:
+                      type: array
+                      items:
+                        type: string
+                      description: List of parent row identifiers
+            example:
+              data:
+                parentRowIds:
+                  - "8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a"
+                  - "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableRowsResponse'
+              examples:
+                hierarchicalTableRows:
+                  $ref: '#/components/examples/searchHierarchicalTablesRowsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /hierarchicalTables/{eid}/tables/{tableId}/rows/{rowId}:
+    get:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch content of a specific row in a Hierarchical Table Layer'
+      description: |
+        Fetch content of a specific row in a Hierarchical Table Layer.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+
+      operationId: 'fetchHierarchicalTablesLayerRowById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableOneRowResponse'
+              examples:
+                hierarchicalTableRow:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesOneRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - HierarchicalTables
+      summary: 'Update content of a specific row in a Hierarchical Table Layer'
+      description: |
+        Update content of a specific row in a Hierarchical Table Layer.
+        Only the cells provided in the request body will be updated.
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+          - number {"value": 3.0 }
+          - date  {"value":"2019-09-06T15:22:47.309Z"}
+          - text  {"value":"text1"}
+          - list  {"value": "list1"}
+          - multiSelect {"value": "select1, select2"}
+          - attributeList(multiple option) {"values": ["select1", "select2"]}
+          - ontologyList(single select) {"value": {"id": 1234}}
+          - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+          - boolean {"value": true}
+          - unit {"value": 3 } or {"display": "3 g" } or {"user": "3 g" }
+            
+            Note: "value" is stored in the system's base unit (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+            molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+            
+            Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+          - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+          - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        To clear the value of a cell, set its content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'updateHierarchicalTablesLayerRowById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchRowRequest'
+            examples:
+              UpdateRowValueBody:
+                $ref: '#/components/examples/patchRowRequestBody'
+              UpdateFormulationRowValueBody:
+                $ref: '#/components/examples/patchFormulaRowRequestBody'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableOneRowResponse'
+              examples:
+                hierarchicalTableOneRow:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesOneRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - HierarchicalTables
+      summary: 'Delete specified row from hierarchical table'
+      description: |
+        Delete specified row from hierarchical table.
+
+        The related children rows will also be removed.
+
+        Accepted entity types: hierarchicalGrid.
+
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/tables/layer-1/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+
+      operationId: 'deleteHierarchicalTablesLayerRowById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/tableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+
+  /hierarchicalTables/{eid}/header:
+    get:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch content of a Hierarchical Table header'
+      description: |
+        Fetch content of a Hierarchical Table header.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/header
+
+      operationId: 'fetchHierarchicalTablesHeaderById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableHeaderResponse'
+              examples:
+                hierarchicalTableHeader:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesHeaderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - HierarchicalTables
+      summary: 'Patch content of a Hierarchical Table header'
+      description: |
+        Patch content of a Hierarchical Table header.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          /hierarchicalTables/hierarchicalGrid:abcd/header
+        
+        Here are some example values for different column data types,
+          - number {"value": 3.0 }
+          - date  {"value":"2019-09-06T15:22:47.309Z"}
+          - text  {"value":"text1"}
+          - list  {"value": "list1"}
+          - multiSelect {"value": "select1, select2"}
+          - attributeList(multiple option) {"values": ["select1", "select2"]}
+          - ontologyList(single select) {"value": {"id": 1234}}
+          - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+          - boolean {"value": true}
+          - unit {"value": 3 } or {"display": "3 g" } or {"user": "3 g" }
+        
+            Note: "value" is stored in the system's base unit (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+            molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+            Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+          - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+          - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+          - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        To clear the value of a cell, set its content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'updateHierarchicalTablesHeaderById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchRowRequest'
+            examples:
+              UpdateRowValueBody:
+                $ref: '#/components/examples/patchRowRequestBody'
+              UpdateFormulationRowValueBody:
+                $ref: '#/components/examples/patchFormulaRowRequestBody'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableHeaderResponse'
+              examples:
+                hierarchicalTableHeader:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesHeaderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+
+  /hierarchicalTables/{eid}/_columns:
+    get:
+      tags:
+        - HierarchicalTables
+      summary: 'Fetch column definitions of a Hierarchical Table'
+      description: |
+        Fetch column definitions of a Hierarchical Table.
+        This endpoint includes column definitions for all table layers.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          GET /hierarchicalTables/hierarchicalGrid:abcd/_columns
+
+      operationId: 'fetchHierarchicalTablesAllColumnDefinitionsById'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableColumnsResponse'
+              examples:
+                hierarchicalTableColumns:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesColumnsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - HierarchicalTables
+      summary: 'Update column definitions of a Hierarchical Table'
+      description: |
+        Update column definitions of a Hierarchical Table.
+
+        The `action` field must be one of:
+        - `hide`, set the specified columns as hidden
+        - `unhide`, set the specified columns as visible
+
+        The `tables` field is a non-empty list of tables to update, each with the following structure:
+        - id: the ID of the table to update.
+        - columns: a non-empty list of column IDs to hide/unhide in the specified table.
+
+        Accepted entity types: hierarchicalGrid.
+
+        Example usages:
+
+          PATCH /hierarchicalTables/hierarchicalGrid:abcd/_columns?digest=xxx&force=false
+
+      operationId: 'patchHierarchicalTablesColumnVisibility'
+      parameters:
+        - $ref: '#/components/parameters/hierarchicalTablesIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateHierarchicalTableColumnsRequest'
+            examples:
+              hideHierarchicalTableColumns:
+                $ref: '#/components/examples/hideHierarchicalTableColumnRequest'
+              unhideHierarchicalTableColumns:
+                $ref: '#/components/examples/unhideHierarchicalTableColumnRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/hierarchicalTableColumnsResponse'
+              examples:
+                hierarchicalTableColumns:
+                  $ref: '#/components/examples/fetchingHierarchicalTablesColumnsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    hierarchicalTablesIdParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique Hierarchical Table identifier. Format: EID.
+        Accepted entity types: hierarchicalGrid.
+
+        Example value: "hierarchicalGrid:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    tableIdParam:
+      name: 'tableId'
+      in: path
+      description: |
+        Layer identifier of the hierarchical table. Format: UUID
+
+        Example value: "49137ece-5778-48db-b79c-098ebe95dead".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    rowIdParam:
+      name: 'rowId'
+      in: path
+      description: |
+        Unique row identifier. Format: UUID.
+
+        Example value: "fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    digestParam:
+      name: 'digest'
+      in: query
+      description: >
+        Indicate digest of entity.
+        It is used to avoid conflict while concurrent editing.
+        If the parameter 'force' is true, this parameter is optional.
+        If the parameter 'force' is false, this parameter is required.
+      schema:
+        type: string
+        deprecated: false
+    forceParam:
+      name: 'force'
+      in: query
+      description: >
+        Force to update properties without digest check.
+      schema:
+        type: boolean
+        deprecated: false
+    syncDataParam:
+      name: 'syncData'
+      in: query
+      description: >
+        Populate data from external data source if this is a table connected to an external data source
+        and the external data reference ID is provided.
+      schema:
+        type: boolean
+        deprecated: false
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtHierarchicalTable:
+      type: object
+      title: 'ExtHierarchicalTable'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtHierarchicalTableAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            type:
+              type: string
+            header:
+              $ref: '#/components/schemas/ExtHierarchicalTableHeader'
+            tables:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExtHierarchicalTableLayer'
+        relationships:
+          type: object
+          title: 'ExtHierarchicalTableRowRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            links:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    ExtHierarchicalTableLayer:
+      type: object
+      title: 'ExtHierarchicalTableLayer'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtHierarchicalTableLayer'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+            tableId:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+            columns:
+              type: array
+              items:
+                type: object
+
+    ExtHierarchicalTableRow:
+      type: object
+      title: 'ExtHierarchicalTableRow'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+          description: Data type of the row.
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtHierarchicalTableRow'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            cells:
+              type: array
+              items:
+                type: object
+        relationships:
+          type: object
+          title: 'ExtHierarchicalTableRowRelationships'
+          properties:
+            columnDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    ExtHierarchicalTableHeader:
+      type: object
+      title: 'ExtHierarchicalTableHeader'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtHierarchicalTableHeader'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+            columns:
+              type: array
+              items:
+                type: object
+
+    ExtHierarchicalTableColumns:
+      type: object
+      title: 'ExtHierarchicalTableColumns'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtHierarchicalTableColumnsAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            templateId:
+                type: string
+            header:
+              type: object
+              properties:
+                columns:
+                  type: array
+                  items:
+                    type: object
+            tables:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  columns:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+
+    hierarchicalTableResponse:
+      type: object
+      title: 'hierarchicalTablesResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtHierarchicalTable'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    hierarchicalTableLayerResponse:
+      type: object
+      title: 'hierarchicalTablesLayerResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtHierarchicalTableLayer'
+
+    hierarchicalTableHeaderResponse:
+      type: object
+      title: 'hierarchicalTablesHeaderResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtHierarchicalTableHeader'
+
+    hierarchicalTableOneRowResponse:
+      type: object
+      title: 'hierarchicalTablesOneRowResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtHierarchicalTableRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    hierarchicalTableRowsResponse:
+      type: object
+      title: 'hierarchicalTablesRowsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtHierarchicalTableRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    hierarchicalTableColumnsResponse:
+      type: object
+      title: 'hierarchicalTablesColumnsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtHierarchicalTableColumns'
+
+    UpdateRowRequest:
+      type: object
+      required: [ data ]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateRowRequestData'
+
+    AddRowRequest:
+      type: object
+      required: [ data ]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              example: 'hierarchicalTableRow'
+            attributes:
+              type: object
+              required: [ cells ]
+              properties:
+                parentRowId:
+                  type: string
+                  description: 'Optional parent row ID for hierarchical structure'
+                cells:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateRowRequestDataCell'
+
+    PatchRowRequest:
+      type: object
+      required: [ data ]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: object
+          required: [ type, id, attributes ]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              required: [ cells ]
+              properties:
+                cells:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateRowRequestDataCell'
+
+    UpdateRequestMeta:
+      type: object
+      required: [ reasonId ]
+      properties:
+        reasonId:
+          type: string
+        comment:
+          type: string
+
+    UpdateRowRequestData:
+      type: object
+      required: [ type, attributes ]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        attributes:
+          type: object
+          required: [ action ]
+          properties:
+            action:
+              type: string
+            parentRowId:
+              type: string
+            cells:
+              type: array
+              items:
+                $ref: '#/components/schemas/UpdateRowRequestDataCell'
+
+    UpdateRowRequestDataCell:
+      type: object
+      required: [ key ]
+      properties:
+        key:
+          type: string
+        formulationAction:
+          type: string
+          enum: [ "update", "recalculate" ]
+          maxLength: 99
+        content:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+    UpdateHierarchicalTableColumnsRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              example: updateTableColumnRequest
+              enum: [ 'updateTableColumnRequest' ]
+            attributes:
+              type: object
+              required: [ action ]
+              properties:
+                action:
+                  type: string
+                  enum: [ hide, unhide ]
+                  description: 'Action to perform. Use "hide" to hide columns and "unhide" to show them.'
+                tables:
+                  type: array
+                  description: 'List of table layers whose columns should be updated.'
+                  items:
+                    type: object
+                    required: [ id, columns ]
+                    properties:
+                      id:
+                        type: string
+                        description: 'The ID of the table layer.'
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          required: [ key ]
+                          properties:
+                            key:
+                              type: string
+                              description: 'Column key to update.'
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    addARowInTopTableRequestBody:
+      value:
+        data:
+          type: hierarchicalTableRow
+          attributes:
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                content:
+                  value: updated value
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                content:
+                  value: 123
+    addARowInNonTopTableRequestBody:
+      value:
+        data:
+          type: hierarchicalTableRow
+          attributes:
+            parentRowId: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                content:
+                  value: updated value
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                content:
+                  value: 123
+
+    patchRowRequestBody:
+      value:
+        data:
+          type: hierarchicalTableRow
+          id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          attributes:
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                content:
+                  value: updated value
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                content:
+                  value: 123
+
+    bulkPatchRowsRequestBody:
+      value:
+        data:
+          - type: hierarchicalTableRow
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            attributes:
+              action: update
+              cells:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  content:
+                    value: "updated text 1"
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  content:
+                    value: 123
+          - type: hierarchicalTableRow
+            attributes:
+              action: create
+              parentRowId: 'c689c46e-c424-49c3-816e-8372b89820d9'
+              cells:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  content:
+                    value: "new value"
+          - type: hierarchicalTableRow
+            id: 4de17b6f-751e-4a54-af90-d0a17668d6ee
+            attributes:
+              action: delete
+
+    patchFormulaRowRequestBody:
+      value:
+        data:
+          type: hierarchicalTableRow
+          id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          attributes:
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                content:
+                  value: updated value
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                formulationAction: "recalculate"
+
+    bulkPatchFormulaRowsRequestBody:
+      value:
+        data:
+          - type: hierarchicalTableRow
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            attributes:
+              action: update
+              cells:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  content:
+                    value: "updated text 1"
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  formulationAction: "recalculate"
+
+    fetchingHierarchicalTablesResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        data:
+          type: hierarchicalTables
+          id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            eid: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: hierarchicalTable
+            header:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              type: hierarchicalTableHeader
+              row:
+                id: f9056987-3146-4c03-b28c-734989924516
+                type: hierarchicalTableRow
+                cells:
+                  - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                    type: text
+                    name: header-text
+                    content:
+                      value: hello
+              columns:
+                - key: e1a0e8f2-4966-4c0c-b46a-3cf9a00082ee
+                  title: ttt
+                  type: text
+
+            tables:
+              - id: 55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+                type: hierarchicalTableLayer
+                name: hierarchicalTable-1
+                rows:
+                  - id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+                    type: hierarchicalTableRow
+                    cells:
+                      - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                        type: text
+                        name: test1
+                        content:
+                          value: hello
+                      - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                        type: text
+                        name: test2
+                        content:
+                          value: world
+                columns:
+                  - key: e809bebd-4aee-4e71-b561-cc65709215ef
+                    title: col1
+                    type: text
+                  - key: b2869325-388a-4dee-869f-49657f97b31c
+                    title: col2
+                    type: text
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              data:
+                type: entity
+                id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+          - type: user
+            id: '100'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/100
+            attributes:
+              userId: '100'
+              userName: foo.bar@example.com
+              flags:
+                isSystemStandardUser: true
+              email: foo.bar@example.com
+              firstName: foo
+              lastName: bar
+              isEnabled: true
+            relationships:
+              systemGroups:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100/systemGroups
+          - type: entity
+            id: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+            attributes:
+              type: experiment
+              eid: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+              name: exp-001
+              digest: '25450853'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: exp-001
+              flags: { }
+          - type: entity
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            attributes:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              eid: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              name: simpleHierarchicalTable
+              description: ''
+              createdAt: '2024-01-11T05:24:02.211Z'
+              editedAt: '2024-01-11T05:24:36.371Z'
+              type: hierarchicalGrid
+              digest: '52955291'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: simpleHierarchicalTable
+              flags:
+                canEdit: true
+            relationships:
+              createdBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              editedBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              ancestors:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/ancestors
+                data:
+                  - type: entity
+                    id: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+                    meta:
+                      links:
+                        self: https://snb.example.com/api/rest/v1.0/entities/experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+              owner:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              source:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/export
+
+    fetchingHierarchicalTablesLayerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+        data:
+          type: hierarchicalTableLayer
+          id: 55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+          links:
+            self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+          attributes:
+            id: 55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+            type: hierarchicalTableLayer
+            name: hierarchicalTable-1
+            rows:
+              - id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+                type: hierarchicalTableRow
+                cells:
+                  - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                    type: text
+                    name: test1
+                    content:
+                      value: hello
+                  - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                    type: text
+                    name: test2
+                    content:
+                      value: world
+            columns:
+              - key: e809bebd-4aee-4e71-b561-cc65709215ef
+                title: col1
+                type: text
+              - key: b2869325-388a-4dee-869f-49657f97b31c
+                title: col2
+                type: text
+
+    fetchingHierarchicalTablesHeaderResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/header
+        data:
+          type: hierarchicalTableHeader
+          id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: hierarchicalTableHeader
+            row:
+              id: f9056987-3146-4c03-b28c-734989924516
+              type: hierarchicalTableRow
+              cells:
+                - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  type: text
+                  name: header-text
+                  content:
+                    value: hello
+            columns:
+              - key: e1a0e8f2-4966-4c0c-b46a-3cf9a00082ee
+                title: ttt
+                type: text
+
+    fetchingHierarchicalTablesColumnsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/_columns
+        data:
+          type: hierarchicalTableColumnDefinitions
+          id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: hierarchicalTableColumnDefinitions
+            templateId: hierarchicalGrid:1989558a-a41f-40d2-b3a8-abe8b42e5012
+            header:
+              columns:
+                - key: e1a0e8f2-4966-4c0c-b46a-3cf9a00082ee
+                  title: ttt
+                  type: text
+
+            tables:
+              - id: "55af522f-7fcb-48e6-89be-ad3a3dd3af1e"
+                columns:
+                  - key: e809bebd-4aee-4e71-b561-cc65709215ef
+                    title: col1
+                    type: text
+                  - key: b2869325-388a-4dee-869f-49657f97b31c
+                    title: col2
+                    type: text
+
+    hideHierarchicalTableColumnRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "hide"
+            tables:
+              - id: "55af522f-7fcb-48e6-89be-ad3a3dd3af1e"
+                columns:
+                  - key: "e809bebd-4aee-4e71-b561-cc65709215ef"
+                  - key: "b2869325-388a-4dee-869f-49657f97b31c"
+    unhideHierarchicalTableColumnRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "unhide"
+            tables:
+              - id: "55af522f-7fcb-48e6-89be-ad3a3dd3af1e"
+                columns:
+                  - key: "e809bebd-4aee-4e71-b561-cc65709215ef"
+                  - key: "b2869325-388a-4dee-869f-49657f97b31c"
+    fetchingHierarchicalTablesOneRowResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+        data:
+          type: hierarchicalTableRow
+          id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          links:
+            self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          attributes:
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            type: hierarchicalTableRow
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                type: text
+                name: col1
+                content:
+                  value: ha
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                type: text
+                name: col2
+                content:
+                  value: hello
+          relationships:
+            columnDefinitions:
+              data:
+                type: layerColumnDefinitions
+                id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+          - type: layerColumnDefinitions
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            attributes:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              type: layerColumnDefinitions
+              templateId: hierarchicalGrid:1989558a-a41f-40d2-b3a8-abe8b42e5012
+              columns:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  title: col1
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  title: col2
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+
+    addHierarchicalTablesOneRowResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+        data:
+          type: hierarchicalTableRow
+          id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          links:
+            self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          attributes:
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            type: hierarchicalTableRow
+            cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                type: text
+                name: col1
+                content:
+                  value: ha
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                type: text
+                name: col2
+                content:
+                  value: hello
+          relationships:
+            columnDefinitions:
+              data:
+                type: layerColumnDefinitions
+                id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+          - type: layerColumnDefinitions
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            attributes:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              type: layerColumnDefinitions
+              templateId: hierarchicalGrid:1989558a-a41f-40d2-b3a8-abe8b42e5012
+              columns:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  title: col1
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  title: col2
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+
+    searchHierarchicalTablesRowsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+        data:
+          - type: hierarchicalTableRow
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            attributes:
+              id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+              type: hierarchicalTableRow
+              cells:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  type: text
+                  name: col1
+                  content:
+                    value: ha
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  type: text
+                  name: col2
+                  content:
+                    value: hello
+            relationships:
+              columnDefinitions:
+                data:
+                  type: layerColumnDefinitions
+                  id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+          - type: layerColumnDefinitions
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            attributes:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              type: layerColumnDefinitions
+              templateId: hierarchicalGrid:1989558a-a41f-40d2-b3a8-abe8b42e5012
+              columns:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  title: col1
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  title: col2
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+
+    bulkUpdateHierarchicalTablesRowsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+        data:
+          - type: hierarchicalTableRow
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/hierarchicalTables/hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/tables/55af522f-7fcb-48e6-89be-ad3a3dd3af1e/rows/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            attributes:
+              id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+              type: hierarchicalTableRow
+              cells:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  type: text
+                  name: col1
+                  content:
+                    value: ha
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  type: text
+                  name: col2
+                  content:
+                    value: hello
+            relationships:
+              columnDefinitions:
+                data:
+                  type: layerColumnDefinitions
+                  id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+          - type: layerColumnDefinitions
+            id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            attributes:
+              id: hierarchicalGrid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              type: layerColumnDefinitions
+              templateId: hierarchicalGrid:1989558a-a41f-40d2-b3a8-abe8b42e5012
+              columns:
+                - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                  title: col1
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false
+                - key: b81d7782-d023-4ebe-a803-66622182267b
+                  title: col2
+                  type: text
+                  isExternalKey: false
+                  isUserDefined: false

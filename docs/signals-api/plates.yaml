@@ -1,0 +1,2656 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: [ ]
+
+paths:
+  /plates:
+    post:
+      tags:
+        - Plates
+      summary: 'Create a new plate container'
+      description: |
+        Create a new plate container.
+
+        Accepted entity types: plate container.
+
+        #### Ancestors
+        Ancestors of the entity to be created. Only needs to set parent entity in the ancestors section.
+        Possible parent entities of plate container are experiment, parallel experiment and custom admin defined object.
+
+        #### Template
+        No template is required for plate container.
+
+        #### Attributes
+        There are 3 attributes are required for plate container.
+        - numberOfRows, number of rows of each plate, integer, min value is 1, max value is 48.
+        - numberOfColumns, number of columns of each plate, integer, min value is 1, max value is 48.
+        - numberOfPlates, number of plates to be created, integer, min value is 1, max value is 500.
+
+      operationId: 'postNewPlateContainer'
+      parameters:
+        - name: 'digest'
+          in: query
+          description: >
+            Digest of parent entity.
+            It is used to avoid conflict while concurrent editing.
+            If the parameter 'force' is true, this parameter is optional.
+            If the parameter 'force' is false, this parameter is required.
+          schema:
+            type: string
+            deprecated: false
+        - name: 'force'
+          in: query
+          description: >
+            Force to create ignoring the provided digest.
+            If true, the system will get and use the latest digest before updating parent, ignoring the provided one.
+          schema:
+            type: boolean
+            deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/CreateEntityRequest'
+            examples:
+              CreatePlateContainer:
+                $ref: '#/components/examples/createNewPlateContainerRequest'
+      responses:
+        '201':
+          description: 'Created'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateContainerApiResponse'
+              examples:
+                PlateContainer:
+                  $ref: '#/components/examples/createNewPlateContainerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}:
+    get:
+      tags:
+        - Plates
+      summary: 'Fetch plate container by ID'
+      description: |
+        Fetch plate container by ID.
+
+      operationId: 'fetchPlateContainerContentById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateContainerApiResponse'
+              examples:
+                PlateContainer:
+                  $ref: '#/components/examples/fetchDataOfPlateContainerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}/plates:
+    get:
+      tags:
+        - Plates
+      summary: 'Retrieve all plates from a specified container'
+      description: |
+        Retrieve all plates from a specified container.
+
+      operationId: 'fetchAllPlatesFromPlateContainer'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateListApiResponse'
+              examples:
+                Plates:
+                  $ref: '#/components/examples/fetchAllPlatesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Plates
+      summary: 'Create a new plate in a specified container'
+      description: |
+        Create a new plate in a specified container.
+        
+        No request body is needed.
+
+      operationId: 'postNewPlateToPlateContainer'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/digestParam'
+        - name: 'force'
+          in: query
+          description: >
+            Force to create ignoring the provided digest.
+            If true, the system will get and use the latest digest before updating, ignoring the provided one.
+          schema:
+            type: boolean
+            deprecated: false
+      responses:
+        '201':
+          description: 'Created'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateApiResponse'
+              examples:
+                NewPlate:
+                  $ref: '#/components/examples/createNewPlateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}/plates/{id}:
+    get:
+      tags:
+        - Plates
+      summary: 'Retrieve data of an existing plate'
+      description: |
+        Retrieve data of an existing plate.
+
+      operationId: 'fetchInventoryPlateById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/plateIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateApiResponse'
+              examples:
+                Plate:
+                  $ref: '#/components/examples/fetchPlateByNameResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Plates
+      summary: 'Update an existing plate'
+      description: |
+        Update an existing plate.
+
+        **Well-level annotation layers** (concentration, material, amount, etc.) use the `wells` array:
+        - wellformat: {"value": "text"}
+        - concentration: {"value": "123 pmolar|nmolar|μmolar|mmolar|molar|%|cell count|pg/mL|ng/mL|μg/mL|mg/mL"}
+        - material: {"type":"experiment", "user":"exp-1-1", "value":"experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - amount: {"value": "123 pL|nL|μL|mL"}
+        - replicate: {"value": 123}
+        - deviation: {"value": "text"}
+        - integer: {"value": 123}
+        - number:  {"value": 1.23}
+        - text: {"value": "text"}
+
+        **Property-class annotation layers** (plate-level values) use the `value` field directly:
+        - text: "My text value"
+        - attribute: "Attribute value"
+        - ontology_list: "{\"id\": 123}" (JSON string containing the ontology item ID)
+
+        Note:
+        - Only one annotation layer is allowed per request.
+        - The units must be same in one annotation layer.
+        - For ONTOLOGY_LIST type, the value must be a JSON string containing a valid ontology item ID from the associated attribute list.
+
+        **Note:** In responses, ONTOLOGY_LIST values are returned as objects (e.g., `{"id": 123, "preferredName": "Option A", "iri": "http://example.org/option-a"}`), not as JSON strings.
+
+      operationId: 'patchInventoryPlateById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/plateIdParam'
+        - $ref: '#/components/parameters/plateDigestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlateRequest'
+            examples:
+              UpdatePlateWells:
+                $ref: '#/components/examples/updatePlateExample'
+              UpdateOntologyListProperty:
+                $ref: '#/components/examples/updatePlatePropertyAnnotationLayerExample'
+              UpdateTextProperty:
+                $ref: '#/components/examples/updatePlateTextPropertyExample'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateApiResponse'
+              examples:
+                Plate:
+                  $ref: '#/components/examples/fetchPlateByNameResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    put:
+      tags:
+        - Plates
+      summary: 'Replace an existing plate'
+      description: |
+        Replace an existing plate.
+
+        The specified plate will be replaced with the new wells data.
+
+        **Well-level annotation layers** (concentration, material, amount, etc.) use the `wells` array:
+        - wellformat: {"value": "text"}
+        - concentration: {"value": "123 pmolar|nmolar|μmolar|mmolar|molar|%|cell count|pg/mL|ng/mL|μg/mL|mg/mL"}
+        - material: {"type":"experiment", "user":"exp-1-1", "value":"experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - amount: {"value": "123 pL|nL|μL|mL"}
+        - replicate: {"value": 123}
+        - deviation: {"value": "text"}
+        - integer: {"value": 123}
+        - number:  {"value": 1.23}
+        - text: {"value": "text"}
+
+        **Property-class annotation layers** (plate-level values) use the `value` field directly:
+        - text: "My text value"
+        - attribute: "Attribute value"
+        - ontology_list: "{\"id\": 123}" (JSON string containing the ontology item ID)
+
+        Note:
+        - Only one annotation layer is allowed per request.
+        - The units must be same in one annotation layer.
+        - For ONTOLOGY_LIST type, the value must be a JSON string containing a valid ontology item ID from the associated attribute list.
+
+        **Note:** In responses, ONTOLOGY_LIST values are returned as objects (e.g., `{"id": 123, "preferredName": "Option A", "iri": "http://example.org/option-a"}`), not as JSON strings.
+
+      operationId: 'putPlaceInPlateContainerById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/plateIdParam'
+        - $ref: '#/components/parameters/plateDigestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlateRequest'
+            examples:
+              ReplacePlateWells:
+                $ref: '#/components/examples/updatePlateExample'
+              UpdateOntologyListProperty:
+                $ref: '#/components/examples/updatePlatePropertyAnnotationLayerExample'
+              UpdateTextProperty:
+                $ref: '#/components/examples/updatePlateTextPropertyExample'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateApiResponse'
+              examples:
+                Plate:
+                  $ref: '#/components/examples/fetchPlateByNameResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Plates
+      summary: 'Remove an existing plate'
+      description: |
+        Remove an existing plate from container.
+
+      operationId: 'deletePlateFromPlateContainerById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/plateIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - name: 'force'
+          in: query
+          description: >
+            Force to delete ignoring the provided digest.
+            If true, the system will get and use the latest digest before deleting, ignoring the provided one.
+          schema:
+            type: boolean
+            deprecated: false
+      responses:
+        '204':
+          description: 'Deleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}/settings/annotationLayers:
+    get:
+      tags:
+        - Plates
+      summary: 'Get annotation layers of a specified container'
+      description: |
+        Get annotation layers of a specified container.
+
+      operationId: 'fetchAnnotationLayersOfPlateContainer'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AnnotationLayerListApiResponse'
+              examples:
+                AnnotationLayers:
+                  $ref: '#/components/examples/fetchAllAnnotationLayersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Plates
+      summary: 'Add a new annotation layer to a specified container'
+      description: |
+        Add a new annotation layer to a specified container.
+
+        Here are the acceptable annotationClasses for the new annotation layer.
+        - wellformat
+        - concentration
+        - material
+        - amount
+        - replicate
+        - deviation
+        - other
+        - property
+
+        If select "other" annotationClass, the data type is required. Here are the acceptable data types for "other" annotationClass,
+        - INTEGER
+        - DECIMAL
+        - TEXT
+        
+        If select "property" annotationClass, the data type is required. Here are the acceptable data types for "property" annotationClass,
+        - INTEGER
+        - DECIMAL
+        - TEXT
+        - ATTRIBUTE
+        - ONTOLOGY_LIST
+
+        If select "ATTRIBUTE" or "ONTOLOGY_LIST" data type for "property" annotationClass, the attributeList is required.
+        The attributeList must be an attribute EID (e.g., "attribute:123"). 
+
+        For other annotation classes other than "other" and "property". Data type is set by the default. Do not need to be provided.
+
+      operationId: 'postNewAnnotationLayerToPlateContainer'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/digestParam'
+        - name: 'force'
+          in: query
+          description: >
+            Force to create ignoring the provided digest.
+            If true, the system will get and use the latest digest from server, ignoring the provided digest.
+          schema:
+            type: boolean
+            deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/CreateAnnotationLayerRequest'
+            examples:
+              AddNewAnnotationLayer:
+                $ref: '#/components/examples/createAnnotationLayerRequest'
+              AddOntologyListAnnotationLayer:
+                $ref: '#/components/examples/createOntologyListAnnotationLayerRequest'
+      responses:
+        '201':
+          description: 'Created'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AnnotationLayerApiResponse'
+              examples:
+                NewAnnotationLayer:
+                  $ref: '#/components/examples/addNewAnnotationLayerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}/settings/annotationLayers/{annotationLayerId}:
+    get:
+      tags:
+        - Plates
+      summary: 'Get annotation layer by ID'
+      description: |
+        Get annotation layer by annotation layer ID.
+
+      operationId: 'fetchAnnotationLayerById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/annotationLayerIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AnnotationLayerApiResponse'
+              examples:
+                AnnotationLayer:
+                  $ref: '#/components/examples/getAnnotationLayerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Plates
+      summary: 'Update an existing annotation layer'
+      description: |
+        Update an existing annotation layer.
+
+        Only the name of the not predefined annotation layer can be updated.
+
+      operationId: 'patchAnnotationById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/annotationLayerIdParam'
+        - $ref: '#/components/parameters/plateDigestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateAnnotationLayerRequest'
+            examples:
+              UpdateAnnotationLayer:
+                $ref: '#/components/examples/updateAnnotationLayerRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AnnotationLayerApiResponse'
+              examples:
+                AnnotationLayer:
+                  $ref: '#/components/examples/getAnnotationLayerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Plates
+      summary: 'Delete an existing annotation layer'
+      description: |
+        Delete an existing annotation layer from specified container.
+        
+        Only the custom annotation layer can be deleted. Predefined annotation layer is not deletable.
+
+      operationId: 'deleteAnnotationLayerById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/annotationLayerIdParam'
+        - $ref: '#/components/parameters/plateDigestParam'
+        - name: 'force'
+          in: query
+          description: >
+            Force to delete ignoring the provided digest.
+            If true, the system will get and use the latest digest from server, ignoring the provided digest.
+          schema:
+            type: boolean
+            deprecated: false
+      responses:
+        '204':
+          description: 'Deleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /plates/{plateContainerId}/summary:
+    get:
+      tags:
+        - Plates
+      summary: 'Retrieve the summary table of an existing plate container'
+      description: |
+        Retrieve the summary table of an existing plate container.
+
+      operationId: 'fetchPlateSummaryTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/plateContainerId'
+        - $ref: '#/components/parameters/splitUnitsParam'
+        - $ref: '#/components/parameters/includeParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PlateSummaryApiResponse'
+              examples:
+                PlateContainerSummary:
+                  $ref: '#/components/examples/getPlateContainerSummaryExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    plateContainerId:
+      name: 'plateContainerId'
+      in: path
+      description: |
+        Unique Plate Container identifier. Format: EID.
+
+        Accepted entity types: plateContainer.
+
+        Example value: "plateContainer:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    plateIdParam:
+      name: 'id'
+      in: path
+      description: |
+        Name of the plate.
+
+        Example value: "Plate-1",  "Plate-2",  "Plate-4".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    annotationLayerIdParam:
+      name: 'annotationLayerId'
+      in: path
+      description: |
+        The unique annotation layer identifier. 
+
+        Example value: "a28ba89f-90f0-492f-b448-015876a4518c".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    digestParam:
+      name: 'digest'
+      in: query
+      description: >
+        Indicate digest of entity.
+        It is used to avoid conflict while concurrent editing.
+        If the parameter 'force' is true, this parameter is optional.
+        If the parameter 'force' is false, this parameter is required.
+      schema:
+        type: string
+        deprecated: false
+    plateDigestParam:
+      name: 'digest'
+      in: query
+      description: >
+        Digest of plate container.
+        It is used to avoid conflict while concurrent editing.
+        If the parameter 'force' is true, this parameter is optional.
+        If the parameter 'force' is false, this parameter is required.
+      schema:
+        type: string
+        deprecated: false
+    forceParam:
+      name: 'force'
+      in: query
+      description: >
+        Force to update without checking the provided digest.
+        If true, the system will get and use the latest digest from server, ignoring the provided digest.
+      schema:
+        type: boolean
+        deprecated: false
+    splitUnitsParam:
+      name: 'splitUnits'
+      in: query
+      description: >
+        Split units column into 2 columns, units and value.
+
+        For example, column "Amount" is a unit column, if request with "splitUnits=true", this column will be split into 2 columns.
+
+        - One column is "Amount", which contains the value of the amount.
+
+        - Another column is "Amount Unit", which contains the units of the amount.
+
+        - If using this option, please make sure there is no custom annotation layer with the same name as the unit column to be created, in this case "Amount Unit".
+
+      schema:
+        type: boolean
+        deprecated: false
+    includeParam:
+      name: 'include'
+      in: query
+      description: |
+        The related resources to be shown in "included" field.
+
+        Example value: "entity".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [ errors ]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtPlateContainer:
+      type: object
+      title: 'ExtPlateContainer'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtPlateContainerAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+            numberOfRows:
+              type: integer
+            numberOfColumns:
+              type: integer
+            numberOfPlates:
+              type: integer
+        relationships:
+          type: object
+          title: 'ExtPlateContainerRelationships'
+          properties:
+            plates:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            ancestors:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            annotationLayerDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    PlateContainerApiResponse:
+      type: object
+      title: 'PlateContainerApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtPlateContainer'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtPlate:
+      type: object
+      title: 'ExtPlate'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtPlateAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+            numberOfRows:
+              type: integer
+            numberOfColumns:
+              type: integer
+            plateId:
+              type: string
+            annotationLayers:
+              type: array
+              items:
+                type: object
+                properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    dataType:
+                      type: string
+                    value:
+                      description: |
+                        Value for property-class annotation layers. For ONTOLOGY_LIST dataType,
+                        this is an object with id, preferredName, and iri fields. For other
+                        dataTypes, this is a string.
+                      oneOf:
+                        - type: string
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            preferredName:
+                              type: string
+                            iri:
+                              type: string
+                    wells:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          wellId:
+                            type: string
+                          content:
+                            type: object
+        relationships:
+          type: object
+          title: 'ExtPlateRelationships'
+          properties:
+            plateContainer:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            annotationLayerDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    PlateApiResponse:
+      type: object
+      title: 'PlateApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtPlate'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    PlateListApiResponse:
+      type: object
+      title: 'PlateListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtPlate'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtAnnotationLayer:
+      type: object
+      title: 'ExtAnnotationLayer'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtAnnotationLayerAttributes'
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            dataType:
+              type: string
+            annotationClass:
+              type: string
+            isPredefined:
+              type: boolean
+            isHidden:
+              type: boolean
+            annotationLayerValues:
+              type: object
+        relationships:
+          type: object
+          title: 'ExtAnnotationLayerRelationships'
+          properties:
+            plateContainer:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    AnnotationLayerApiResponse:
+      type: object
+      title: 'AnnotationLayerApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtAnnotationLayer'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    AnnotationLayerListApiResponse:
+      type: object
+      title: 'AnnotationLayerListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtAnnotationLayer'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtPlateSummaryRow:
+      type: object
+      title: 'ExtPlateSummaryRow'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtPlateSummaryRowAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            cells:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  content:
+                    type: object
+        relationships:
+          type: object
+          title: 'ExtPlateSummaryRowRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            columnDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    PlateSummaryApiResponse:
+      type: object
+      title: 'PlateSummaryApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtPlateSummaryRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+    UpdatePlateRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, id, attributes ]
+          properties:
+            type:
+              type: string
+              enum: [ plate ]
+            id:
+              type: string
+            attributes:
+              type: object
+              properties:
+                plateId:
+                  type: string
+                annotationLayers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AnnotationLayerAttributes'
+    AnnotationLayerAttributes:
+      type: object
+      required: [ id ]
+      properties:
+        id:
+          type: string
+          description: ID of the annotation layer to update
+        value:
+          type: string
+          description: |
+            Value for property annotation layers. For ONTOLOGY_LIST data type, this must be a
+            JSON-encoded string with an 'id' field (e.g., "{\"id\":123}"). To clear a value,
+            send an empty string (""). Empty objects like "{}" are rejected as invalid.
+        wells:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnotationLayerWellAttributes'
+    AnnotationLayerWellAttributes:
+      type: object
+      required: [ wellId ]
+      properties:
+        wellId:
+          type: string
+        content:
+          type: object
+          nullable: true
+    CreateEntityRequest:
+      title: 'EntityCreationRequestPayload'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+            meta:
+              type: object
+              title: 'meta'
+              properties:
+                adoTypeName:
+                  type: string
+            attributes:
+              type: object
+              title: 'attributes'
+              additionalProperties: true
+              properties:
+                name:
+                  type: string
+                stoicRef:
+                  type: object
+                  title: 'stoicRef'
+                  required: [ eid, rowId ]
+                  properties:
+                    eid:
+                      type: string
+                      pattern: '^(chemicalDrawing)(:|(%3A)|(%3a)).+$'
+                    rowId:
+                      type: string
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    required: [ id, content ]
+                    properties:
+                      id:
+                        type: string
+                      content:
+                        type: object
+                        additionalProperties: true
+            relationships:
+              type: object
+              properties:
+                ancestors:
+                  type: object
+                  title: 'ancestors'
+                  required: [ data ]
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        required: [ type,id ]
+                        properties:
+                          type:
+                            type: string
+                          id:
+                            type: string
+                template:
+                  type: object
+                  title: 'template'
+                  required: [ data ]
+                  properties:
+                    data:
+                      type: object
+                      required: [ type,id ]
+                      properties:
+                        type:
+                          type: string
+                        id:
+                          type: string
+    CreateAnnotationLayerRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              enum: [ annotationLayer ]
+            attributes:
+              type: object
+              required: [ name, annotationClass ]
+              properties:
+                name:
+                  type: string
+                annotationClass:
+                  type: string
+                  enum: [ wellformat, concentration, material, amount, replicate, deviation, other, property ]
+                dataType:
+                  type: string
+                  description: |
+                    Data type for the annotation layer value. Required for 'other' and 'property' annotationClass.
+                    ONTOLOGY_LIST is only valid for 'property' annotationClass and requires attributeList to be set.
+                  enum: [ INTEGER, DECIMAL, TEXT, ATTRIBUTE, ONTOLOGY_LIST ]
+                attributeList:
+                  type: string
+                  description: |
+                    EID of the attribute list (e.g., "attribute:123"). Required when dataType is ATTRIBUTE or ONTOLOGY_LIST.
+    UpdateAnnotationLayerRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              enum: [ annotationLayer ]
+            attributes:
+              type: object
+              required: [ name ]
+              properties:
+                name:
+                  type: string
+
+  responses:
+    BadRequest: #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized: #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden: #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound: #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed: #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable: #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout: #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict: #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone: #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired: #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge: #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong: #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType: #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType: #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm: #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity: #422
+      description: 'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch: #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests: #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError: #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented: #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway: #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable: #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout: #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    getPlateContainerSummaryExample:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff/summary
+        data:
+          - type: plateRow
+            id: 869491dc-bf8b-3c43-a225-629e2c10900a
+            attributes:
+              id: 869491dc-bf8b-3c43-a225-629e2c10900a
+              type: plateRow
+              cells:
+                - key: 76a7d17a-75b7-39a5-8549-05f073a064e3
+                  type: TEXT
+                  name: Well ID
+                  content:
+                    user: A1
+                    value: A1
+                - key: 59f9b60c-a571-3c8e-982d-cdfe7e88e23c
+                  type: TEXT
+                  name: Row
+                  content:
+                    user: A
+                    value: A
+                - key: b5ff1ac8-310e-3848-9367-a4b8f4dc7ecc
+                  type: INTEGER
+                  name: Column
+                  content:
+                    user: '1'
+                    value: 1
+                - key: 5a79aad4-7b07-39f1-9634-a2669a149a5b
+                  type: TEXT
+                  name: Plate
+                  content:
+                    user: Plate-1
+                    value: Plate-1
+                - key: 43a9fcf2-bf40-3ed0-ba54-204275f053df
+                  type: INTEGER
+                  name: Order
+                  content:
+                    user: '1'
+                    value: 1
+                - key: f2053c2d-985d-3343-97e4-ae35b7fbe9d3
+                  type: TEXT
+                  name: Plate ID
+                  content:
+                    user: '1'
+                    value: '1'
+                - key: 52eada20-5232-30b2-b2e7-e1e38a630750
+                  type: UNIT
+                  name: Concentration
+                  content:
+                    measure: molarity
+                    user: 2.5 molar
+                    value: 2.5
+                    units: molar
+                - key: 33fd690e-cc3a-39aa-8216-97ff0c920a5a
+                  type: LINK
+                  name: Material
+                  content:
+                    user: EDS
+                - key: ffddc6cd-d890-3a2b-a87b-edb290a535a1
+                  type: UNIT
+                  name: Amount
+                  content:
+                    measure: volume
+                    user: 23.5 pL
+                    value: 2.3500000000000002e-08
+                    units: mL
+                - key: 845a3060-6602-38af-8f6a-564a4859add4
+                  type: UNIT
+                  name: Ann-Concerntration
+                  content:
+                    measure: molarity
+                    user: 3.3 mmolar
+                    value: 0.0033
+                    units: molar
+                - key: 417e2967-fddc-3299-b72d-4e5709c3e047
+                  type: TEXT
+                  name: UserTextCol
+                  content:
+                    user: asdf
+                    value: asdf
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+                data:
+                  type: entity
+                  id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+              columnDefinitions:
+                data:
+                  type: columnDefinitions
+                  id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+          - type: plateRow
+            id: 1b88b66a-598d-3552-bedc-aa468ea75776
+            attributes:
+              id: 1b88b66a-598d-3552-bedc-aa468ea75776
+              type: plateRow
+              cells:
+                - key: 76a7d17a-75b7-39a5-8549-05f073a064e3
+                  type: TEXT
+                  name: Well ID
+                  content:
+                    user: A2
+                    value: A2
+                - key: 59f9b60c-a571-3c8e-982d-cdfe7e88e23c
+                  type: TEXT
+                  name: Row
+                  content:
+                    user: A
+                    value: A
+                - key: b5ff1ac8-310e-3848-9367-a4b8f4dc7ecc
+                  type: INTEGER
+                  name: Column
+                  content:
+                    user: '2'
+                    value: 2
+                - key: 5a79aad4-7b07-39f1-9634-a2669a149a5b
+                  type: TEXT
+                  name: Plate
+                  content:
+                    user: Plate-1
+                    value: Plate-1
+                - key: 43a9fcf2-bf40-3ed0-ba54-204275f053df
+                  type: INTEGER
+                  name: Order
+                  content:
+                    user: '1'
+                    value: 1
+                - key: f2053c2d-985d-3343-97e4-ae35b7fbe9d3
+                  type: TEXT
+                  name: Plate ID
+                  content:
+                    user: '1'
+                    value: '1'
+                - key: 52eada20-5232-30b2-b2e7-e1e38a630750
+                  type: UNIT
+                  name: Concentration
+                  content:
+                    measure: molarity
+                    user: 2.5 molar
+                    value: 2.5
+                    units: molar
+                - key: ffddc6cd-d890-3a2b-a87b-edb290a535a1
+                  type: UNIT
+                  name: Amount
+                  content:
+                    measure: volume
+                    user: 23.5 pL
+                    value: 2.3500000000000002e-08
+                    units: mL
+                - key: 845a3060-6602-38af-8f6a-564a4859add4
+                  type: UNIT
+                  name: Ann-Concerntration
+                  content:
+                    measure: molarity
+                    user: 3.3 mmolar
+                    value: 0.0033
+                    units: molar
+                - key: 417e2967-fddc-3299-b72d-4e5709c3e047
+                  type: TEXT
+                  name: UserTextCol
+                  content:
+                    user: asdf
+                    value: asdf
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+                data:
+                  type: entity
+                  id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+              columnDefinitions:
+                data:
+                  type: columnDefinitions
+                  id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+        included:
+          - type: entity
+            id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+            attributes:
+              type: plateContainer
+              eid: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+              name: Plates
+              digest: '41278393'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+          - type: columnDefinitions
+            id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+            attributes:
+              id: plateContainer:2f44e81f-7d0d-4987-893c-a82b29c86cff
+              type: columnDefinitions
+              columns:
+                - key: 76a7d17a-75b7-39a5-8549-05f073a064e3
+                  title: Well ID
+                  type: TEXT
+                - key: 59f9b60c-a571-3c8e-982d-cdfe7e88e23c
+                  title: Row
+                  type: TEXT
+                - key: b5ff1ac8-310e-3848-9367-a4b8f4dc7ecc
+                  title: Column
+                  type: INTEGER
+                - key: 5a79aad4-7b07-39f1-9634-a2669a149a5b
+                  title: Plate
+                  type: TEXT
+                - key: 43a9fcf2-bf40-3ed0-ba54-204275f053df
+                  title: Order
+                  type: INTEGER
+                - key: f2053c2d-985d-3343-97e4-ae35b7fbe9d3
+                  title: Plate ID
+                  type: TEXT
+                - key: 3f013737-b8b2-3676-9693-1c8261688249
+                  title: Well Format
+                  type: TEXT
+                - key: 52eada20-5232-30b2-b2e7-e1e38a630750
+                  title: Concentration
+                  type: UNIT
+                  measure: VARIABLE_MEASURE
+                - key: 33fd690e-cc3a-39aa-8216-97ff0c920a5a
+                  title: Material
+                  type: LINK
+                - key: f626804e-b6e2-38ef-b468-017f146c99db
+                  title: Container
+                  type: LINK
+                - key: ffddc6cd-d890-3a2b-a87b-edb290a535a1
+                  title: Amount
+                  type: UNIT
+                  measure: VARIABLE_MEASURE
+                - key: 0774f46e-c5fe-3339-aa9e-4620e6b0facb
+                  title: Replicate
+                  type: INTEGER
+                - key: 7c5d1ca7-f73b-32ca-ab33-e818cd4dff27
+                  title: Deviation
+                  type: TEXT
+                - key: 845a3060-6602-38af-8f6a-564a4859add4
+                  title: Ann-Concerntration
+                  type: UNIT
+                  measure: VARIABLE_MEASURE
+                - key: 417e2967-fddc-3299-b72d-4e5709c3e047
+                  title: UserTextCol
+                  type: TEXT
+    updatePlateExample:
+      value:
+        data:
+          type: plate
+          id: Plate-1
+          attributes:
+            plateId: 1st Plate
+            annotationLayers:
+              - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                wells:
+                  - wellId: A1
+                    content:
+                      value: "1 molar"
+                  - wellId: B3
+                    content: null
+    updatePlatePropertyAnnotationLayerExample:
+      summary: Update a property-class annotation layer value
+      description: |
+        Example showing how to set a plate-level property annotation layer value.
+        For ONTOLOGY_LIST type, the value is a JSON string containing the ontology item ID.
+      value:
+        data:
+          type: plate
+          id: Plate-1
+          attributes:
+            annotationLayers:
+              - id: 3d8f1a2b-5c6e-4d7f-8a9b-0c1d2e3f4a5b
+                value: "{\"id\": 123}"
+    updatePlateTextPropertyExample:
+      summary: Update a text property annotation layer value
+      value:
+        data:
+          type: plate
+          id: Plate-1
+          attributes:
+            annotationLayers:
+              - id: 4e9f2b3c-6d7e-5f8a-9a0b-1c2d3e4f5a6b
+                value: "My text value"
+    fetchAllPlatesResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates
+        data:
+          - type: plate
+            id: Plate-1
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates/Plate-1
+            attributes:
+              id: Plate-1
+              eid: plate:e0552756-3f5e-4c4f-9d4b-aa38d86c4a41
+              type: plate
+              name: Plate-1
+              numberOfRows: 3
+              numberOfColumns: 4
+              annotationLayers:
+                - id: 6a90fdd6-23d2-40b8-91c4-3f60cba659da
+                  name: Well Format
+                  dataType: TEXT
+                  wells:
+                    - wellId: A1
+                      content:
+                        user: abc
+                        value: abc
+                - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                  name: Concentration
+                  dataType: DECIMAL
+                  wells:
+                    - wellId: A1
+                      content:
+                        user: 12 molar
+                        value: 12
+                    - wellId: B1
+                      content:
+                        user: 12 molar
+                        value: 12
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+                data:
+                  type: entity
+                  id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              annotationLayerDefinitions:
+                data:
+                  type: annotationLayerDefinition
+                  id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+        included:
+          - type: annotationLayerDefinition
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              type: annotationLayerDefinition
+              annotationLayers:
+                - id: 6a90fdd6-23d2-40b8-91c4-3f60cba659da
+                  name: Well Format
+                  dataType: TEXT
+                  annotationClass: wellformat
+                  isPredefined: true
+                - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                  name: Concentration
+                  dataType: DECIMAL
+                  annotationClass: concentration
+                  isPredefined: true
+                - id: '01605889-9a91-4e41-989e-eaf27d0dd346'
+                  name: Material
+                  dataType: LINK
+                  annotationClass: material
+                  isPredefined: true
+                - id: b03b66eb-ddf4-48a4-b9f3-76e7c8197ec4
+                  name: Amount
+                  dataType: DECIMAL
+                  annotationClass: amount
+                  isPredefined: true
+                - id: 3001aaea-97a9-47b9-97e7-c9ece7a9d8c1
+                  name: Replicate
+                  dataType: INTEGER
+                  annotationClass: replicate
+                  isPredefined: true
+                - id: 60abe821-affa-4cec-9e9e-776b22a0d7cf
+                  name: Deviation
+                  dataType: TEXT
+                  annotationClass: deviation
+                  isPredefined: true
+                - id: 485042c1-0258-485a-8e54-c2f23cabb6da
+                  name: intLayer
+                  dataType: INTEGER
+                  annotationClass: other
+                  isPredefined: false
+                - id: 364810c1-5642-2341-8a67-c1f45cdab6ac
+                  name: propertyLayer
+                  dataType: INTEGER
+                  annotationClass: property
+                  isPredefined: false
+          - type: entity
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              type: plateContainer
+              eid: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              name: Plates
+              digest: '47951474'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+    fetchPlateByNameResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates/Plate-1
+        data:
+          type: plate
+          id: Plate-1
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates/Plate-1
+          attributes:
+            id: Plate-1
+            eid: plate:e0552756-3f5e-4c4f-9d4b-aa38d86c4a41
+            type: plate
+            name: Plate-1
+            numberOfRows: 3
+            numberOfColumns: 4
+            annotationLayers:
+              - id: 6a90fdd6-23d2-40b8-91c4-3f60cba659da
+                name: Well Format
+                dataType: TEXT
+                wells:
+                  - wellId: A1
+                    content:
+                      user: abc
+                      value: abc
+              - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                name: Concentration
+                dataType: DECIMAL
+                wells:
+                  - wellId: A1
+                    content:
+                      user: 12 molar
+                      value: 12
+                  - wellId: B1
+                    content:
+                      user: 12 molar
+                      value: 12
+          relationships:
+            plateContainer:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              data:
+                type: entity
+                id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            annotationLayerDefinitions:
+              data:
+                type: annotationLayerDefinition
+                id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+        included:
+          - type: annotationLayerDefinition
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              type: annotationLayerDefinition
+              annotationLayers:
+                - id: 6a90fdd6-23d2-40b8-91c4-3f60cba659da
+                  name: Well Format
+                  dataType: TEXT
+                  annotationClass: wellformat
+                  isPredefined: true
+                - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                  name: Concentration
+                  dataType: DECIMAL
+                  annotationClass: concentration
+                  isPredefined: true
+                - id: '01605889-9a91-4e41-989e-eaf27d0dd346'
+                  name: Material
+                  dataType: LINK
+                  annotationClass: material
+                  isPredefined: true
+                - id: b03b66eb-ddf4-48a4-b9f3-76e7c8197ec4
+                  name: Amount
+                  dataType: DECIMAL
+                  annotationClass: amount
+                  isPredefined: true
+                - id: 3001aaea-97a9-47b9-97e7-c9ece7a9d8c1
+                  name: Replicate
+                  dataType: INTEGER
+                  annotationClass: replicate
+                  isPredefined: true
+                - id: 60abe821-affa-4cec-9e9e-776b22a0d7cf
+                  name: Deviation
+                  dataType: TEXT
+                  annotationClass: deviation
+                  isPredefined: true
+                - id: 485042c1-0258-485a-8e54-c2f23cabb6da
+                  name: intLayer
+                  dataType: INTEGER
+                  annotationClass: other
+                  isPredefined: false
+                - id: 364810c1-5642-2341-8a67-c1f45cdab6ac
+                  name: propertyLayer
+                  dataType: INTEGER
+                  annotationClass: property
+                  isPredefined: false
+          - type: entity
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              type: plateContainer
+              eid: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              name: Plates
+              digest: '47951474'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+    createNewPlateResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates
+        data:
+          type: plate
+          id: Plate-1
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a/plates/Plate-1
+          attributes:
+            id: Plate-1
+            eid: plate:e0552756-3f5e-4c4f-9d4b-aa38d86c4a41
+            type: plate
+            name: Plate-1
+            numberOfRows: 3
+            numberOfColumns: 4
+            annotationLayers: [ ]
+          relationships:
+            plateContainer:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              data:
+                type: entity
+                id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            annotationLayerDefinitions:
+              data:
+                type: annotationLayerDefinition
+                id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+        included:
+          - type: annotationLayerDefinition
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              type: annotationLayerDefinition
+              annotationLayers:
+                - id: 6a90fdd6-23d2-40b8-91c4-3f60cba659da
+                  name: Well Format
+                  dataType: TEXT
+                  annotationClass: wellformat
+                  isPredefined: true
+                - id: 2c401bcf-2c8a-4e89-9fab-62e754a8a003
+                  name: Concentration
+                  dataType: DECIMAL
+                  annotationClass: concentration
+                  isPredefined: true
+                - id: '01605889-9a91-4e41-989e-eaf27d0dd346'
+                  name: Material
+                  dataType: LINK
+                  annotationClass: material
+                  isPredefined: true
+                - id: b03b66eb-ddf4-48a4-b9f3-76e7c8197ec4
+                  name: Amount
+                  dataType: DECIMAL
+                  annotationClass: amount
+                  isPredefined: true
+                - id: 3001aaea-97a9-47b9-97e7-c9ece7a9d8c1
+                  name: Replicate
+                  dataType: INTEGER
+                  annotationClass: replicate
+                  isPredefined: true
+                - id: 60abe821-affa-4cec-9e9e-776b22a0d7cf
+                  name: Deviation
+                  dataType: TEXT
+                  annotationClass: deviation
+                  isPredefined: true
+                - id: 485042c1-0258-485a-8e54-c2f23cabb6da
+                  name: intLayer
+                  dataType: INTEGER
+                  annotationClass: other
+                  isPredefined: false
+                - id: 364810c1-5642-2341-8a67-c1f45cdab6ac
+                  name: propertyLayer
+                  dataType: INTEGER
+                  annotationClass: property
+                  isPredefined: false
+          - type: entity
+            id: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+            attributes:
+              type: plateContainer
+              eid: plateContainer:0bff8d4e-1f74-41b9-aa69-6d5475c0685a
+              name: Plates
+              digest: '47951474'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+    createNewPlateContainerRequest:
+      value:
+        data:
+          type: 'plateContainer'
+          attributes:
+            numberOfRows: 6
+            numberOfColumns: 8
+            numberOfPlates: 2
+          relationships:
+            ancestors:
+              data:
+                - type: 'experiment'
+                  id: 'experiment:3528f625-977d-480b-8c38-17c9477e9a0d'
+    createNewPlateContainerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates
+        data:
+          type: plateContainer
+          id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+          attributes:
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            eid: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            type: plateContainer
+            name: Plates
+            numberOfRows: 6
+            numberOfColumns: 8
+            numberOfPlates: 2
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              data:
+                type: entity
+                id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            ancestors:
+              data:
+                - type: entity
+                  id: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            annotationLayerDefinitions:
+              data:
+                type: annotationLayerDefinition
+                id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            plates:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197/plates
+        included:
+          - type: entity
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            attributes:
+              type: plateContainer
+              eid: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              name: Plates
+              digest: '41629145'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+          - type: entity
+            id: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            attributes:
+              type: experiment
+              eid: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+              name: demo0525
+              digest: '32526679'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: demo0525
+              flags: { }
+          - type: annotationLayerDefinition
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            attributes:
+              id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              type: annotationLayerDefinition
+              annotationLayers:
+                - id: 5b76b22e-756c-4ce0-98d2-986a64f7827a
+                  name: Well Format
+                  dataType: TEXT
+                  annotationClass: wellformat
+                  isPredefined: true
+                - id: 6e79c86d-bacd-485b-8174-f1c6622213d3
+                  name: Concentration
+                  dataType: DECIMAL
+                  annotationClass: concentration
+                  isPredefined: true
+                - id: 51ea80f1-6a57-458b-b5d5-466840614f79
+                  name: Material
+                  dataType: LINK
+                  annotationClass: material
+                  isPredefined: true
+                - id: 96444064-f086-4174-9216-326aa5571a3d
+                  name: Amount
+                  dataType: DECIMAL
+                  annotationClass: amount
+                  isPredefined: true
+                - id: e9ed3490-7591-44d8-bd89-42eac8ffbf2f
+                  name: Replicate
+                  dataType: INTEGER
+                  annotationClass: replicate
+                  isPredefined: true
+                - id: 28aa8459-66fb-44bc-8404-0f2591e121f9
+                  name: Deviation
+                  dataType: TEXT
+                  annotationClass: deviation
+                  isPredefined: true
+    fetchDataOfPlateContainerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+        data:
+          type: plateContainer
+          id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+          attributes:
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            eid: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            type: plateContainer
+            name: Plates
+            numberOfRows: 6
+            numberOfColumns: 8
+            numberOfPlates: 2
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              data:
+                type: entity
+                id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            ancestors:
+              data:
+                - type: entity
+                  id: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            annotationLayerDefinitions:
+              data:
+                type: annotationLayerDefinition
+                id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            plates:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197/plates
+        included:
+          - type: entity
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            attributes:
+              type: plateContainer
+              eid: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              name: Plates
+              digest: '41629145'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+          - type: entity
+            id: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+            attributes:
+              type: experiment
+              eid: experiment:8813ad6f-3bc9-48a9-a5e2-79d73f7e25dd
+              name: demo0525
+              digest: '32526679'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: demo0525
+              flags: { }
+          - type: annotationLayerDefinition
+            id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+            attributes:
+              id: plateContainer:58130001-4bcb-4e07-99e4-65f0e3307197
+              type: annotationLayerDefinition
+              annotationLayers:
+                - id: 5b76b22e-756c-4ce0-98d2-986a64f7827a
+                  name: Well Format
+                  dataType: TEXT
+                  annotationClass: wellformat
+                  isPredefined: true
+                - id: 6e79c86d-bacd-485b-8174-f1c6622213d3
+                  name: Concentration
+                  dataType: DECIMAL
+                  annotationClass: concentration
+                  isPredefined: true
+                - id: 51ea80f1-6a57-458b-b5d5-466840614f79
+                  name: Material
+                  dataType: LINK
+                  annotationClass: material
+                  isPredefined: true
+                - id: 96444064-f086-4174-9216-326aa5571a3d
+                  name: Amount
+                  dataType: DECIMAL
+                  annotationClass: amount
+                  isPredefined: true
+                - id: e9ed3490-7591-44d8-bd89-42eac8ffbf2f
+                  name: Replicate
+                  dataType: INTEGER
+                  annotationClass: replicate
+                  isPredefined: true
+                - id: 28aa8459-66fb-44bc-8404-0f2591e121f9
+                  name: Deviation
+                  dataType: TEXT
+                  annotationClass: deviation
+                  isPredefined: true
+    fetchAllAnnotationLayersResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers
+        data:
+          - type: annotationLayer
+            id: 0b450c55-cf4b-41f3-bc5e-1a37951480df
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/0b450c55-cf4b-41f3-bc5e-1a37951480df
+            attributes:
+              id: 0b450c55-cf4b-41f3-bc5e-1a37951480df
+              name: Well Format
+              dataType: TEXT
+              annotationClass: wellformat
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: 76f7d14e-2491-4d4e-958a-7ab4d805d4b2
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/76f7d14e-2491-4d4e-958a-7ab4d805d4b2
+            attributes:
+              id: 76f7d14e-2491-4d4e-958a-7ab4d805d4b2
+              name: Concentration
+              dataType: DECIMAL
+              annotationClass: concentration
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: e6aca19f-90d6-4dc7-a522-748628ac1357
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/e6aca19f-90d6-4dc7-a522-748628ac1357
+            attributes:
+              id: e6aca19f-90d6-4dc7-a522-748628ac1357
+              name: Material
+              dataType: LINK
+              annotationClass: material
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: 9dadeec8-6726-4904-954f-6b47d133018a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/9dadeec8-6726-4904-954f-6b47d133018a
+            attributes:
+              id: 9dadeec8-6726-4904-954f-6b47d133018a
+              name: Amount
+              dataType: DECIMAL
+              annotationClass: amount
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: 543861bc-00b3-4d91-900e-1e825f3e8223
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/543861bc-00b3-4d91-900e-1e825f3e8223
+            attributes:
+              id: 543861bc-00b3-4d91-900e-1e825f3e8223
+              name: Replicate
+              dataType: INTEGER
+              annotationClass: replicate
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: bac4d273-3428-4636-b993-898024415339
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/bac4d273-3428-4636-b993-898024415339
+            attributes:
+              id: bac4d273-3428-4636-b993-898024415339
+              name: Deviation
+              dataType: TEXT
+              annotationClass: deviation
+              isPredefined: true
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+          - type: annotationLayer
+            id: afbef471-1a71-4016-ad8b-7196027e13d4
+            links:
+              self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/afbef471-1a71-4016-ad8b-7196027e13d4
+            attributes:
+              id: afbef471-1a71-4016-ad8b-7196027e13d4
+              name: addedByExtapi
+              dataType: DECIMAL
+              annotationClass: other
+              isPredefined: false
+              isHidden: false
+            relationships:
+              plateContainer:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+                data:
+                  type: entity
+                  id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+        included:
+          - type: entity
+            id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            attributes:
+              type: plateContainer
+              eid: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+              name: Plates
+              digest: '21804412'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+    createAnnotationLayerRequest:
+      value:
+        data:
+          type: 'annotationLayer'
+          attributes:
+            name: 'addedByExtapi'
+            annotationClass: 'other'
+            dataType: 'DECIMAL'
+    createOntologyListAnnotationLayerRequest:
+      summary: Create an ONTOLOGY_LIST annotation layer
+      description: |
+        Example showing how to create a property-class annotation layer with ONTOLOGY_LIST data type.
+        The attributeList must reference a valid attribute EID.
+      value:
+        data:
+          type: 'annotationLayer'
+          attributes:
+            name: 'My Ontology Property'
+            annotationClass: 'property'
+            dataType: 'ONTOLOGY_LIST'
+            attributeList: 'attribute:123'
+    updateAnnotationLayerRequest:
+      value:
+        data:
+          type: 'annotationLayer'
+          attributes:
+            name: 'addedByExtapi-updated'
+    addNewAnnotationLayerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers
+        data:
+          type: annotationLayer
+          id: afbef471-1a71-4016-ad8b-7196027e13d4
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/afbef471-1a71-4016-ad8b-7196027e13d4
+          attributes:
+            id: afbef471-1a71-4016-ad8b-7196027e13d4
+            name: addedByExtapi
+            dataType: DECIMAL
+            annotationClass: other
+            isPredefined: false
+            isHidden: false
+          relationships:
+            plateContainer:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+              data:
+                type: entity
+                id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+        included:
+          - type: entity
+            id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            attributes:
+              type: plateContainer
+              eid: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+              name: Plates
+              digest: '21804412'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates
+    getAnnotationLayerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/afbef471-1a71-4016-ad8b-7196027e13d4
+        data:
+          type: annotationLayer
+          id: afbef471-1a71-4016-ad8b-7196027e13d4
+          links:
+            self: https://snb.example.com/api/rest/v1.0/plates/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7/settings/annotationLayers/afbef471-1a71-4016-ad8b-7196027e13d4
+          attributes:
+            id: afbef471-1a71-4016-ad8b-7196027e13d4
+            name: addedByExtapi
+            dataType: DECIMAL
+            annotationClass: other
+            isPredefined: false
+            isHidden: false
+          relationships:
+            plateContainer:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+              data:
+                type: entity
+                id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+        included:
+          - type: entity
+            id: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+            attributes:
+              type: plateContainer
+              eid: plateContainer:a954f5bb-fe98-4d53-8f56-67e58ff2cbb7
+              name: Plates
+              digest: '21804412'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Plates

@@ -1,0 +1,1327 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: [ ]
+paths:
+  /monomers/libraries:
+    get:
+      tags:
+        - Monomers
+      summary: 'Fetch all active monomer libraries'
+      description: |
+        Fetch all active monomer libraries.
+
+        Example usages:
+
+          /monomers/libraries
+
+      operationId: 'fetchAllActiveMonomerLibraries'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerLibrariesResponse'
+              examples:
+                MonomerLibraries:
+                  $ref: '#/components/examples/fetchingMonomerLibrariesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /monomers/libraries/{libraryEid}/export:
+    get:
+      tags:
+        - Monomers
+      summary: 'Export monomers in specific library'
+      description: |
+        Export monomers in a specified monomer library.
+
+        The API returns the exported JSON as a downloadable file stream.
+
+        Accepted entity types: monomerLibrary.
+
+      operationId: 'exportMonomerLibrary'
+      parameters:
+        - $ref: '#/components/parameters/monomerLibraryIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/octet-stream:
+              schema:
+                description: 'Exported monomers JSON file stream'
+                type: string
+                format: binary
+              example: '(no example available)'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /monomers/libraries/{libraryEid}/bulkImport:
+    post:
+      tags:
+        - Monomers
+      summary: 'Bulk import monomers'
+      deprecated: false
+      operationId: 'bulkImportMonomers'
+      description: |
+        Bulk import monomers into a specified monomer library.
+
+        Currently, this API supports importing monomers from json file.
+        Example file can be fetched by "/monomers/libraries/{libraryEid}/bulkImport/example" API.
+
+        This is an asynchronous API.
+        If the request is accepted, server will start a job to import the monomers asynchronously and return a report with a job ID to client.
+
+        Client can check the status of the job with API "/monomers/libraries/libraryEid/bulkImport/jobs/jobId".
+        If the import work is finished with failures, client can download the details with API "/monomers/libraries/libraryEid/bulkImport/jobs/jobId/failures";
+
+        The maximum size of an import file is 50 MB.
+
+        Accepted entity types: monomerLibrary.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerLibraryIdParam'
+        - name: 'treatAsNewVersion'
+          in: query
+          description: |
+            Create a new version for monomers with the same symbol, polymer type and monomer type if this parameter is true.
+
+            Else the monomer will NOT be added into the library.
+          required: false
+          schema:
+            type: boolean
+            default: false
+            deprecated: false
+        - name: 'treatAsNewMonomer'
+          in: query
+          description: |
+            Create a new monomer for monomers that are an exact structural match for another monomer in the library,
+            but have a different symbol, polymer type and monomer type if this parameter is true.
+
+            Else the monomer will NOT be added into the library.
+          required: false
+          schema:
+            type: boolean
+            default: false
+            deprecated: false
+        - name: 'filename'
+          in: query
+          description: 'Name of the imported file. The name must end with ".json".'
+          required: false
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+            deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+            example: '(please refer API \"/monomers/libraries/{libraryEid}/bulkImport/example\" to get the example file)'
+      responses:
+        '202':
+          description: 'accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerBulkImportJobResponse'
+              examples:
+                BulkImportMonomersReport:
+                  $ref: '#/components/examples/bulkImportJobResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /monomers/libraries/{libraryEid}/bulkImport/example:
+    get:
+      tags:
+        - Monomers
+      summary: 'Obtain an example for importing monomers in batches.'
+      description: |
+        Obtain an example for importing monomers in batches.
+        
+        The API will return a ZIP file containing a sample Json file for importing monomers.
+        
+        Accepted entity types: monomerLibrary.
+
+      operationId: 'downloadBulkImportMonomersExample'
+      parameters:
+        - $ref: '#/components/parameters/monomerLibraryIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/octet-stream:
+              schema:
+                description: 'Return zip example file as binary stream'
+                type: string
+                format: binary
+              example: '(no example available)'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /monomers/libraries/{libraryEid}/bulkImport/jobs/{jobId}:
+    get:
+      tags:
+        - Monomers
+      summary: 'Get report of monomer bulk import job.'
+      deprecated: false
+      operationId: 'fetchMonomerBulkImportJobReport'
+      description: |
+        Get the report of monomer bulk import job.
+
+        This API is used to check the status of bulk import job. There are 4 available job status:
+        - READY, the job is ready to run.
+        - IMPORTING, the job is running.
+        - FAILED, the job is failed to run.
+        - COMPLETED, the job is completed.
+
+        Accepted entity types: monomerLibrary.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerLibraryIdParam'
+        - $ref: '#/components/parameters/bulkImportJobIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerBulkImportJobResponse'
+              examples:
+                BulkImportMonomersReport:
+                  $ref: '#/components/examples/bulkImportJobReportResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /monomers/libraries/{libraryEid}/bulkImport/jobs/{jobId}/failures:
+    get:
+      tags:
+        - Monomers
+      summary: 'Download the failures report of bulk import job.'
+      deprecated: false
+      operationId: 'fetchMonomerBulkImportJobFailureReport'
+      description: |
+        Download the failures report of bulk import job.
+
+        Accepted entity types: monomerLibrary.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerLibraryIdParam'
+        - $ref: '#/components/parameters/bulkImportJobIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/octet-stream:
+              schema:
+                description: 'Failures report'
+                type: string
+                format: binary
+              example: '(no example available)'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /monomers/{monomerId}:
+    get:
+      tags:
+        - Monomers
+      summary: 'Fetch monomer by ID'
+      deprecated: false
+      operationId: 'fetchMonomerById'
+      description: |
+        Fetch monomer by monomer ID.
+
+        Accepted entity types: monomer.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerResponse'
+              examples:
+                Monomer:
+                  $ref: '#/components/examples/fetchMonomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /monomers/{monomerId}/deprecate:
+    post:
+      tags:
+        - Monomers
+      summary: 'Deprecate specified monomer'
+      deprecated: false
+      operationId: 'deprecateMonomerById'
+      description: |
+        Deprecate monomer by monomer ID.
+
+        Accepted entity types: monomer.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerIdParam'
+        - $ref: '#/components/parameters/monomerDigestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerResponse'
+              examples:
+                Monomer:
+                  $ref: '#/components/examples/fetchMonomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /monomers/{monomerId}/restore:
+    post:
+      tags:
+        - Monomers
+      summary: 'Restore specified monomer'
+      deprecated: false
+      operationId: 'restoreMonomerById'
+      description: |
+        Restore monomer by monomer ID.
+
+        Accepted entity types: monomer.
+
+      parameters:
+        - $ref: '#/components/parameters/monomerIdParam'
+        - $ref: '#/components/parameters/monomerDigestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/MonomerResponse'
+              examples:
+                Monomer:
+                  $ref: '#/components/examples/fetchMonomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    fragmentIdParam:
+      name: 'id'
+      in: path
+      description: |
+        Unique Fragment identifier. Format: Integer.
+
+        Example value: 1, 2, 3.
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: integer
+        deprecated: false
+    offsetParam:
+      name: page[offset]
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        default: 0
+    limitParam:
+      name: page[limit]
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 100
+        default: 20
+    includeParam:
+      name: 'include'
+      in: query
+      description: 'The related resources to be shown in "included" field. Example value: "children, owner". Leave it blank will show all related resources.'
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    monomerLibraryIdParam:
+      name: 'libraryEid'
+      in: path
+      description: |
+        Unique monomer library identifier. Format: EID.
+        Accepted entity types: monomerLibrary.
+
+        Example value: "monomerLibrary:d3010e3b-3f88-484e-b876-0aad135e5e9a".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    monomerIdParam:
+      name: 'monomerId'
+      in: path
+      description: |
+        Unique monomer identifier. Format: EID.
+        Accepted entity types: monomer.
+
+        Example value: "monomer:d3010e3b-3f88-484e-b876-0aad135e5e9a".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    bulkImportJobIdParam:
+      name: 'jobId'
+      in: path
+      description: 'Id of monomer bulk import job'
+      required: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    monomerDigestParam:
+      name: 'digest'
+      in: query
+      description: >
+        Digest of monomer.
+        It is used to avoid conflict while concurrent editing.
+        If the parameter 'force' is true, this parameter is optional.
+        If the parameter 'force' is false, this parameter is required.
+      schema:
+        type: string
+        deprecated: false
+    forceParam:
+      name: 'force'
+      in: query
+      description: >
+        Force to update without checking the provided digest.
+        If true, the system will get and use the latest digest from server, ignoring the provided digest.
+      schema:
+        type: boolean
+        deprecated: false
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [ errors ]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    ExtMonomerLibrary:
+      type: object
+      title: 'ExtMonomerLibrary'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtMonomerLibraryAttributes'
+          properties:
+            id:
+              type: integer
+            eid:
+              type: string
+            name:
+              type: string
+            system:
+              type: boolean
+            enabled:
+              type: boolean
+            searchOrder:
+              type: integer
+            digest:
+              type: integer
+            fieldDefinitions:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+          additionalProperties: true
+        relationships:
+          type: object
+    MonomerLibrariesResponse:
+      type: object
+      title: 'MonomerLibrariesResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtMonomerLibrary'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtMonomer:
+      type: object
+      title: 'ExtMonomer'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtMonomerAttributes'
+          properties:
+            eid:
+              type: string
+            name:
+              type: string
+            monomerType:
+              type: string
+            polymerType:
+              type: string
+            symbol:
+              type: string
+            naturalAnalog:
+              type: string
+            deprecated:
+              type: boolean
+            version:
+              type: integer
+            sourceLibrary:
+              type: string
+            sourceLibraryId:
+              type: string
+            molfile:
+              type: string
+            rgroups:
+              type: array
+              items:
+                type: object
+            properties:
+              type: object
+            flags:
+              type: object
+          additionalProperties: true
+        relationships:
+          type: object
+    MonomerResponse:
+      type: object
+      title: 'MonomerResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtMonomer'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtMonomerBulkImportJob:
+      type: object
+      title: 'ExtMonomerBulkImportJob'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtMonomerBulkImportJobAttributes'
+          properties:
+            jobId:
+              type: integer
+            status:
+              type: string
+            error:
+              type: object
+            duplicateAction:
+              type: object
+            summary:
+              type: object
+            libraryId:
+              type: string
+            libraryName:
+              type: string
+            createdAt:
+              type: string
+            startedAt:
+              type: string
+            completedAt:
+              type: string
+          additionalProperties: true
+
+    MonomerBulkImportJobResponse:
+      type: object
+      title: 'MonomerBulkImportJobResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtMonomerBulkImportJob'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+  responses:
+    BadRequest: #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized: #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden: #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound: #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed: #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable: #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout: #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict: #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone: #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired: #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge: #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong: #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType: #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType: #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm: #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity: #422
+      description: 'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch: #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests: #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError: #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented: #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway: #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable: #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout: #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    fetchingSaltsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments
+        data:
+          - type: salt
+            id: 1
+            links:
+              self: https://snb.example.com/api/rest/v1.0/fragments/salts/1
+            attributes:
+              id: 1
+              type: SALT
+              name: 'Acetate'
+              mf: 'C2H3O2-'
+              mw: '59.0445 g/mol'
+              smiles: "CC([O-])=O"
+    fetchingSolvatesResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments
+        data:
+          - type: solvate
+            id: 1
+            links:
+              self: https://snb.example.com/api/rest/v1.0/fragments/solvates/1
+            attributes:
+              id: 1
+              type: SOLVATE
+              name: '1,4-dioxane'
+              mf: 'C4H8O2'
+              mw: '88.1060 g/mol'
+    fetchingSaltResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments/salts/1
+        data:
+          type: salt
+          id: 1
+          attributes:
+            id: 1
+            type: SALT
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    fetchingSolvateResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments/solvates/1
+        data:
+          type: solvate
+          id: 1
+          attributes:
+            id: 1
+            type: SOLVATE
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'
+    putSaltsRequest:
+      value:
+        data:
+          - attributes:
+              name: 'Acetate'
+              mf: 'C2H3O2-'
+              mw: '59.0445 g/mol'
+              smiles: "CC([O-])=O"
+          - attributes:
+              name: 'triethylamine'
+              mf: 'C6H15N'
+              mw: '101.19 g/mol'
+              smiles: "CCN(CC)CC"
+    putSolvatesRequest:
+      value:
+        data:
+          - attributes:
+              name: '1,4-dioxane'
+              mf: 'C4H8O2'
+              mw: '88.1060 g/mol'
+          - attributes:
+              name: '2-methylpropan-2-ol'
+              mf: 'C4H10O'
+              mw: '74.1230 g/mol'
+    postSaltRequest:
+      value:
+        data:
+          attributes:
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    postSolvateRequest:
+      value:
+        data:
+          attributes:
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'
+    patchSaltRequest:
+      value:
+        data:
+          attributes:
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    patchSolvateRequest:
+      value:
+        data:
+          attributes:
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'
+    fetchingMonomerLibrariesResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/monomers/libraries
+        data:
+          - type: monomerLibrary
+            id: monomerLibrary:d3010e3b-3f88-484e-b876-0aad135e5e9a
+            attributes:
+              eid: monomerLibrary:d3010e3b-3f88-484e-b876-0aad135e5e9a
+              id: 2
+              name: Natural Monomers
+              system: true
+              enabled: true
+              searchOrder: 3
+              fieldDefinitions:
+                - key: symbol
+                  title: Symbol
+                  type: TEXT
+                  preventEditDefinition: true
+                - key: name
+                  title: Name
+                  type: TEXT
+                  preventEditDefinition: true
+                - key: naturalAnalog
+                  title: Natural Analog
+                  type: LIST
+                  options:
+                    - A
+                    - Y
+                    - X
+                    - ALA
+                    - ARG
+                    - TRP
+                    - TYR
+                    - VAL
+                    - Unspecified
+                  preventEditDefinition: true
+                - key: polymerType
+                  title: Polymer Type
+                  type: LIST
+                  options:
+                    - Peptide
+                    - RNA
+                    - Chem
+                    - Blob
+                  preventEditDefinition: true
+                - key: monomerType
+                  title: Monomer Type
+                  type: LIST
+                  options:
+                    - Backbone
+                    - Branch
+                    - Unspecified
+                  preventEditDefinition: true
+                - key: version
+                  title: Version
+                  type: INTEGER
+                  preventEditDefinition: true
+                - key: deprecated
+                  title: Deprecated
+                  type: BOOLEAN
+                  preventEditDefinition: true
+                - key: synonyms
+                  title: Synonyms
+                  type: TEXT
+                - key: drawingContent
+                  title: Drawing Content
+                  type: EMBEDDED_CHEMICAL_DRAWING
+                  hidden: true
+                  preventEditDefinition: true
+              digest: 30540308
+          - type: monomerLibrary
+            id: monomerLibrary:3f501eab-b081-4d5f-b63b-896a721e9e12
+            attributes:
+              eid: monomerLibrary:3f501eab-b081-4d5f-b63b-896a721e9e12
+              id: 3
+              name: Signals Monomers
+              system: true
+              enabled: true
+              searchOrder: 1
+              fieldDefinitions:
+                - key: symbol
+                  title: Symbol
+                  type: TEXT
+                  preventEditDefinition: true
+                - key: name
+                  title: Name
+                  type: TEXT
+                  preventEditDefinition: true
+                - key: naturalAnalog
+                  title: Natural Analog
+                  type: LIST
+                  options:
+                    - A
+                    - Y
+                    - X
+                    - ALA
+                    - ARG
+                    - TRP
+                    - TYR
+                    - VAL
+                    - Unspecified
+                  preventEditDefinition: true
+                - key: polymerType
+                  title: Polymer Type
+                  type: LIST
+                  options:
+                    - Peptide
+                    - RNA
+                    - Chem
+                    - Blob
+                  preventEditDefinition: true
+                - key: monomerType
+                  title: Monomer Type
+                  type: LIST
+                  options:
+                    - Backbone
+                    - Branch
+                    - Unspecified
+                  preventEditDefinition: true
+                - key: version
+                  title: Version
+                  type: INTEGER
+                  preventEditDefinition: true
+                - key: deprecated
+                  title: Deprecated
+                  type: BOOLEAN
+                  preventEditDefinition: true
+                - key: synonyms
+                  title: Synonyms
+                  type: TEXT
+                - key: drawingContent
+                  title: Drawing Content
+                  type: EMBEDDED_CHEMICAL_DRAWING
+                  hidden: true
+                  preventEditDefinition: true
+              digest: 35594379
+    bulkImportJobResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/monomers/libraries/monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5/bulkImport
+        data:
+          type: bulkImportMonomersReport
+          id: '11'
+          attributes:
+            jobId: 11
+            status: READY
+            duplicateAction:
+              treatAsNewVersion: false
+              treatAsNewMonomer: false
+            libraryId: monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5
+            libraryName: myHelm
+            createdAt: '2024-05-17T06:19:11.241Z'
+    bulkImportJobReportResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/monomers/libraries/monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5/bulkImport/jobs/11
+        data:
+          type: bulkImportMonomersReport
+          id: '11'
+          attributes:
+            jobId: 11
+            status: COMPLETED
+            duplicateAction:
+              treatAsNewVersion: false
+              treatAsNewMonomer: false
+            summary:
+              newMonomers: 0
+              newVersions: 0
+              failed: 2
+            libraryId: monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5
+            libraryName: myHelm
+            createdAt: '2024-05-17T06:19:11.241Z'
+            startedAt: '2024-05-17T06:19:11.263Z'
+            completedAt: '2024-05-17T06:19:14.302Z'
+          relationships:
+            failures:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/monomers/libraries/monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5/bulkImport/jobs/11/failures
+    fetchMonomerResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/monomers/monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+        data:
+          type: monomer
+          id: monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+          links:
+            self: https://snb.example.com/api/rest/v1.0/monomers/monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+          attributes:
+            eid: monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+            name: helm-001
+            monomerType: Unspecified
+            polymerType: CHEM
+            symbol: '1001'
+            naturalAnalog: Unspecified
+            deprecated: false
+            version: 1
+            sourceLibrary: myHelm
+            sourceLibraryId: monomerLibrary:91c7a8b1-8525-467e-b664-5982a3b2e4a5
+            molfile: |2
+            
+                ChemDraw05152406172D
+            
+                0  0  0     0  0              0 V3000
+              M  V30 BEGIN CTAB
+              M  V30 COUNTS 10 10 0 0 1
+              M  V30 BEGIN ATOM
+              M  V30 1 O 0.721875 0.819844 0.000000 0
+              M  V30 2 C 0.008021 0.406198 0.000000 0
+              M  V30 3 C 1.436876 0.408490 0.000000 0
+              M  V30 4 C 0.222865 -0.390157 0.000000 0
+              M  V30 5 C 1.224323 -0.388438 0.000000 0
+              M  V30 6 O 0.224011 -1.215157 0.000000 0
+              M  V30 7 C -0.140364 1.260990 0.000000 0
+              M  V30 8 O -0.611876 1.614480 0.000000 0
+              M  V30 9 R# -1.436876 1.769167 0.000000 0 RGROUPS=(1 1)
+              M  V30 10 R# 0.925260 -1.769167 0.000000 0 RGROUPS=(1 2)
+              M  V30 END ATOM
+              M  V30 BEGIN BOND
+              M  V30 1 1 1 2
+              M  V30 2 1 1 3
+              M  V30 3 1 2 4
+              M  V30 4 1 2 7 CFG=1
+              M  V30 5 1 3 5
+              M  V30 6 1 4 5
+              M  V30 7 1 4 6 CFG=3
+              M  V30 8 1 6 10
+              M  V30 9 1 7 8
+              M  V30 10 1 8 9
+              M  V30 END BOND
+              M  V30 END CTAB
+              M  END
+            rgroups:
+              - alternateId: R1-H
+                label: R1
+                capGroupSmiles: "[*:1][H]"
+                capGroupName: H
+              - alternateId: R2-H
+                label: R2
+                capGroupSmiles: "[*:2][H]"
+                capGroupName: H
+            flags:
+              isSystem: false
+              canDeprecate: true
+            author: foo.bar@revvity.com
+            stereoType: undetermined
+            topologyType: undetermined
+            trashed: false
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+              data:
+                type: entity
+                id: monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+        included:
+          - type: entity
+            id: monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+            attributes:
+              type: monomer
+              eid: monomer:4a63f622-9466-482c-a6d3-6771f7c2f290
+              name: helm-001
+              digest: '25221879'
+              fields:
+                Description:
+                  value: ''
+                HELM Monomer Libraries:
+                  value: myHelm
+                Name:
+                  value: helm-001

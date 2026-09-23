@@ -1,0 +1,1291 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+paths:
+  /scim/v2/ServiceProviderConfig:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM ServiceProviderConfig'
+      description: 'Fetch SCIM ServiceProviderConfig'
+      operationId: 'fetchSCIMServiceProviderConfig'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderConfigResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/ResourceTypes:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM ResourceTypes'
+      description: 'Fetch SCIM ResourceTypes'
+      operationId: 'fetchSCIMResourceTypes'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                type: object
+                properties:
+                  schemas:
+                    type: array
+                    items:
+                      type: string
+                  totalResults:
+                    type: number
+                  Resources:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResourceTypeResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/ResourceTypes/{resourceTypeId}:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM ResourceType by id'
+      description: 'Fetch SCIM ResourceType by id'
+      operationId: 'fetchSCIMResourceTypeById'
+      parameters:
+        - $ref: '#/components/parameters/resourceTypeIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ResourceTypeResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Schemas:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM Schemas'
+      description: 'Fetch SCIM Schemas'
+      operationId: 'fetchSCIMSchemas'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                type: object
+                properties:
+                  schemas:
+                    type: array
+                    items:
+                      type: string
+                  totalResults:
+                    type: number
+                  Resources:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SchemasResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Schemas/{id}:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM Schemas by id'
+      description: 'Fetch SCIM Schemas by id'
+      operationId: 'fetchSCIMSchemasById'
+      parameters:
+        - $ref: '#/components/parameters/schemaIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SchemasResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Users:
+    get:
+      tags:
+        - SCIM
+      summary: 'Search SCIM user'
+      description: 'Search SCIM user'
+      operationId: 'SearchSCIMUser'
+      parameters:
+        - $ref: '#/components/parameters/filterParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/sortOrderParam'
+        - $ref: '#/components/parameters/startIndexParam'
+        - $ref: '#/components/parameters/countParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    post:
+      tags:
+        - SCIM
+      summary: 'Create SCIM user'
+      description: |
+        Create SCIM user, if create user who was deleted, will mark user as normal, otherwise response 409.
+        
+        Notes:
+        - The userName "email@[your_domain]" should be a real email address.
+
+      operationId: 'createSCIMUser'
+      parameters:
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              User:
+                $ref: '#/components/examples/userApiRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Users/{id}:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM user by id'
+      description: 'Fetch SCIM user by id'
+      operationId: 'findSCIMUserById'
+      parameters:
+        - $ref: '#/components/parameters/scimUserIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    patch:
+      tags:
+        - SCIM
+      summary: 'Update SCIM user by id'
+      description: |
+        Update SCIM user by id.
+        
+        For the operations of update licenses,
+        - replace, set active=true/false to activate/deactivate the license.
+        - add, not supported
+        - remove, not supported
+
+      operationId: 'patchSCIMUserById'
+      parameters:
+        - $ref: '#/components/parameters/scimUserIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/PatchRequest'
+            examples:
+              Add:
+                $ref: '#/components/examples/addUserPatchApiRequest'
+              Replace:
+                $ref: '#/components/examples/replaceUserPatchApiRequest'
+              Remove:
+                $ref: '#/components/examples/removeUserPatchApiRequest'
+              ActivateUser:
+                $ref: '#/components/examples/activateUserPatchApiRequest'
+              DeactivateUser:
+                $ref: '#/components/examples/deactivateUserPatchApiRequest'
+              ActivateUserLicense:
+                $ref: '#/components/examples/activateUserLicensesPatchApiRequest'
+              DeactivateUserLicense:
+                $ref: '#/components/examples/deactivateUserLicensesPatchApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    put:
+      tags:
+        - SCIM
+      summary: 'Update SCIM user by id'
+      description: |
+        Update SCIM user by id.
+        
+        For update licenses,
+        - If the licenses is not provided, the licenses will not be changed.
+        - If the licenses is provided, the licenses should include the full set of the tenant licenses.
+          If one license is not active, include it with active=false
+
+        Notes:
+        - The userName "email@[your_domain]" should be a real email address.
+
+      operationId: 'putSCIMUserById'
+      parameters:
+        - $ref: '#/components/parameters/scimUserIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              User:
+                $ref: '#/components/examples/userApiRequest'
+              UpdateUserWithLicense:
+                $ref: '#/components/examples/updateUserWithLicenseApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    delete:
+      tags:
+        - SCIM
+      summary: 'Delete SCIM user by id'
+      description: 'Mark user as deleted, if get/update deleted user, will response 404'
+      operationId: 'deleteSCIMUserById'
+      parameters:
+        - $ref: '#/components/parameters/scimUserIdParam'
+      responses:
+        '204':
+          description: 'OK'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Groups:
+    get:
+      tags:
+        - SCIM
+      summary: 'Search SCIM group'
+      description: 'Search SCIM group'
+      operationId: 'searchSCIMGroup'
+      parameters:
+        - $ref: '#/components/parameters/filterParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/sortOrderParam'
+        - $ref: '#/components/parameters/startIndexParam'
+        - $ref: '#/components/parameters/countParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/GroupListResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    post:
+      tags:
+        - SCIM
+      summary: 'Create SCIM group'
+      description: 'Create SCIM group'
+      operationId: 'createSCIMGroup'
+      parameters:
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+            examples:
+              Group:
+                $ref: '#/components/examples/groupApiRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Groups/{id}:
+    get:
+      tags:
+        - SCIM
+      summary: 'Fetch SCIM group by id'
+      description: 'Fetch SCIM group by id'
+      operationId: 'findSCIMGroupById'
+      parameters:
+        - $ref: '#/components/parameters/groupIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    patch:
+      tags:
+        - SCIM
+      summary: 'Update SCIM group by id'
+      description: 'Update SCIM group by id'
+      operationId: 'patchSCIMGroupById'
+      parameters:
+        - $ref: '#/components/parameters/groupIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/PatchRequest'
+            examples:
+              Add:
+                $ref: '#/components/examples/addGroupPatchApiRequest'
+              Replace:
+                $ref: '#/components/examples/replaceGroupPatchApiRequest'
+              Remove:
+                $ref: '#/components/examples/removeGroupPatchApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    put:
+      tags:
+        - SCIM
+      summary: 'Update SCIM group by id'
+      description: 'Update SCIM group by id'
+      operationId: 'putSCIMGroupById'
+      parameters:
+        - $ref: '#/components/parameters/groupIdParam'
+        - $ref: '#/components/parameters/requestAttributesParam'
+        - $ref: '#/components/parameters/excludedAttributesParam'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+            examples:
+              Group:
+                $ref: '#/components/examples/groupApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+    delete:
+      tags:
+        - SCIM
+      summary: 'Delete SCIM group by id'
+      description: 'Delete SCIM group by id'
+      operationId: 'deleteSCIMGroupById'
+      parameters:
+        - $ref: '#/components/parameters/groupIdParam'
+      responses:
+        '204':
+          description: 'OK'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /scim/v2/Bulk:
+    post:
+      tags:
+        - SCIM
+      summary: 'SCIM Bulk Operation'
+      description: |
+        SCIM Bulk Operation.
+
+        Notes:
+        - For create user, the userName "email@[your_domain]" should be a real email address.
+
+      operationId: 'SCIMBulkOperation'
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/BulkRequest'
+            examples:
+              Bulk:
+                $ref: '#/components/examples/bulkApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/BulkResponse'
+        '4XX':
+          description: 'Request error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          description: 'Internal Error'
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    scimUserIdParam:
+      name: 'id'
+      in: path
+      description: 'Unique SCIM user identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        pattern: '^user-.+$'
+        maxLength: 1000
+        deprecated: false
+    groupIdParam:
+      name: 'id'
+      in: path
+      description: 'Unique SCIM group identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        pattern: '^(group|role)-.+$'
+        maxLength: 1000
+        deprecated: false
+    resourceTypeIdParam:
+      name: 'resourceTypeId'
+      in: path
+      description: 'Unique SCIM resource type id'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    schemaIdParam:
+      name: 'id'
+      in: path
+      description: 'Unique SCIM schema identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    requestAttributesParam:
+      name: 'attributes'
+      in: query
+      description: 'which attributes are included in response, '','' to split'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    excludedAttributesParam:
+      name: 'excludedAttributes'
+      in: query
+      description: 'which attributes are excluded in response, '','' to split'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    filterParam:
+      name: 'filter'
+      in: query
+      description: 'filter expression'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 999
+        deprecated: false
+    sortByParam:
+      name: 'sortBy'
+      in: query
+      description: 'sort by attribute name'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    sortOrderParam:
+      name: 'sortOrder'
+      in: query
+      description: 'sort order, ascending|descending'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    startIndexParam:
+      name: 'startIndex'
+      in: query
+      description: 'start item index'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    countParam:
+      name: 'count'
+      in: query
+      description: 'item count in result'
+      required: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+  schemas:
+    UserRequest:
+      title: 'UserRequest'
+      type: object
+      required: [schemas, userName, name, 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties']
+      additionalProperties: true
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        userName:
+          type: string
+        name:
+          type: object
+          required: [familyName, givenName]
+          properties:
+            familyName:
+              type: string
+            givenName:
+              type: string
+        'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties':
+          type: object
+          required: [country, organization]
+          properties:
+            alias:
+              type: string
+            country:
+              type: string
+              enum: ['USA', 'Afghanistan', 'Aland Islands', 'Albania', 'Algeria', 'American Samoa', 'Andorra', 'Angola', 'Anguilla', 'Antarctica', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Aruba', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bermuda', 'Bhutan', 'Bolivia', 'Bonaire, Sint Eustatius and Saba', 'Bosnia-Herzegovina', 'Botswana', 'Bouvet Island', 'Brazil', 'British Indian Ocean Territory', 'Brunei Darussalam', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Canary Islands', 'Cape Verde', 'Cayman Islands', 'Central African Republic', 'Chad', 'Chile', 'China', 'Christmas Island', 'Cocos (Keeling) Islands', 'Colombia', 'Comoros', 'Congo', 'Congo, Democratic Republic', 'Cook Islands', 'Costa Rica', 'Croatia', 'Curacao', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'Falkland Islands', 'Faroe Islands', 'Fiji', 'Finland', 'France', 'French Guiana', 'French Polynesia', 'French Southern Territories', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Gibraltar', 'Greece', 'Greenland', 'Grenada', 'Guadeloupe', 'Guam', 'Guatemala', 'Guernsey', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Heard and McDonald Islands', 'Honduras', 'Hong Kong', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Isle of Man', 'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Japan', 'Jersey', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Macau', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Mariana Islands', 'Marshall Islands', 'Martinique', 'Mauritania', 'Mauritius', 'Mayotte', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Montserrat', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'Netherlands Antilles', 'New Caledonia', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'Niue', 'Norfolk Island', 'Northern Mariana Islands', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestinian Territory, Occupied', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Pitcairn', 'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Reunion', 'Romania', 'Russian Federation', 'Rwanda', 'S. Georgia and S. Sandwich Islands', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Sint Maarten', 'Slovak Republic', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'St. Barthelemy', 'St. Helena, Ascension and Tristan da Cunha', 'St. Kitts & Nevis', 'St. Lucia', 'St. Martin', 'St. Pierre and Miquelon', 'St. Vincent and the Grenadines', 'Suriname', 'Svalbard & Jan Mayen', 'Swaziland', 'Sweden', 'Switzerland', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tokelau', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Turks and Caicos Islands', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'Uruguay', 'US Minor Outlying Islands', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Virgin Islands (US)', 'Virgin Islands(Brit)', 'Wallis and Futuna', 'Western Sahara', 'Yemen', 'Yugoslavia', 'Zambia', 'Zimbabwe']
+              default: 'USA'
+            organization:
+              type: string
+            schemas:
+              type: array
+              items:
+                type: string
+        roles:
+          type: array
+          items:
+            type: object
+            required: [value]
+            properties:
+              value:
+                type: string
+              display:
+                type: string
+    GroupRequest:
+      title: 'GroupRequest'
+      type: object
+      required: [schemas, displayName]
+      additionalProperties: true
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        displayName:
+          type: string
+        members:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    PatchRequest:
+      title: 'PatchRequest'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        Operations:
+          type: array
+          items:
+            type: object
+            properties:
+              op:
+                type: string
+              path:
+                type: string
+              value:
+                oneOf:
+                  - type: array
+                    items:
+                      type: object
+                  - type: object
+                  - type: string
+    ErrorResponse:
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        scimType:
+          type: string
+        detail:
+          type: string
+        status:
+          type: string
+
+    UserResponse:
+      title: 'UserApiResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        userName:
+          type: string
+        meta:
+          type: object
+        name:
+          type: object
+        emails:
+          type: array
+          items:
+            type: object
+        'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties':
+          type: object
+        photos:
+          type: array
+          items:
+            type: object
+        roles:
+          type: array
+          items:
+            type: object
+        groups:
+          type: array
+          items:
+            type: object
+        active:
+          type: boolean
+    UserListResponse:
+      title: 'UserListApiResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        totalResults:
+          type: integer
+        itemsPerPage:
+          type: integer
+        startIndex:
+          type: integer
+        Resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+
+    GroupResponse:
+      title: 'GroupApiResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        displayName:
+          type: string
+        meta:
+          type: object
+        members:
+          type: array
+          items:
+            type: object
+        'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:GroupProperties':
+          type: object
+    GroupListResponse:
+      title: 'GroupListResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        totalResults:
+          type: integer
+        itemsPerPage:
+          type: integer
+        startIndex:
+          type: integer
+        Resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupResponse'
+
+    ServiceProviderConfigResponse:
+      title: 'ServiceProviderConfigResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        patch:
+          type: object
+        filter:
+          type: object
+        etag:
+          type: object
+        sort:
+          type: object
+        bulk:
+          type: object
+        changePassword:
+          type: object
+        authenticationSchemes:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              specUri:
+                type: string
+              documentationUri:
+                type: string
+              primary:
+                type: boolean
+    ResourceTypeResponse:
+      title: 'ResourceTypeResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        name:
+          type: string
+        endpoint:
+          type: string
+        description:
+          type: string
+        schema:
+          type: string
+        schemaExtensions:
+          type: array
+          items:
+            type: object
+        meta:
+          type: object
+    SchemasResponse:
+      title: 'SchemasResponse'
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        attributes:
+          type: array
+          items:
+            type: object
+        meta:
+          type: object
+    BulkOperation:
+      title: 'BulkOperation'
+      type: object
+      properties:
+        method:
+          type: string
+        bulkId:
+          type: string
+        version:
+          type: string
+        path:
+          type: string
+        data:
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+        location:
+          type: string
+        status:
+          type: string
+        response:
+          type: object
+    BulkRequest:
+      title: 'BulkRequest'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        failOnErrors:
+          type: integer
+        Operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkOperation'
+    BulkResponse:
+      title: 'BulkResponse'
+      type: object
+      properties:
+        schemas:
+          type: array
+          items:
+            type: string
+        Operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkOperation'
+  examples:
+    userApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:schemas:core:2.0:User'
+          - 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties'
+        userName: 'email@[your_domain]'
+        name:
+          familyName: 'account'
+          givenName: 'test'
+        urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:
+          alias: ''
+          country: 'USA'
+          organization: 'snb'
+        roles:
+          - value: '3'
+            display: 'Standard User'
+    updateUserWithLicenseApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:schemas:core:2.0:User'
+          - 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties'
+        userName: 'email@[your_domain]'
+        name:
+          familyName: 'account'
+          givenName: 'test'
+        urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:
+          alias: ''
+          country: 'USA'
+          organization: 'snb'
+          licenses:
+            - id: 'signals_suite'
+              active: true
+            - id: 'signals_notebook'
+              active: true
+            - id: 'chemoffice_plus'
+              active: false
+        roles:
+          - value: '3'
+            display: 'Standard User'
+    groupApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:schemas:core:2.0:Group'
+        displayName: 'TestGroup1'
+    addUserPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'add'
+            value:
+              roles:
+                - value: '1'
+                  display: 'System Admin'
+    replaceUserPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:organization'
+            value: 'eln'
+    removeUserPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'remove'
+            path: 'roles[value eq 1]'
+    activateUserPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'active'
+            value: true
+    deactivateUserPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'active'
+            value: false
+    activateUserLicensesPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:licenses[id eq chemoffice_plus]'
+            value:
+              id: 'chemoffice_plus'
+              active: true
+    deactivateUserLicensesPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:licenses[id eq chemoffice_plus]'
+            value:
+              id: 'chemoffice_plus'
+              active: false
+
+    addGroupPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'add'
+            value:
+              members:
+                - value: 'user-100'
+                  display: 'test.account@example.com'
+                - value: 'user-101'
+                  display: 'test2.account@example.com'
+    replaceGroupPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'replace'
+            path: 'displayName'
+            value: 'TestGroup'
+    removeGroupPatchApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:PatchOp'
+        Operations:
+          - op: 'remove'
+            path: 'members[value eq user-101]'
+    bulkApiRequest:
+      value:
+        schemas:
+          - 'urn:ietf:params:scim:api:messages:2.0:BulkRequest'
+        Operations:
+          - method: 'POST'
+            path: '/Users'
+            bulkId: 'qwerty'
+            data:
+              schemas:
+                - 'urn:ietf:params:scim:schemas:core:2.0:User'
+                - 'urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties'
+              userName: 'email@[your_domain]'
+              name:
+                familyName: 'account'
+                givenName: 'test'
+              urn:ietf:params:scim:schemas:extension:signalsnotebook:2.0:UserProperties:
+                alias: ''
+                country: 'USA'
+                organization: 'snb'
+          - method: 'POST'
+            path: '/Groups'
+            bulkId: 'ytrewq'
+            data:
+              schemas:
+                - 'urn:ietf:params:scim:schemas:core:2.0:Group'
+              displayName: 'TestGroup1'
+          - method: 'PATCH'
+            path: '/Groups/group-100'
+            data:
+              - op: 'replace'
+                path: 'displayName'
+                value: 'TestGroup'
+          - method: 'DELETE'
+            path: '/Groups/group-100'

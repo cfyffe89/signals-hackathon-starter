@@ -1,0 +1,3028 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      summary: 'List users'
+      description: |
+        List users.
+
+        Parameter 'q' is a String and it is used to filter users.
+        Example usage: Input 'foo' as value of 'q', will return
+         - Users whose first name starts with 'foo'.
+         - Users whose last name starts with 'foo'.
+         - Users whose email address starts with 'foo'.
+         - Users who has role name (except "Standard User") contains 'foo'.
+
+        All of above are case insensitive.
+
+      operationId: 'fetchAllUsers'
+      parameters:
+        - name: 'q'
+          in: query
+          description: 'Query string for list users'
+          required: false
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+          deprecated: false
+        - name: 'enabled'
+          in: query
+          description: 'Filter activated and deactivated users'
+          required: false
+          schema:
+            type: boolean
+            default: true
+          deprecated: false
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+        - name: 'userType'
+          in: query
+          description: 'Filter users by type. Use "cro" to list CRO users, "systemStd" for standard users. Defaults to standard users when not provided.'
+          required: false
+          schema:
+            type: string
+            enum: [cro, systemStd]
+          deprecated: false
+        - name: 'cro'
+          in: query
+          description: 'Filter CRO users by a specific CRO eid. Only applicable when userType=cro. If not provided, users from all CROs are returned.'
+          required: false
+          schema:
+            type: string
+          deprecated: false
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserListApiResponse'
+              examples:
+                UserList:
+                  $ref: '#/components/examples/userListApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Users
+      summary: 'Create user'
+      description: |
+        Create user.
+
+        Notes:
+        - The emailAddress "email@[your_domain]" should be a real email address.
+
+      operationId: 'postNewUser'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              User:
+                $ref: '#/components/examples/userApiRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+              examples:
+                User:
+                  $ref: '#/components/examples/usersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: 'Fetch user by id'
+      description: 'Fetch user by id'
+      operationId: 'fetchUserById'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+              examples:
+                User:
+                  $ref: '#/components/examples/usersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Users
+      summary: 'Update user'
+      description: |
+        Update user attributes/roles/systemGroups or activate/deactivate a user's licenses.
+  
+        You can only update a user's attributes/roles/systemGroups OR a user's licenses. They cannot be done simultaneously.
+
+        To bulk update a user's systemGroups, two associateTypes are accepted:  
+        - ADD, add the user to the specified system group.  
+        - REMOVE, remove the user from the specified system group.
+
+        To update a user licenses:
+        - Set active = true/false to activate/deactivate a user's licenses.
+  
+        Available licenses can be viewed using GET /users/licenses
+  
+        See example for details.
+
+      operationId: 'patchUserById'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+            examples:
+              UpdateUser:
+                $ref: '#/components/examples/userUpdateApiRequest'
+              UpdateUserLicenses:
+                $ref: '#/components/examples/userUpdateLicensesApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+              examples:
+                User:
+                  $ref: '#/components/examples/usersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Users
+      summary: 'Disable user by id'
+      description: 'Disable user by id'
+      operationId: 'disableUserById'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+        - name: 'assignResourceTo'
+          in: query
+          description: 'username (email) who assign resource'
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+          deprecated: false
+      responses:
+        '204':
+          description: 'OK'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /users/{userId}/picture:
+    get:
+      tags:
+        - Users
+      summary: 'Fetch user picture'
+      description: 'Fetch user picture'
+      operationId: 'downloadUserPicture'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+              example: '(no example available)'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /users/{userId}/systemGroups:
+    get:
+      tags:
+        - Users
+      summary: 'Fetch user system groups'
+      description: 'Fetch user system groups'
+      operationId: 'fetchUserSystemGroups'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserGroupListApiResponse'
+              examples:
+                UserGroups:
+                  $ref: '#/components/examples/userSystemGroupsApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /users/{userId}/reactivate:
+    patch:
+      tags:
+        - Users
+      summary: 'reactivate user by id'
+      description: 'Reactivate user by Id'
+      operationId: 'reactivateUserById'
+      parameters:
+        - $ref: '#/components/parameters/userIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+              examples:
+                User:
+                  $ref: '#/components/examples/usersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /users/licenses:
+    get:
+      tags:
+        - Users
+      summary: 'Fetch available users licenses'
+      description: 'Fetch available user licenses in current tenant'
+      operationId: 'fetchAllTenantLicenses'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/TenantUserLicensesApiResponse'
+              examples:
+                TenantUserLicenses:
+                  $ref: '#/components/examples/tenantUserLicensesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /groups:
+    get:
+      tags:
+        - Groups
+      summary: 'List user groups'
+      description: 'List user groups'
+      operationId: 'fetchAllUserGroups'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserGroupListApiResponse'
+              examples:
+                UserGroups:
+                  $ref: '#/components/examples/userGroupsApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Groups
+      summary: 'Create user group'
+      description: 'Create user group'
+      operationId: 'postNewUserGroup'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UserGroupRequest'
+            examples:
+              UserGroup:
+                $ref: '#/components/examples/userGroupApiRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserGroupApiResponse'
+              examples:
+                UserGroup:
+                  $ref: '#/components/examples/userGroupApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}:
+    get:
+      tags:
+        - Groups
+      summary: 'Fetch user group by id'
+      description: 'Fetch user group by id'
+      operationId: 'fetchUserGroupById'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserGroupApiResponse'
+              examples:
+                UserGroup:
+                  $ref: '#/components/examples/userGroupApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Groups
+      summary: 'Update user group'
+      description: 'Update user group'
+      operationId: 'patchUserGroupById'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+        - name: 'digest'
+          in: query
+          description: 'Indicate digest of user group'
+          schema:
+            type: string
+          deprecated: false
+        - name: 'force'
+          in: query
+          description: 'Force to update'
+          schema:
+            type: boolean
+          deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserGroupRequest'
+            examples:
+              UserGroup:
+                $ref: '#/components/examples/updateUserGroupRequest'
+      responses:
+        '201':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Groups
+      summary: 'Delete user group by id'
+      description: 'Delete user group by id'
+      operationId: 'deleteUserGroupById'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      responses:
+        '204':
+          description: 'OK'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}/members:
+    get:
+      tags:
+        - Groups
+      summary: 'Fetch user group members'
+      description: 'Fetch user group members'
+      operationId: 'fetchAllUserGroupMembers'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserListApiResponse'
+              examples:
+                Members:
+                  $ref: '#/components/examples/userGroupMembersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Groups
+      summary: 'Add user to user group'
+      description: 'Add user to user group'
+      operationId: 'postNewUserToUserGroup'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+        - name: 'digest'
+          in: query
+          description: 'Indicate digest of user group'
+          schema:
+            type: string
+          deprecated: false
+        - name: 'force'
+          in: query
+          description: 'Force to update'
+          schema:
+            type: boolean
+          deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/MembersRequest'
+            examples:
+              User:
+                $ref: '#/components/examples/membersApiRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserApiResponse'
+              examples:
+                Members:
+                  $ref: '#/components/examples/userGroupMembersApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}/members/{userId}:
+    delete:
+      tags:
+        - Groups
+      summary: 'Delete user from user group'
+      description: 'Delete user from user group'
+      operationId: 'deleteUserFromUserGroup'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+        - $ref: '#/components/parameters/userIdParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}/shares:
+    get:
+      tags:
+        - Groups
+      summary: 'Fetch user group shares'
+      description: 'Fetch user group shares'
+      operationId: 'fetchAllUserGroupShares'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ShareListApiResponse'
+              examples:
+                Shares:
+                  $ref: '#/components/examples/sharesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Groups
+      summary: 'Create a share to user group'
+      description: 'Create a share to user group'
+      operationId: 'postNewShare'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/ShareRequest'
+            examples:
+              ShareUser:
+                $ref: '#/components/examples/shareUserRequest'
+              ShareUserGroup:
+                $ref: '#/components/examples/shareGroupRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ShareApiResponse'
+              examples:
+                Share:
+                  $ref: '#/components/examples/sharesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}/shares/{sid}:
+    patch:
+      tags:
+        - Groups
+      summary: 'Update user group share'
+      description: 'Update user group share'
+      operationId: 'patchUserGroupShareById'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+        - $ref: '#/components/parameters/shareIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  required: [attributes]
+                  properties:
+                    attributes:
+                      type: object
+                      properties:
+                        canRead:
+                          type: boolean
+                        canWrite:
+                          type: boolean
+                        hasFullControl:
+                          type: boolean
+            examples:
+              Shares:
+                $ref: '#/components/examples/shareRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ShareApiResponse'
+              examples:
+                Share:
+                  $ref: '#/components/examples/sharesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Groups
+      summary: 'Delete a share from group'
+      description: 'Delete a share from Group'
+      operationId: 'deleteShareFromGroupById'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+        - $ref: '#/components/parameters/shareIdParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /groups/{groupId}/associations:
+    get:
+      tags:
+        - Groups
+      summary: 'Fetch group associations'
+      description: 'Fetch group associations'
+      operationId: 'fetchAllGroupAssociations'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationsApiResponse'
+              examples:
+                Association:
+                  $ref: '#/components/examples/associationsApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Groups
+      summary: 'Create association to user group'
+      description: 'Create association to user group'
+      operationId: 'postNewAssociation'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AssociationsRequest'
+            examples:
+              RequestWithEid:
+                $ref: '#/components/examples/associationsRequestWithEid'
+              RequestWithName:
+                $ref: '#/components/examples/associationsRequestWithName'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationsApiResponse'
+              examples:
+                Association:
+                  $ref: '#/components/examples/associationsApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '419':
+          $ref: '#/components/responses/GroupAssociationLimitation'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Groups
+      summary: 'Update user group associations'
+      description: |
+        Update user group associations.
+
+        There are 4 accepted actions.
+        - create, Add a new association item.
+        - update, Replace current association item values with new values.
+        - patch,  Append new values to current association item values.
+        - delete, Delete current association item.
+      operationId: 'patchAssociationOfGroup'
+      parameters:
+        - $ref: '#/components/parameters/userGroupIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AssociationsPatchRequest'
+            examples:
+              RequestWithEid:
+                $ref: '#/components/examples/associationsPatchRequestWithEid'
+              RequestWithName:
+                $ref: '#/components/examples/associationsPatchRequestWithName'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/GroupAssociationsApiResponse'
+              examples:
+                Association:
+                  $ref: '#/components/examples/associationsApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '419':
+          $ref: '#/components/responses/GroupAssociationLimitation'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: 'List Roles'
+      description: 'List Roles'
+      operationId: 'fetchAllRoles'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsonApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RoleApiResponseData'
+              examples:
+                Roles:
+                  $ref: '#/components/examples/rolesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /roles/{roleId}:
+    get:
+      tags:
+        - Roles
+      summary: 'Fetch role by id'
+      description: 'Fetch role by id'
+      operationId: 'fetchRoleById'
+      parameters:
+        - $ref: '#/components/parameters/roleIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/RoleApiResponse'
+              examples:
+                Role:
+                  $ref: '#/components/examples/roleApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /profiles/me:
+    get:
+      tags:
+        - Users
+      summary: "Get profile of current user"
+      description: |
+        Get profile of current user.
+      operationId: 'fetchProfileOfCurrentUser'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserProfileApiResponse'
+              examples:
+                myProfile:
+                  $ref: '#/components/examples/myProfileApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '428':
+          $ref: '#/components/responses/DigestMismatch'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    userIdParam:
+      name: 'userId'
+      in: path
+      description: 'Unique user identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    userGroupIdParam:
+      name: 'groupId'
+      in: path
+      description: 'Unique user group identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    shareIdParam:
+      name: 'sid'
+      in: path
+      description: 'Unique share identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    offsetParam:
+      name: page[offset]
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        default: 0
+    limitParam:
+      name: page[limit]
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 1000
+        default: 20
+    roleIdParam:
+      name: 'roleId'
+      in: path
+      description: 'Unique role identifier'
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtUser:
+      type: object
+      title: 'ExtUser'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtUserAttributes'
+          properties:
+            isEnabled:
+              type: boolean
+            userId:
+              type: string
+            userName:
+              type: string
+            email:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            alias:
+              type: string
+            country:
+              type: string
+            organization:
+              type: string
+            lastLoginAt:
+              type: string
+            createdAt:
+              type: string
+            licenses:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  active:
+                    type: boolean
+        relationships:
+          type: object
+          title: 'ExtUserRelationships'
+          properties:
+            picture:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            roles:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            systemGroups:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    UserApiResponse:
+        type: object
+        title: 'UserApiResponse'
+        properties:
+          links:
+            $ref: '#/components/schemas/JsonApiLinks'
+          meta:
+            $ref: '#/components/schemas/JsonApiMeta'
+          data:
+            $ref: '#/components/schemas/ExtUser'
+          included:
+            $ref: '#/components/schemas/JsonApiIncluded'
+    UserListApiResponse:
+      type: object
+      title: 'UserListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtUser'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtUserGroup:
+      type: object
+      title: 'ExtUserGroup'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtUserGroupAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            type:
+              type: string
+            createdAt:
+              type: string
+            editedAt:
+              type: string
+            digest:
+              type: string
+            isSystem:
+              type: boolean
+            flags:
+              type: object
+        relationships:
+          type: object
+          title: 'ExtUserGroupRelationships'
+          properties:
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            members:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            shares:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            associations:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    UserGroupApiResponse:
+      type: object
+      title: 'UserGroupApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtUserGroup'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    UserGroupListApiResponse:
+      type: object
+      title: 'UserGroupListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtUserGroup'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+
+    UserRequestData:
+      title: 'UserRequestData'
+      type: object
+      required: [country, emailAddress, firstName, lastName, organization]
+      properties:
+        alias:
+          type: string
+        country:
+          type: string
+          enum: ['USA', 'Afghanistan', 'Aland Islands', 'Albania', 'Algeria', 'American Samoa', 'Andorra', 'Angola', 'Anguilla', 'Antarctica', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Aruba', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bermuda', 'Bhutan', 'Bolivia', 'Bonaire, Sint Eustatius and Saba', 'Bosnia-Herzegovina', 'Botswana', 'Bouvet Island', 'Brazil', 'British Indian Ocean Territory', 'Brunei Darussalam', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Canary Islands', 'Cape Verde', 'Cayman Islands', 'Central African Republic', 'Chad', 'Chile', 'China', 'Christmas Island', 'Cocos (Keeling) Islands', 'Colombia', 'Comoros', 'Congo', 'Congo, Democratic Republic', 'Cook Islands', 'Costa Rica', 'Croatia', 'Curacao', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'Falkland Islands', 'Faroe Islands', 'Fiji', 'Finland', 'France', 'French Guiana', 'French Polynesia', 'French Southern Territories', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Gibraltar', 'Greece', 'Greenland', 'Grenada', 'Guadeloupe', 'Guam', 'Guatemala', 'Guernsey', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Heard and McDonald Islands', 'Honduras', 'Hong Kong', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Isle of Man', 'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Japan', 'Jersey', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Macau', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Mariana Islands', 'Marshall Islands', 'Martinique', 'Mauritania', 'Mauritius', 'Mayotte', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Montserrat', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'Netherlands Antilles', 'New Caledonia', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'Niue', 'Norfolk Island', 'Northern Mariana Islands', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestinian Territory, Occupied', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Pitcairn', 'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Reunion', 'Romania', 'Russian Federation', 'Rwanda', 'S. Georgia and S. Sandwich Islands', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Sint Maarten', 'Slovak Republic', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'St. Barthelemy', 'St. Helena, Ascension and Tristan da Cunha', 'St. Kitts & Nevis', 'St. Lucia', 'St. Martin', 'St. Pierre and Miquelon', 'St. Vincent and the Grenadines', 'Suriname', 'Svalbard & Jan Mayen', 'Swaziland', 'Sweden', 'Switzerland', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tokelau', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Turks and Caicos Islands', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'Uruguay', 'US Minor Outlying Islands', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Virgin Islands (US)', 'Virgin Islands(Brit)', 'Wallis and Futuna', 'Western Sahara', 'Yemen', 'Yugoslavia', 'Zambia', 'Zimbabwe']
+          default: 'USA'
+        emailAddress:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        organization:
+          type: string
+        roles:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+    UserUpdateRequestData:
+      title: 'UserRequestData'
+      type: object
+      properties:
+        alias:
+          type: string
+        country:
+          type: string
+          enum: ['USA', 'Afghanistan', 'Aland Islands', 'Albania', 'Algeria', 'American Samoa', 'Andorra', 'Angola', 'Anguilla', 'Antarctica', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Aruba', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bermuda', 'Bhutan', 'Bolivia', 'Bonaire, Sint Eustatius and Saba', 'Bosnia-Herzegovina', 'Botswana', 'Bouvet Island', 'Brazil', 'British Indian Ocean Territory', 'Brunei Darussalam', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Canary Islands', 'Cape Verde', 'Cayman Islands', 'Central African Republic', 'Chad', 'Chile', 'China', 'Christmas Island', 'Cocos (Keeling) Islands', 'Colombia', 'Comoros', 'Congo', 'Congo, Democratic Republic', 'Cook Islands', 'Costa Rica', 'Croatia', 'Curacao', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'Falkland Islands', 'Faroe Islands', 'Fiji', 'Finland', 'France', 'French Guiana', 'French Polynesia', 'French Southern Territories', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Gibraltar', 'Greece', 'Greenland', 'Grenada', 'Guadeloupe', 'Guam', 'Guatemala', 'Guernsey', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Heard and McDonald Islands', 'Honduras', 'Hong Kong', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Isle of Man', 'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Japan', 'Jersey', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Macau', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Mariana Islands', 'Marshall Islands', 'Martinique', 'Mauritania', 'Mauritius', 'Mayotte', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Montserrat', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'Netherlands Antilles', 'New Caledonia', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'Niue', 'Norfolk Island', 'Northern Mariana Islands', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestinian Territory, Occupied', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Pitcairn', 'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Reunion', 'Romania', 'Russian Federation', 'Rwanda', 'S. Georgia and S. Sandwich Islands', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Sint Maarten', 'Slovak Republic', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'St. Barthelemy', 'St. Helena, Ascension and Tristan da Cunha', 'St. Kitts & Nevis', 'St. Lucia', 'St. Martin', 'St. Pierre and Miquelon', 'St. Vincent and the Grenadines', 'Suriname', 'Svalbard & Jan Mayen', 'Swaziland', 'Sweden', 'Switzerland', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tokelau', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Turks and Caicos Islands', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'Uruguay', 'US Minor Outlying Islands', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Virgin Islands (US)', 'Virgin Islands(Brit)', 'Wallis and Futuna', 'Western Sahara', 'Yemen', 'Yugoslavia', 'Zambia', 'Zimbabwe']
+          default: 'USA'
+        firstName:
+          type: string
+        lastName:
+          type: string
+        organization:
+          type: string
+        roles:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        systemGroups:
+          type: array
+          items:
+            type: object
+            required: [name, associateType]
+            properties:
+              name:
+                type: string
+              associateType:
+                type: string
+                enum: ['ADD', 'REMOVE']
+    UserUpdateLicensesRequestData:
+      title: 'UserRequestData'
+      type: object
+      required: [licenses]
+      properties:
+        licenses:
+          type: array
+          items:
+            type: object
+            required: [id, active]
+            properties:
+              id:
+                type: string
+              active:
+                type: boolean
+    UserRequest:
+      title: 'UserRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/UserRequestData'
+    UserUpdateRequest:
+      title: 'UserRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              oneOf:
+                - $ref: '#/components/schemas/UserUpdateRequestData'
+                - $ref: '#/components/schemas/UserUpdateLicensesRequestData'
+    UserGroupRequestData:
+      title: 'UserGroupRequestData'
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        isSystem:
+          type: boolean
+    UserGroupRequest:
+      title: 'UserGroupRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/UserGroupRequestData'
+    MembersRequest:
+      title: 'MembersRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+    UpdateUserGroupRequestData:
+      title: 'UserGroupRequestData'
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    UpdateUserGroupRequest:
+      title: 'UserGroupRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/UpdateUserGroupRequestData'
+    ShareUserRequestData:
+      title: 'ShareUserRequestData'
+      type: object
+      required: [user]
+      properties:
+        canRead:
+          type: boolean
+        canWrite:
+          type: boolean
+        hasFullControl:
+          type: boolean
+        user:
+          type: object
+          required: [userId]
+          properties:
+            userId:
+              type: string
+    ShareGroupRequestData:
+      title: 'ShareGroupRequestData'
+      type: object
+      required: [group]
+      properties:
+        canRead:
+          type: boolean
+        canWrite:
+          type: boolean
+        hasFullControl:
+          type: boolean
+        group:
+          type: object
+          required: [groupId]
+          properties:
+            groupId:
+              type: string
+    ShareRequest:
+      title: 'ShareRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              oneOf:
+                - $ref: '#/components/schemas/ShareUserRequestData'
+                - $ref: '#/components/schemas/ShareGroupRequestData'
+
+    ExtUserGroupShare:
+      type: object
+      title: 'ExtUserGroupShare'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtUserGroupShareAttributes'
+          properties:
+            canRead:
+              type: boolean
+            canWrite:
+              type: boolean
+            hasFullControl:
+              type: boolean
+            sid:
+              type: string
+            isAdmin:
+              type: boolean
+        relationships:
+          type: object
+          title: 'ExtUserGroupShareRelationships'
+          properties:
+            group:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            user:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    ShareListApiResponse:
+      type: object
+      title: 'ShareListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtUserGroupShare'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    ShareApiResponse:
+      type: object
+      title: 'ShareListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtUserGroupShare'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+    ExtGroupAssociation:
+      type: object
+      title: 'ExtGroupAssociation'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtGroupAssociationAttributes'
+          properties:
+            associations:
+              type: array
+              items:
+                type: object
+                properties:
+                  eid:
+                    type: string
+                  name:
+                    type: string
+                  values:
+                    type: array
+                    items:
+                      type: string
+        relationships:
+          type: object
+    GroupAssociationsApiResponse:
+      type: object
+      title: 'ExtGroupAssociationApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtGroupAssociation'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+    AssociationsAttribute:
+      title: 'AssociationsAttribute'
+      type: object
+      properties:
+        associations:
+          type: array
+          items:
+            type: object
+            properties:
+              eid:
+                type: string
+              name:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+
+    AssociationsRequest:
+      title: 'AssociationRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/AssociationsAttribute'
+    AssociationsAttributePatch:
+      title: 'AssociationsAttribute'
+      type: object
+      required: [associations]
+      properties:
+        associations:
+          type: array
+          items:
+            type: object
+            required: [action]
+            properties:
+              eid:
+                type: string
+              name:
+                type: string
+              action:
+                type: string
+                enum: [create,update,patch,delete]
+              values:
+                type: array
+                items:
+                  type: string
+    AssociationsPatchRequest:
+      title: 'AssociationRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          required: [attributes]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/AssociationsAttributePatch'
+    RoleAttributes:
+      title: 'RoleAttributes'
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        privileges:
+          type: object
+        counts:
+          type: object
+        flags:
+          type: object
+    RoleApiResponseData:
+      allOf:
+        - $ref: '#/components/schemas/JsonApiData'
+        - title: 'RoleApiResponseData'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/RoleAttributes'
+    RoleApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/JsonApiResponse'
+        - title: 'RoleApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RoleApiResponseData'
+
+
+    TenantUserLicensesApiResponse:
+      title: 'TenantUserLicenses'
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            attributes:
+              type: object
+              properties:
+                totalLicense:
+                  type: integer
+                totalLicenseConsumed:
+                  type: integer
+                licenses:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TenantUserLicenseFeature'
+    TenantUserLicenseFeature:
+      title: 'TenantUserLicenseFeature'
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        totalLicense:
+          type: integer
+        totalLicenseConsumed:
+          type: integer
+
+    ExtUserProfile:
+      type: object
+      title: 'ExtUserProfile'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtUserProfileAttributes'
+          properties:
+            id:
+              type: string
+            userId:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            alias:
+              type: string
+            email:
+              type: string
+            createdAt:
+              type: string
+            tenant:
+              type: string
+            isAutoFillExpFieldsEnabled:
+              type: boolean
+            authenticatedAt:
+              type: string
+            privileges:
+              type: object
+            picture:
+              type: object
+            alert:
+              type: object
+            roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                additionalProperties: true
+            licenses:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  valid:
+                    type: boolean
+                  expiresAt:
+                    type: string
+                  hasServiceExpired:
+                    type: boolean
+                  hasUserFound:
+                    type: boolean
+                  hasUserActivated:
+                    type: boolean
+            flags:
+              type: object
+            adoPrivileges:
+              type: object
+            licenseFeatures:
+                type: array
+                items:
+                    type: object
+            groups:
+              type: array
+              items:
+                type: object
+        relationships:
+          type: object
+
+    UserProfileApiResponse:
+      type: object
+      title: 'UserProfileApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtUserProfile'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GroupAssociationLimitation:                #419
+      description: 'Exceed group association count limitation.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    userApiRequest:
+      value:
+        data:
+          attributes:
+            alias: 'test'
+            country: 'USA'
+            emailAddress: 'email@[your_domain]'
+            firstName: 'test'
+            lastName: 'account'
+            organization: 'example'
+            roles:
+              - id: '1'
+                name: 'System Admin'
+    userUpdateApiRequest:
+      value:
+        data:
+          attributes:
+            alias: 'test'
+            country: 'USA'
+            firstName: 'test'
+            lastName: 'account'
+            organization: 'example'
+            roles:
+              - id: '2'
+                name: 'Config Admin'
+            systemGroups:
+              - name: 'Administrators'
+                associateType: 'ADD'
+              - name: 'SystemGroupName-1'
+                associateType: 'REMOVE'
+    userUpdateLicensesApiRequest:
+      value:
+        data:
+          attributes:
+            licenses:
+              - id: "signals_notebook"
+                active: true
+              - id: "chemoffice_plus"
+                active: false
+    membersApiRequest:
+      value:
+        data:
+          attributes:
+            userId: '101'
+    usersApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/users/100'
+        data:
+          id: '100'
+          type: 'user'
+          attributes:
+            isEnabled: true
+            userId: '100'
+            userName: 'foo.bar@example.com'
+            email: 'foo.bar@example.com'
+            firstName: 'foo'
+            lastName: 'bar'
+            alias: 'foo.bar'
+            country: 'USA'
+            organization: 'example'
+            lastLoginAt: '2021-11-29T04:00:02.295Z'
+            createdAt: '2020-07-17T21:48:33.262Z'
+            licenses:
+              - id : 'signals_notebook'
+                name: 'Notebook'
+                active: true
+          relationships:
+            picture:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/users/100/picture'
+            roles:
+              data:
+                - id: '1'
+                  type: 'role'
+                - id: '3'
+                  type: 'role'
+            systemGroups:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/users/100/systemGroups'
+          links:
+            self: 'https://snb.example.com/api/rest/v1.0/users/100'
+        included:
+          - type: 'role'
+            id: '1'
+            attributes:
+              id: '1'
+              name: 'System Admin'
+          - type: 'role'
+            id: '3'
+            attributes:
+              id: '3'
+              name: 'Standard User'
+          - type: 'group'
+            id: '103'
+            attributes:
+              id: '103'
+              name: 'TestSys'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+    userListApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/users'
+        data:
+          - id: '100'
+            type: 'user'
+            attributes:
+              isEnabled: true
+              userId: '100'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+              alias: 'foo.bar'
+              country: 'USA'
+              organization: 'example'
+              lastLoginAt: '2021-11-29T04:00:02.295Z'
+              createdAt: '2020-07-17T21:48:33.262Z'
+              licenses:
+                - id : 'signals_notebook'
+                  name: 'Notebook'
+                  active: true
+            relationships:
+              picture:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100/picture'
+              roles:
+                data:
+                  - id: '1'
+                    type: 'role'
+                  - id: '3'
+                    type: 'role'
+              systemGroups:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100/systemGroups'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/100'
+        included:
+          - type: 'role'
+            id: '1'
+            attributes:
+              id: '1'
+              name: 'System Admin'
+          - type: 'role'
+            id: '3'
+            attributes:
+              id: '3'
+              name: 'Standard User'
+          - type: 'group'
+            id: '103'
+            attributes:
+              id: '103'
+              name: 'TestSys'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+    updateUserGroupRequest:
+      value:
+        data:
+          attributes:
+            name: 'TestSys'
+            description: 'TestSys'
+    userGroupApiRequest:
+      value:
+        data:
+          attributes:
+            name: 'TestSys'
+            description: 'TestSys'
+            isSystem: true
+    userGroupApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+        data:
+          id: '103'
+          type: 'group'
+          attributes:
+            id: '103'
+            name: 'TestSys'
+            description: 'TestSys'
+            createdAt: '2019-12-02T04:58:45.069Z'
+            editedAt: '2019-12-02T04:58:45.069Z'
+            type: 'group'
+            digest: '23eeab9d8c63bb438cf56596d4b7f589'
+            isSystem: true
+          relationships:
+            createdBy:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/users/100'
+              data:
+                type: 'user'
+                id: '100'
+            owner:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/users/100'
+              data:
+                type: 'user'
+                id: '100'
+            members:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/groups/103/members'
+            shares:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/groups/103/shares'
+            associations:
+              links:
+                self: 'https://snb.example.com/api/rest/v1.0/groups/103/associations'
+          links:
+            self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+        included:
+          - type: 'user'
+            id: '100'
+            attributes:
+              userId: '100'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/100'
+    userGroupsApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/groups'
+        data:
+          - id: '103'
+            type: 'group'
+            attributes:
+              id: '103'
+              name: 'TestSys'
+              description: 'TestSys'
+              createdAt: '2019-12-02T04:58:45.069Z'
+              editedAt: '2019-12-02T04:58:45.069Z'
+              type: 'group'
+              digest: '23eeab9d8c63bb438cf56596d4b7f589'
+              isSystem: true
+            relationships:
+              createdBy:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              owner:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              members:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/members'
+              shares:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/shares'
+              associations:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/associations'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+          - id: '100'
+            type: 'group'
+            attributes:
+              id: '100'
+              name: 'Administrator'
+              description: 'Administrator'
+              createdAt: '2019-12-02T04:58:45.069Z'
+              editedAt: '2019-12-02T04:58:45.069Z'
+              type: 'group'
+              digest: '23eeab9d8c63bb438cf56596d4b7f589'
+              isSystem: true
+            relationships:
+              createdBy:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              owner:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              members:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/members'
+              shares:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/shares'
+              associations:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/associations'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/100'
+        included:
+          - type: 'user'
+            id: '100'
+            attributes:
+              userId: '100'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/100'
+    userGroupMembersApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/groups/103/members'
+        data:
+          - type: 'user'
+            id: '100'
+            attributes:
+              userId: '100'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/100'
+          - type: 'user'
+            id: '101'
+            attributes:
+              userId: '101'
+              userName: 'test.test@example.com'
+              email: 'test.test@example.com'
+              firstName: 'test'
+              lastName: 'test'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/101'
+    shareRequest:
+      value:
+        data:
+          attributes:
+            canWrite: true
+    shareUserRequest:
+      value:
+        data:
+          attributes:
+            canWrite: false
+            user:
+              userId: '101'
+    shareGroupRequest:
+      value:
+        data:
+          attributes:
+            canWrite: false
+            group:
+              groupId: '101'
+    sharesApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/groups/103/shares'
+        data:
+          - type: 'share'
+            id: '100'
+            attributes:
+              sid: '100'
+              canRead: true
+              canWrite: false
+              hasFullControl: false
+              isAdmin: false
+            relationships:
+              group:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/110'
+                data:
+                  id: '110'
+                  type: 'group'
+          - type: 'share'
+            id: '101'
+            attributes:
+              sid: '101'
+              canRead: true
+              isAdmin: false
+            relationships:
+              user:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/111'
+                data:
+                  id: '111'
+                  type: 'user'
+        included:
+          - type: 'user'
+            id: '111'
+            attributes:
+              userId: '111'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/111'
+          - type: 'group'
+            id: '110'
+            attributes:
+              id: '103'
+              name: 'TestSys'
+              description: 'TestSys'
+              type: 'group'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/110'
+    associationsApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/groups/100/associations'
+        data:
+          id: '100'
+          type: 'association'
+          attributes:
+            associations:
+              - eid: 'attribute:10'
+                name: 'Test'
+                values:
+                  - 'A'
+                  - 'B'
+              - eid: 'attribute:5'
+                name: 'Material Library Type'
+                values:
+                  - 'Cell Lines'
+                  - 'Equipment'
+    associationsRequestWithName:
+      value:
+        data:
+          attributes:
+            associations:
+              - name: 'Test'
+                values:
+                  - 'A'
+                  - 'B'
+              - name: 'Material Library Type'
+                values:
+                  - 'Cell Lines'
+                  - 'Equipment'
+    associationsRequestWithEid:
+      value:
+        data:
+          attributes:
+            associations:
+              - eid: 'attribute:10'
+                values:
+                  - 'A'
+                  - 'B'
+              - eid: 'attribute:5'
+                values:
+                  - 'Cell Lines'
+                  - 'Equipment'
+    associationsPatchRequestWithName:
+      value:
+        data:
+          attributes:
+            associations:
+              - name: 'Attribute name-1'
+                action: 'create'
+                values:
+                  - 'A'
+                  - 'B'
+              - name: 'Attribute name-2'
+                action: 'update'
+                values:
+                  - 'A'
+                  - 'B'
+              - name: 'Attribute name-3'
+                action: 'patch'
+                values:
+                  - 'A'
+                  - 'B'
+              - name: 'Attribute name-4'
+                action: 'delete'
+    associationsPatchRequestWithEid:
+      value:
+        data:
+          attributes:
+            associations:
+              - eid: 'attribute:1'
+                action: 'create'
+                values:
+                  - 'A'
+                  - 'B'
+              - eid: 'attribute:2'
+                action: 'update'
+                values:
+                  - 'Cell Lines'
+                  - 'Equipment'
+              - eid: 'attribute:3'
+                action: 'patch'
+                values:
+                  - 'A'
+                  - 'B'
+              - eid: 'attribute:4'
+                action: 'delete'
+    roleApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/roles/1'
+        data:
+          type: 'role'
+          id: '1'
+          links:
+            self: 'https://snb.example.com/api/rest/v1.0/roles/1'
+          attributes:
+            id: '1'
+            name: 'System Admin'
+            description: 'Users with this role have all privileges.'
+            privileges:
+              canMoveExperiments: true,
+              canManageSystemTemplates: true,
+              canTrashRequests: true,
+              canTrashSamples: true,
+              canShare: true,
+              canAddMaterials: true,
+              canTrashExperiments: true,
+              canTrashMaterials: true,
+              canTrashNotebooks: true,
+              canViewMaterials: true,
+              canManageMaterialLibraries: true,
+              canShareTemplates: true,
+              canManageAttributes: true,
+              canManageGroups: true,
+              canSearchElnArchive: true,
+              canConfigure: true,
+              canEditMaterials: true
+            counts:
+              groups: 1
+              users: 4
+            flags:
+              isInUse: true
+    rolesApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/roles'
+        data:
+          - type: 'role'
+            id: '1'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/roles/1'
+            attributes:
+              id: '1'
+              name: 'System Admin'
+              description: 'Users with this role have all privileges.'
+              privileges:
+                canMoveExperiments: true,
+                canManageSystemTemplates: true,
+                canTrashRequests: true,
+                canTrashSamples: true,
+                canShare: true,
+                canAddMaterials: true,
+                canTrashExperiments: true,
+                canTrashMaterials: true,
+                canTrashNotebooks: true,
+                canViewMaterials: true,
+                canManageMaterialLibraries: true,
+                canShareTemplates: true,
+                canManageAttributes: true,
+                canManageGroups: true,
+                canSearchElnArchive: true,
+                canConfigure: true,
+                canEditMaterials: true
+              counts:
+                groups: 1
+                users: 4
+              flags:
+                isInUse: true
+          - type: 'role'
+            id: '2'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/roles/2'
+            attributes:
+              id: '2'
+              name: 'Config Admin'
+              description: 'Users with this role have privileges for accessing SNConfig and managing metadata.'
+              privileges:
+                canTrashNotebooks: true,
+                canManageSystemTemplates: true,
+                canMoveExperiments: true,
+                canShareTemplates: true,
+                canTrashExperiments: true,
+                canManageAttributes: true,
+                canConfigure: true
+              counts:
+                groups: 0
+                users: 2
+              flags:
+                canTrash: true,
+                canEdit: true,
+                isInUse: true
+    userSystemGroupsApiResponse:
+      value:
+        links:
+          self: 'https://snb.example.com/api/rest/v1.0/users/100/systemGroups'
+        data:
+          - id: '103'
+            type: 'group'
+            attributes:
+              id: '103'
+              name: 'TestSys'
+              description: 'TestSys'
+              createdAt: '2019-12-02T04:58:45.069Z'
+              editedAt: '2019-12-02T04:58:45.069Z'
+              type: 'group'
+              digest: '23eeab9d8c63bb438cf56596d4b7f589'
+              isSystem: true
+            relationships:
+              createdBy:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              owner:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              members:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/members'
+              shares:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/shares'
+              associations:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/103/associations'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/103'
+          - id: '100'
+            type: 'group'
+            attributes:
+              id: '100'
+              name: 'Administrator'
+              description: 'Administrator'
+              createdAt: '2019-12-02T04:58:45.069Z'
+              editedAt: '2019-12-02T04:58:45.069Z'
+              type: 'group'
+              digest: '23eeab9d8c63bb438cf56596d4b7f589'
+              isSystem: true
+            relationships:
+              createdBy:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              owner:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              members:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/members'
+              shares:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/shares'
+              associations:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/groups/100/associations'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/groups/100'
+        included:
+          - type: 'user'
+            id: '100'
+            attributes:
+              userId: '100'
+              userName: 'foo.bar@example.com'
+              email: 'foo.bar@example.com'
+              firstName: 'foo'
+              lastName: 'bar'
+            links:
+              self: 'https://snb.example.com/api/rest/v1.0/users/100'
+    myProfileApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/profiles/me
+        data:
+          type: profile
+          id: '100'
+          links:
+            self: https://snb.example.com/api/rest/v1.0/profiles/me
+          attributes:
+            userId: '100'
+            firstName: foo
+            lastName: bar
+            email: foo.bar@example.com
+            createdAt: '2020-07-17T21:48:33.262665Z'
+            tenant: frank10
+            alert: {}
+            roles:
+              - id: '1'
+                name: System Admin
+              - id: '3'
+                name: Standard User
+            licenses:
+              - id: 'SIGNALS_NOTEBOOK'
+                name: 'SIGNALS_NOTEBOOK'
+                expiresAt: '2029-12-03T10:15:30Z'
+                valid: true
+                hasServiceExpired: false
+                hasUserFound: false
+                hasUserActivated: false
+    tenantUserLicensesApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/users/licenses
+        data:
+          type: licenses
+          id: 7b09beff-26cc-47f9-807a-d32c6a6e4249
+          attributes:
+            licenses:
+              - totalLicense: 1000
+                totalLicenseConsumed: 1
+                id: signals_notebook
+                name: Notebook
+              - totalLicense: 1000
+                totalLicenseConsumed: 1
+                id: chemoffice_plus
+                name: ChemOffice+

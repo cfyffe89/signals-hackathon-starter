@@ -1,0 +1,4186 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+paths:
+  /adt/{eid}:
+    get:
+      tags:
+        - AdminDefinedTables
+      summary: 'Fetch content of Admin Defined Tables'
+      description: |
+        Fetch content of Admin Defined Tables.
+        
+        Accepted entity types: grid.
+        
+        Example usages:
+
+          /adt/grid:abcd
+
+      operationId: 'fetchAdtContentById'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - $ref: '#/components/parameters/valueFormatParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtResponse'
+              examples:
+                adminDefinedTable:
+                  $ref: '#/components/examples/fetchingAdtResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - AdminDefinedTables
+      summary: 'Bulk update content of Admin Defined Table'
+      description: |
+        Bulk update content of Admin Defined Table.
+        Adding new rows, updating existing rows and deleting existing rows are allowed.
+        Updating column definition is NOT supported.
+
+        Specify expected 'action' values in request body while adding/updating/deleting rows.
+
+        There are 3 actions are accepted,
+        - create, Add a new row.
+        - update, Update existing row.
+        - delete, Delete existing row.
+        
+        For ADTs embedded in worksheets, put the reason in the meta field if the reason-for-change is required.
+        The reasonId can be obtained through the "GET /worksheet/settings/unlock/reasons" endpoint.
+        Additionally, users may include optional comments along with their reason for the change.
+        The reason and comment will be ignored for other cases.
+        Refer to the examples for details if necessary.
+
+        Accepted entity types: grid.
+
+        Example usages:
+
+          /adt/grid:abcd
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different property types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"display": "3.14 g"}
+        
+          Note: If using the "value" field to make changes, please remember "value" is stored in the system's base unit 
+          (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+          molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+          Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+        - unit(var measure) {"display": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+        
+        For inventory decrement:
+        - The row can be switched to another container when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+        - The row can be deleted when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+
+        If want to remove the value of one cell, set the content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+        
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see examples.
+
+      operationId: 'patchAdtContentById'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+        - $ref: '#/components/parameters/valueFormatParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateRowRequest'
+            examples:
+              UpdateRows:
+                $ref: '#/components/examples/updateRowRequest'
+              UpdateRowsWithReason:
+                $ref: '#/components/examples/updateRowWithReasonRequest'
+              UpdateFormulationValue:
+                $ref: '#/components/examples/updateRowWithFormulationRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtResponse'
+              examples:
+                adminDefinedTable:
+                  $ref: '#/components/examples/fetchingAdtResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - AdminDefinedTables
+      summary: 'Add a new row to Admin Defined Table'
+      description: |
+        Append a new row to the end of Admin Defined Table.
+
+        For ADTs embedded in worksheets, put the reason in the meta field if the reason-for-change is required.
+        The reasonId can be obtained through the "GET /worksheet/settings/unlock/reasons" endpoint.
+        Additionally, users may include optional comments along with their reason for the change.
+        The reason and comment will be ignored for other cases.
+        Refer to the examples for details if necessary.
+
+        Accepted entity types: grid.
+
+        Example usages:
+
+          /adt/grid:abcd
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different property types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"display": "3.14 g"}
+        
+          Note: If using the "value" field to make changes, please remember "value" is stored in the system's base unit 
+          (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+          molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+          Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+        - unit(var measure) {"display": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+      operationId: 'postNewRowToAdt'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+        - $ref: '#/components/parameters/valueFormatParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AddRowRequest'
+            examples:
+              AddNewRow:
+                $ref: '#/components/examples/addRowRequest'
+              AddNewRowWithReason:
+                $ref: '#/components/examples/addRowWithReasonRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtRowResponse'
+              examples:
+                adminDefinedTable:
+                  $ref: '#/components/examples/fetchingAdtRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /adt/{eid}/_column:
+    get:
+      tags:
+        - AdminDefinedTables
+      summary: 'Fetch column definitions of Admin Defined Tables'
+      description: |
+        Fetch column definitions of Admin Defined Tables.
+
+        Accepted entity types: grid.
+
+        Example usages:
+
+          GET /adt/grid:abcd/_column
+
+      operationId: 'fetchAdtColumnDefinitionsById'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtColumnDefinitionResponse'
+              examples:
+                columnDefinitions:
+                  $ref: '#/components/examples/fetchingAdtColumnDefinitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - AdminDefinedTables
+      summary: 'Update column definitions of Admin Defined Table'
+      description: |
+        Update column definitions of Admin Defined Table.
+
+        The `action` field must be one of:
+        - `hide`, set the specified columns as hidden
+        - `unhide`, set the specified columns as visible
+
+        The `columns` field is a non-empty list of column IDs to apply the action to.
+
+        Accepted entity types: grid.
+
+        Example usages:
+
+          PATCH /adt/grid:abcd/_column
+
+      operationId: 'patchAdtColumnVisibility'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateTableColumnRequest'
+            examples:
+              hideColumn:
+                $ref: '#/components/examples/hideAdtColumnVisibilityRequest'
+              unhideColumn:
+                $ref: '#/components/examples/unhideAdtColumnVisibilityRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtColumnDefinitionResponse'
+              examples:
+                columnDefinitions:
+                  $ref: '#/components/examples/fetchingAdtColumnDefinitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /adt/{eid}/{rowid}:
+    get:
+      tags:
+        - AdminDefinedTables
+      summary: 'Fetch specified row of Admin Defined Table'
+      description: |
+        Fetch specified row of Admin Defined Table.
+        
+        Accepted entity types: grid.
+        
+        Example usages:
+
+          /adt/grid:abcd/123
+
+      operationId: 'fetchAdtRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - name: 'rowid'
+          in: path
+          required: true
+          description: row id of table.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/valueFormatParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtRowResponse'
+              examples:
+                adminDefinedTableRow:
+                  $ref: '#/components/examples/fetchingAdtRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - AdminDefinedTables
+      summary: 'Update specified row of Admin Defined Table'
+      description: |
+        Update specified row of Admin Defined Table.
+
+        For ADTs embedded in worksheets, put the reason in the meta field if the reason-for-change is required.
+        The reasonId can be obtained through the "GET /worksheet/settings/unlock/reasons" endpoint.
+        Additionally, users may include optional comments along with their reason for the change.
+        The reason and comment will be ignored for other cases.
+        Refer to the examples for details if necessary.
+        
+        Accepted entity types: grid.
+        
+        Example usages:
+
+          /adt/grid:abcd/123
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different property types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"display": "3.14 g"}
+        
+          Note: If using the "value" field to make changes, please remember "value" is stored in the system's base unit 
+          (e.g. mol for Amount, g/mL for Density, mmol/g for Loading, g for Mass,
+          molar for Molarity, g/mol for Molecular Weight, atm for Pressure, °C for Temperature, min for Duration, mL for Volume).
+        
+          Suggestion: Use "display" or "user" to specify a value with an explicit unit.
+        - unit(var measure) {"display": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+        
+        For inventory decrement:
+        - The row can be switched to another container when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+
+        To clear the value of a cell, set its content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+        
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see examples.
+
+      operationId: 'patchAdtRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - name: 'rowid'
+          in: path
+          required: true
+          description: row id of table.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+        - $ref: '#/components/parameters/valueFormatParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchRowRequest'
+            examples:
+              UpdateRowValue:
+                $ref: '#/components/examples/patchRowRequest'
+              UpdateRowValueWithReason:
+                $ref: '#/components/examples/patchRowWithReasonRequest'
+              UpdateFormulationValue:
+                $ref: '#/components/examples/patchFormulationRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AdtRowResponse'
+              examples:
+                adminDefinedTableRow:
+                  $ref: '#/components/examples/fetchingAdtRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - AdminDefinedTables
+      summary: 'Delete specified row of Admin Defined Table'
+      description: |
+        Delete specified row of Admin Defined Table.
+
+        Note: 
+        For ADTs embedded in worksheets, this API can be used to remove a row from the table if and only if the reason-for-change is not required.
+        Otherwise, use "PATCH /adt/eid" to remove the row from the table.
+        
+        For inventory decrement:
+        - The row can be deleted when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+
+        Accepted entity types: grid.
+        
+        Example usages:
+
+          /adt/grid:abcd/123
+
+      operationId: 'deleteAdtRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/adtIdParam'
+        - name: 'rowid'
+          in: path
+          required: true
+          description: row id of table.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /worksheet/{eid}:
+    get:
+      tags:
+        - Worksheet
+      summary: 'Fetch content of specified worksheet'
+      description: |
+        Fetch the content of specified worksheet.
+
+        The content of the embedded ADTs are not returned in the response, please get them by the ADT APIs.
+
+        Accepted entity types: worksheet.
+
+        Example usages:
+
+          /worksheet/worksheet:7c1dab82-5c09-47b2-be4f-fa04a383f620
+
+      operationId: 'fetchWorksheetContentById'
+      parameters:
+        - $ref: '#/components/parameters/worksheetIdParam'
+        - $ref: '#/components/parameters/includeParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/WorksheetResponse'
+              examples:
+                worksheet:
+                  $ref: '#/components/examples/fetchingWorksheetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Worksheet
+      summary: 'Update specified worksheet'
+      description: |
+        Update specified worksheet.
+
+        The content of the embedded ADTs are not editable here, please update them by the ADT APIs.
+
+        Accepted entity types: worksheet.
+
+        Example usages:
+
+          /worksheet/worksheet:7c1dab82-5c09-47b2-be4f-fa04a383f620
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different property types,
+        - number {"value": 3.0 }
+        - datetime  {"value":"2019-09-06T15:22:47.309Z"}
+        - timestamp(autoCreated datetime)  {"action":"now|clear"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.1415926 g|ml|g/ml|mol"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+        Note:
+
+        1. For the fields which require reason on change(requiresReasonOnChange=true).
+
+        If the user wishes to modify a value, they must provide a reason.
+        The reasonId can be obtained through the "GET /worksheet/settings/unlock/reasons" endpoint.
+        Additionally, users may include optional comments along with their reason for the change.
+        For more information, please refer to the UpdateWorksheetWithReason example.
+
+        2. For the fields which don't need reason(requiresReasonOnChange=false).
+
+        The provided reason and comment will be disregarded.
+
+        3. If want to clear the value of one field.
+
+        Example for "requiresReasonOnChange" field,
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: {
+            "reasonId": 1,
+            "value": null
+          }
+        }
+
+        Example for other fields,
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        4. For timestamp fields(whose type is datetime and autoCreated is ture), the accepted actions are as follows:
+        - now: set/reset the value to the current time.
+        - clear: remove the current value.
+
+      operationId: 'patchWorksheetContentById'
+      parameters:
+        - $ref: '#/components/parameters/worksheetIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchWorksheetRequest'
+            examples:
+              UpdateWorksheet:
+                $ref: '#/components/examples/patchWorksheetRequest'
+              UpdateWorksheetWithReason:
+                $ref: '#/components/examples/patchWorksheetWithReasonRequest'
+              UpdateTimestampField:
+                $ref: '#/components/examples/patchWorksheetTimestampRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/WorksheetResponse'
+              examples:
+                worksheet:
+                  $ref: '#/components/examples/fetchingWorksheetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /worksheet/{eid}/_fields:
+    get:
+      tags:
+        - Worksheet
+      summary: 'Fetch worksheet field definitions'
+      description: |
+        Fetch worksheet field definitions
+        
+        Example usages:
+
+          /worksheet/worksheet:7c1dab82-5c09-47b2-be4f-fa04a383f620/_fields
+      operationId: 'fetchWorksheetFieldDefinitionsById'
+      parameters:
+        - $ref: '#/components/parameters/worksheetIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/WorksheetFieldDefinitionsResponse'
+              examples:
+                worksheet:
+                  $ref: '#/components/examples/worksheetFieldDefinitionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /worksheet/settings/unlock/reasons:
+    get:
+      tags:
+        - Worksheet
+      summary: 'Fetch predefined worksheet unlock reasons'
+      description: |
+        Fetch predefined worksheet unlock reasons.
+
+        Example usages:
+
+          /worksheet/settings/unlock/reasons
+
+      operationId: 'fetchPredefinedWorksheetUnlockReasons'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/WorksheetUnlockReasonsResponse'
+              examples:
+                worksheetUnlockReasons:
+                  $ref: '#/components/examples/fetchingWorksheetUnlockReasonsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch content of variations table'
+      description: |
+        Fetch content of variations table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd
+
+      operationId: 'fetchVariationsTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridResponse'
+              examples:
+                variationsTable:
+                  $ref: '#/components/examples/fetchingVariationsTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update content of variations table'
+      description: |
+        Update content of variations table.
+
+        This API is used to add/remove variants to/from variations table.
+        To update the content of component or variant tables, please use the related APIs instead.
+
+        There are 3 actions are accepted in the request body,
+        - create, add a new variant to current variations table.
+        - clone, clone one existing variant and add to current variations table.
+        - delete, delete an existing variant from current variations table.
+
+        Note:
+        - Only 1 action is allowed per request. 
+        - The max size of variants is 20.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd
+
+      operationId: 'patchVariationsTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchVariationsTableRequest'
+            examples:
+              AddNewVariant:
+                $ref: '#/components/examples/addNewVariantRequest'
+              DeleteVariant:
+                $ref: '#/components/examples/deleteVariantRequest'
+              CloneVariant:
+                $ref: '#/components/examples/cloneVariantRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridResponse'
+              examples:
+                variationsTable:
+                  $ref: '#/components/examples/fetchingVariationsTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    put:
+      tags:
+        - VariationsTable
+      summary: 'Replace content of variations table'
+      description: |
+        Replace the whole content of the specified variations table.
+        - The content of component table and variants tables will be replaced with the new content.
+        - The column definition cannot be changed by this API.
+        - The summary config cannot be changed by this API.
+        - The variants can not be added/deleted.
+        - The value of formula column is not required, it will be auto calculated.
+        - The value of external source is not required, it will be auto fetched if external ID is provided.
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.14 g" }
+        - unit(var measure) {"value": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+        
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd
+
+      operationId: 'putVariationsTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PutVariationsTableRequest'
+            examples:
+              ReplaceWholeTableContent:
+                $ref: '#/components/examples/putVariationTableContentRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridResponse'
+              examples:
+                variationsTable:
+                  $ref: '#/components/examples/fetchingVariationsTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}/_column:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch column definition of variations table'
+      description: |
+        Fetch column definition of variations table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          GET /variationsTables/variationsGrid:abcd/_column
+
+      operationId: 'fetchVariationsTableColumnDefinition'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridColumnDefinitionResponse'
+              examples:
+                variationsTableColumnDefinition:
+                  $ref: '#/components/examples/fetchVariantTableColumnDefinitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update column definitions of variations table'
+      description: |
+        Update column definitions of variations table.
+
+        The `action` field must be one of:
+        - `hide`, set the specified columns as hidden
+        - `unhide`, set the specified columns as visible
+
+        The `tables` field is a non-empty list of tables to update, each with the following structure:
+        - id: the ID of the table to update. It can be "componentTable" or "variantTable".
+        - columns: a non-empty list of column IDs to hide/unhide in the specified table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          PATCH /variationsTables/variationsGrid:abcd/_column
+
+      operationId: 'patchVariationsTableColumnDefinition'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateTableColumnRequest'
+            examples:
+              hideVariantTableColumns:
+                $ref: '#/components/examples/hideVariantTableColumnsRequest'
+              unhideVariantTableColumns:
+                $ref: '#/components/examples/unhideVariantTableColumnsRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridColumnDefinitionResponse'
+              examples:
+                variationsTableColumnDefinition:
+                  $ref: '#/components/examples/fetchVariantTableColumnDefinitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}/components:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch content of component table'
+      description: |
+        Fetch content of component table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/components
+
+      operationId: 'fetchComponentTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridComponentResponse'
+              examples:
+                  componentTable:
+                    $ref: '#/components/examples/fetchComponentTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update content of component table'
+      description: |
+        Update content of component table.
+
+        Accepted entity types: variationsGrid.
+        
+        Specify expected 'action' values in request body while adding/updating/deleting rows.
+
+        3 row actions are accepted for component table,
+        - create, add a new row.
+        - update, update an existing row.
+        - delete, delete an existing row.
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.14 g" }
+        - unit(var measure) {"value": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+          {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+          {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+        ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+        
+        For inventory decrement:
+        - The row can be switched to another container when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+        - The row can be deleted when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+          
+        If want to remove the value of one cell, set the content to null.
+        Example,
+        
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see examples.
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/components
+
+      operationId: 'patchComponentTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateRowRequest'
+            examples:
+              UpdateRows:
+                $ref: '#/components/examples/updateComponentRowsRequest'
+              UpdateFormulationRows:
+                $ref: '#/components/examples/updateComponentFormulaRowsRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridComponentResponse'
+              examples:
+                componentTable:
+                  $ref: '#/components/examples/fetchComponentTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}/components/{rowId}:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch specified row of component table'
+      description: |
+        Fetch specified row of component table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/components/123
+
+      operationId: 'fetchComponentTableRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridComponentRowResponse'
+              examples:
+                componentTableRow:
+                  $ref: '#/components/examples/fetchComponentTableRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update specified row of component table'
+      description: |
+        Update specified row of component table.
+
+        Accepted entity types: variationsGrid.
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.14 g" }
+        - unit(var measure) {"value": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+        
+        For inventory decrement:
+        - The row can be switched to another container when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+
+        If want to remove the value of one cell, set the content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see examples.
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+        
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/components/123
+
+      operationId: 'patchComponentTableRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchRowRequest'
+            examples:
+              UpdateRowValue:
+                $ref: '#/components/examples/patchVariationsRowRequest'
+              UpdateFormulationRowValue:
+                $ref: '#/components/examples/patchVariationsFormulaRowRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VariationGridComponentRowResponse'
+              examples:
+                componentTableRow:
+                  $ref: '#/components/examples/fetchComponentTableRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - VariationsTable
+      summary: 'Delete specified row from component table'
+      description: |
+        Delete specified row from component table.
+
+        The related row will be removed from variants table if remove one row from component table.
+
+        Accepted entity types: variationsGrid.
+        
+        For inventory decrement:
+        - The row can be deleted when Inventory Columns amounts are present, 
+          the amount will not be returned to the container automatically.  
+          User needs to update the amount to 0 first if he want to return the amount to the container.
+        
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/components/123
+
+      operationId: 'deleteComponentTableRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}/variants/{variantId}:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch content of variant table'
+      description: |
+        Fetch content of variant table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/variants/UUID
+
+      operationId: 'fetchVariantTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/variantIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VarGridVariantResponse'
+              examples:
+                variantTable:
+                  $ref: '#/components/examples/fetchVariantTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update content of variant table'
+      description: |
+        Update content of variant table.
+
+        Accepted entity types: variationsGrid.
+        
+        Specify expected 'action' values in request body while updating rows.
+
+        Only 1 row action is accepted for variant table,
+        - update, update an existing row.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/variants/UUID
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.14 g" }
+        - unit(var measure) {"value": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+          {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+          {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+        ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+        
+        If want to remove the value of one cell, set the content to null.
+        Example,
+        
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see component examples.
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'patchVariantTableContentById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/variantIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - $ref: '#/components/parameters/syncDataParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateRowRequest'
+            examples:
+              UpdateRowValue:
+                $ref: '#/components/examples/updateVariantRowsRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VarGridVariantResponse'
+              examples:
+                variantTable:
+                  $ref: '#/components/examples/fetchVariantTableResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - VariationsTable
+      summary: 'Delete specified variant table from variations table'
+      description: |
+        Delete specified variant table from variations table.
+
+        Accepted entity types: variationsGrid.
+        
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/variants/UUID
+
+      operationId: 'deleteVariantById'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/variantIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /variationsTables/{eid}/variants/{variantId}/{rowId}:
+    get:
+      tags:
+        - VariationsTable
+      summary: 'Fetch specified row of variant table'
+      description: |
+        Fetch specified row of variant table.
+
+        Accepted entity types: variationsGrid.
+
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/variants/UUID/123
+
+      operationId: 'fetchVariantTableRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/variantIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VarGridVariantRowResponse'
+              examples:
+                variantTableRow:
+                  $ref: '#/components/examples/fetchVariantTableRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - VariationsTable
+      summary: 'Update specified row of variant table'
+      description: |
+        Update specified row of variant table.
+
+        Accepted entity types: variationsGrid.
+        
+        Example usages:
+
+          /variationsTables/variationsGrid:abcd/variants/UUID/123
+
+        To get IDs of ontologyList type fields, please refer to /attributes/{attributeEid}/ontology/options.
+
+        Here are some example values for different column data types,
+        - number {"value": 3.0 }
+        - date  {"value":"2019-09-06T15:22:47.309Z"}
+        - text  {"value":"text1"}
+        - list  {"value": "list1"}
+        - multiSelect {"value": "select1, select2"}
+        - attributeList(multiple option) {"values": ["select1", "select2"]}
+        - ontologyList(single select) {"value": {"id": 1234}}
+        - ontologyList(multiple select) {"values": [{"id": 1234}, {"id": 5678}]}
+        - boolean {"value": true}
+        - unit {"value": "3.14 g" }
+        - unit(var measure) {"value": "3.14 g"}
+        - link {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option) {"values": [
+            {"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"},
+            {"eid": "experiment:9528e408-939e-4902-ad5e-f7a085f627ce"}
+          ]}
+        - externalLink {"display": "Google", "value": "http://www.google.com"}
+
+        If want to remove the value of one cell, set the content to null.
+        Example,
+
+        {
+          key: "0cba9c0d-263c-49be-8f9b-a835235b76ac",
+          content: null
+        }
+
+        The automatically calculated formula columns can also be modified through this API.
+        If a specified value is given, it is no longer calculated automatically.
+        Add "formulationAction=recalculate" in the body of the request to make the value calculate automatically again.
+        For details, see component examples.
+
+        Available units for different measurements.
+        - Amount - μmol, mmol, mol
+        - Density - g/L, mg/mL, g/mL, kg/L
+        - Loading - mmol/g, mol/kg, mol/g, μmol/g, mmol/kg
+        - Mass - ng, μg, mg, g, kg
+        - Molarity - μmolar, mmolar, molar
+        - Molecular Weight - g/mol, kg/mol, dalton
+        - Pressure - atm, bar, mbar, Pa, kPa, mmHg, Torr, psi
+        - Temperature - °C, °F, K
+        - Duration - μs, ms, s, min, hour, day
+        - Volume - nL, μL, mL, L, kL
+        - Percentage - %
+
+      operationId: 'patchVariantTableRowByRowId'
+      parameters:
+        - $ref: '#/components/parameters/variationsTableIdParam'
+        - $ref: '#/components/parameters/variantIdParam'
+        - $ref: '#/components/parameters/rowIdParam'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchRowRequest'
+            examples:
+              UpdateRowValue:
+                $ref: '#/components/examples/patchVariationsRowRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VarGridVariantRowResponse'
+              examples:
+                variantTableRow:
+                  $ref: '#/components/examples/fetchVariantTableRowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    adtIdParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique Admin Defined Table identifier. Format: EID.
+        Accepted entity types: grid.
+
+        Example value: "grid:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    variationsTableIdParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique variations table identifier. Format: EID.
+
+        Accepted entity types: variationsGrid.
+
+        Example value: "variationsGrid:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    variantIdParam:
+      name: 'variantId'
+      in: path
+      description: |
+        Unique variant identifier. Format: UUID.
+
+        Example value: "fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    rowIdParam:
+      name: 'rowId'
+      in: path
+      description: |
+        Unique row identifier. Format: UUID.
+        
+        Example value: "fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    worksheetIdParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique Worksheet identifier. Format: EID.
+        Accepted entity types: worksheet.
+
+        Example value: "worksheet:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    includeParam:
+      name: 'include'
+      in: query
+      description: |
+        The related resources to be shown in "included" field.
+
+        Example value: "entity,fieldsDefinition".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    valueFormatParam:
+      name: 'value'
+      in: query
+      description: |
+        Format of field values.
+        1. Display.
+
+          Will return value without units.
+          Example value: mf : {value: 198.3189, display: "198.3189 g/mol"}
+        2. Normalized.
+
+          Will return composite field value with units.
+          Example value: mf : {value: 198.3189, units:"g/mol", display: "198.3189 g/mol"}
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        enum: [ 'display', 'normalized' ]
+        default: 'display'
+        deprecated: false
+    digestParam:
+        name: 'digest'
+        in: query
+        description: >
+          Indicate digest of entity.
+          It is used to avoid conflict while concurrent editing.
+          If the parameter 'force' is true, this parameter is optional.
+          If the parameter 'force' is false, this parameter is required.
+        schema:
+          type: string
+          deprecated: false
+    forceParam:
+        name: 'force'
+        in: query
+        description: >
+          Force to update properties without digest check.
+        schema:
+          type: boolean
+          deprecated: false
+    syncDataParam:
+      name: 'syncData'
+      in: query
+      description: >
+        Populate data from external data source if this is a table connected to an external data source
+        and the external data reference ID is provided.
+      schema:
+        type: boolean
+        deprecated: false
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtAdtRowCell:
+      type: object
+      title: 'ExtAdtRowCell'
+      properties:
+        key:
+          type: string
+          description: Unique identifier for the cell.
+        type:
+          type: string
+          description: Data type of the cell.
+        name:
+          type: string
+          description: Name of the cell.
+        content:
+          type: object
+          description: Content of the cell.
+          additionalProperties: true
+
+    ExtAdtRow:
+      type: object
+      title: 'ExtAdtRow'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtAdtRowAttributes'
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the row.
+            type:
+              type: string
+              description: Type of the row, default is "adtRow".
+            cells:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExtAdtRowCell'
+              description: List of cells in the row.
+            method:
+              type: string
+            componentRowId:
+              type: string
+              description: Identifier for the component row.
+        relationships:
+          type: object
+          title: 'ExtAdtRowRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            columnDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    AdtResponse:
+      type: object
+      title: 'AdtResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtAdtRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    AdtRowResponse:
+      type: object
+      title: 'AdtRowResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtAdtRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    AdtColumnDefinitionResponse:
+      type: object
+      title: 'AdtColumnDefinitionResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        data:
+          type: object
+          title: AdtColumnDefinitionResponseData
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              title: AdtColumnDefinitionResponseDataAttributes
+              properties:
+                type:
+                  type: string
+                id:
+                  type: string
+                templateId:
+                  type: string
+                columns:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+
+    UpdateRowRequest:
+      type: object
+      required: [data]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: array 
+          items:
+            $ref: '#/components/schemas/UpdateRowRequestData'
+    UpdateTableColumnRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, attributes]
+          properties:
+            type:
+              type: string
+              example: updateTableColumnRequest
+              enum: [ 'updateTableColumnRequest' ]
+            attributes:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [ hide, unhide ]
+                  description: 'Action to perform. Use "hide" to hide columns and "unhide" to show them.'
+                columns:
+                  type: array
+                  description: Used for single table, such as ADT, sample table, materials table.
+                  items:
+                    type: object
+                    required: [ 'key' ]
+                    properties:
+                      key:
+                        type: string
+                        example: '0cba9c0d-263c-49be-8f9b-a835235b76ac'
+                        description: Column key to update
+                tables:
+                    type: array
+                    description: Used for multiple tables, such as variations table and hierarchical table.
+                    items:
+                      $ref: '#/components/schemas/SubTableColumns'
+    SubTableColumns:
+      type: object
+      required: [id, columns]
+      properties:
+        id:
+          type: string
+        columns:
+          type: array
+          items:
+            type: object
+            required: [key]
+            properties:
+              key:
+                type: string
+                description: Column key to update
+
+    AddRowRequest:
+      type: object
+      required: [data]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+            attributes:
+              type: object
+              required: [cells]
+              properties:
+                cells:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateRowRequestDataCell'
+    PatchRowRequest:
+      type: object
+      required: [data]
+      properties:
+        meta:
+          $ref: '#/components/schemas/UpdateRequestMeta'
+        data:
+          type: object
+          required: [type, id]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              required: [cells]
+              properties:
+                cells:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateRowRequestDataCell'
+    UpdateRequestMeta:
+      type: object
+      required: [ reasonId ]
+      properties:
+        reasonId:
+          type: string
+        comment:
+          type: string
+    UpdateRowRequestData:
+      type: object 
+      required: [type, attributes]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        attributes:
+          type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+            cells:
+              type: array
+              items:
+                $ref: '#/components/schemas/UpdateRowRequestDataCell'
+    UpdateRowRequestDataCell:
+      type: object
+      required: [key]
+      properties:
+        key:
+          type: string
+        formulationAction:
+          type: string
+          enum: ["update", "recalculate"]
+          maxLength: 99
+        content:
+          type: object
+          nullable: true
+          additionalProperties: true
+    PatchVariationsTableRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatchVariationsTableData'
+    PatchVariationsTableData:
+      type: object
+      required: [type, attributes]
+      properties:
+        type:
+          type: string
+          maxLength: 99
+          enum: ['variant']
+        id:
+          type: string
+          maxLength: 99
+        attributes:
+          type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+              maxLength: 99
+              enum: ['create','delete','clone']
+    PutVariationsTableRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, id]
+          properties:
+            type:
+              type: string
+              enum: ['variationsTable']
+            id:
+              type: string
+            attributes:
+              type: object
+              required: [componentTable, variantsTables]
+              properties:
+                componentTable:
+                  $ref: '#/components/schemas/PutVariationsTableRequestItem'
+                variantsTables:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PutVariationsTableRequestItem'
+    PutVariationsTableRequestItem:
+      type: object
+      required: [id, rows]
+      properties:
+        id:
+          type: string
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/PutVariationsTableRequestItemRow'
+    PutVariationsTableRequestItemRow:
+      type: object
+      required: [id, cells]
+      properties:
+        id:
+          type: string
+        method:
+          type: string
+          enum: ['header']
+        componentRowId:
+          type: string
+        cells:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateRowRequestDataCell'
+
+    ExtVarGrid:
+      type: object
+      title: 'ExtVarGrid'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtVarGridAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            type:
+              type: string
+            component:
+              type: object
+            variants:
+              type: array
+              items:
+                type: object
+            componentTable:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                rows:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      method:
+                        type: string
+                      componentRowId:
+                        type: string
+                      cells:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                            type:
+                              type: string
+                            name:
+                              type: string
+                            content:
+                              type: object
+                              additionalProperties: true
+            variantsTables:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  rows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        method:
+                          type: string
+                        componentRowId:
+                          type: string
+                        cells:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              key:
+                                type: string
+                              type:
+                                type: string
+                              name:
+                                type: string
+                              content:
+                                type: object
+                                additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtVarGridRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            componentColumnDefinition:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            variantColumnDefinition:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    VariationGridResponse:
+      type: object
+      title: 'VariationGridResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtVarGrid'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    VariationGridColumnDefinitionResponse:
+      type: object
+      title: 'VariationGridColumnDefinitionResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtVarGridColumnDefinition'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtVarGridColumnDefinition:
+      type: object
+      title: 'ExtVarGridColumnDefinition'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtVarGridColumnDefinitionAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            tables:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  columns:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        title:
+                          type: string
+                        type:
+                          type: string
+                      additionalProperties: true
+
+    ExtVarGridRow:
+      type: object
+      title: 'ExtVarGridRow'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtVarGridRowAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            method:
+              type: string
+            componentRowId:
+              type: string
+            cells:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  content:
+                    type: object
+                    additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtVarGridRowRelationships'
+          properties:
+            columnDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    VariationGridComponentResponse:
+      type: object
+      title: 'VariationGridComponentResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtVarGridRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    VariationGridComponentRowResponse:
+      type: object
+      title: 'VariationGridComponentRowResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtVarGridRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    VarGridVariantResponse:
+      type: object
+      title: 'VarGridVariantResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtVarGridRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    VarGridVariantRowResponse:
+      type: object
+      title: 'VarGridVariantRowResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtVarGridRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+    ExtWorksheet:
+      type: object
+      title: 'ExtWorksheet'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtWorksheetAttributes'
+          properties:
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  content:
+                    type: object
+                    additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtWorksheetRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            fieldsDefinition:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            autotextLists:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            attributes:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    WorksheetResponse:
+      type: object
+      title: 'WorksheetResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtWorksheet'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtWorksheetFieldDefinition:
+      type: object
+      title: 'ExtWorksheetFieldDefinition'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtWorksheetFieldDefinitionAttributes'
+          properties:
+            key:
+              type: string
+            title:
+              type: string
+            type:
+              type: string
+            clearValueOnPaste:
+              type: boolean
+            allowEndUserEntry:
+              type: boolean
+            readOnly:
+              type: boolean
+            requiresReasonOnChange:
+              type: boolean
+            isRequiredOnCompletion:
+              type: boolean
+            embeddedEid:
+              type: string
+          additionalProperties: true
+        relationships:
+          type: object
+
+    WorksheetFieldDefinitionsResponse:
+      type: object
+      title: 'WorksheetFieldDefinitionsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtWorksheetFieldDefinition'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtWorksheetUnlockReason:
+      type: object
+      title: 'ExtWorksheetUnlockReason'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtWorksheetUnlockReasonAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            reason:
+              type: string
+        relationships:
+          type: object
+
+    WorksheetUnlockReasonsResponse:
+      type: object
+      title: 'WorksheetUnlockReasonsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtWorksheetUnlockReason'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    WorksheetAttributes:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              content:
+                type: object
+                additionalProperties: true
+    WorksheetFieldDefinitionAttributes:
+      type: object
+      properties:
+        key:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          type: string
+        clearValueOnPaste:
+          type: boolean
+        allowEndUserEntry:
+          type: boolean
+        readOnly:
+          type: boolean
+        requiresReasonOnChange:
+          type: boolean
+        isRequiredOnCompletion:
+          type: boolean
+    PatchWorksheetRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, id]
+          properties:
+            type:
+              type: string
+              enum: ['worksheet']
+            id:
+              type: string
+            attributes:
+              type: object
+              required: [fields]
+              properties:
+                fields:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateWorksheetRequestDataField'
+    UpdateWorksheetRequestDataField:
+      type: object
+      required: [key, content]
+      properties:
+        key:
+          type: string
+        content:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    fetchingAdtResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/adt/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        data:
+          - type: adtRow
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            links:
+              self: https://snb.example.com/api/rest/v1.0/adt/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            attributes:
+              id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+              type: adtRow
+              cells:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                type: text
+                name: col1
+                content:
+                  value: ha
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                type: text
+                name: col2
+                content:
+                  value: hello
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+                data:
+                  type: entity
+                  id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              columnDefinitions:
+                data:
+                  type: columnDefinitions
+                  id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+        - type: columnDefinitions
+          id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: columnDefinitions
+            columns:
+            - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+              title: col1
+              type: text
+              isExternalKey: false
+              isUserDefined: false
+            - key: b81d7782-d023-4ebe-a803-66622182267b
+              title: col2
+              type: text
+              isExternalKey: false
+              isUserDefined: false
+        - type: entity
+          id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            type: grid
+            eid: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            name: adt-frank-1
+            digest: '83206190'
+            fields:
+              Description:
+                value: ''
+              Name:
+                value: adt-frank-1
+    fetchingAdtColumnDefinitionResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/adt/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/_column
+        data:
+          type: columnDefinitions
+          id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: columnDefinitions
+            columns:
+              - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+                title: col1
+                type: text
+                isExternalKey: false
+                isUserDefined: false
+              - key: b81d7782-d023-4ebe-a803-66622182267b
+                title: col2
+                type: text
+                isExternalKey: false
+                isUserDefined: false
+
+    fetchingAdtRowResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/adt/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+        data:
+          type: adtRow
+          id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          links:
+            self: https://snb.example.com/api/rest/v1.0/adt/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8/8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+          attributes:
+            id: 8e2c3d9e-c1df-49bf-ba33-151dc5c6e14a
+            type: adtRow
+            cells:
+            - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+              type: text
+              name: col1
+              content:
+                value: ha
+            - key: b81d7782-d023-4ebe-a803-66622182267b
+              type: text
+              name: col2
+              content:
+                value: hello
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+              data:
+                type: entity
+                id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            columnDefinitions:
+              data:
+                type: columnDefinitions
+                id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+        included:
+        - type: columnDefinitions
+          id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            type: columnDefinitions
+            columns:
+            - key: 0cba9c0d-263c-49be-8f9b-a835235b76ac
+              title: col1
+              type: text
+              isExternalKey: false
+              isUserDefined: false
+            - key: b81d7782-d023-4ebe-a803-66622182267b
+              title: col2
+              type: text
+              isExternalKey: false
+              isUserDefined: false
+        - type: entity
+          id: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+          attributes:
+            type: grid
+            eid: grid:c77587d1-8590-4df6-a64d-fc004f6ba1d8
+            name: adt-frank-1
+            digest: '83206190'
+            fields:
+              Description:
+                value: ''
+              Name:
+                value: adt-frank-1
+    updateRowRequest:
+      value:
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "adtRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "updated value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+          - type: "adtRow"
+            attributes:
+              action: "create"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "new value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 100
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+            type: "adtRow"
+            attributes:
+              action: "delete"
+    hideAdtColumnVisibilityRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "hide"
+            columns:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+    unhideAdtColumnVisibilityRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "unhide"
+            columns:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+    hideVariantTableColumnsRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "hide"
+            tables:
+              - id: "componentTable"
+                columns:
+                  - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  - key: "b81d7782-d023-4ebe-a803-66622182267b"
+              - id: "variantTable"
+                columns:
+                  - key: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+                  - key: "c77587d1-8590-4df6-a64d-fc004f6ba1d8"
+    unhideVariantTableColumnsRequest:
+      value:
+        data:
+          type: "updateTableColumnRequest"
+          attributes:
+            action: "unhide"
+            tables:
+              - id: "componentTable"
+                columns:
+                  - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  - key: "b81d7782-d023-4ebe-a803-66622182267b"
+              - id: "variantTable"
+                columns:
+                  - key: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+                  - key: "c77587d1-8590-4df6-a64d-fc004f6ba1d8"
+    updateRowWithFormulationRequest:
+      value:
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "adtRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  formulationAction: "recalculate"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+    updateComponentRowsRequest:
+      value:
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "variationsTableRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "updated value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+          - type: "variationsTableRow"
+            attributes:
+              action: "create"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "new value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 100
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+            type: "variationsTableRow"
+            attributes:
+              action: "delete"
+    updateComponentFormulaRowsRequest:
+      value:
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "variationsTableRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  formulationAction: "recalculate"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+    updateVariantRowsRequest:
+      value:
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "variationsTableRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "updated value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+    updateRowWithReasonRequest:
+      value:
+        meta:
+          reasonId : "1"
+          comment: "optional"
+        data:
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+            type: "adtRow"
+            attributes:
+              action: "update"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "updated value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 123
+          - type: "adtRow"
+            attributes:
+              action: "create"
+              cells:
+                - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                  content:
+                    value: "new value"
+                - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                  content:
+                    value: 100
+          - id: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+            type: "adtRow"
+            attributes:
+              action: "delete"
+    addRowRequest:
+      value:
+        data:
+          type: "adtRow"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    addRowWithReasonRequest:
+      value:
+        meta:
+          reasonId: "1"
+          comment: "optional"
+        data:
+          type: "adtRow"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchRowRequest:
+      value:
+        data:
+          type: "adtRow"
+          id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchFormulationRequest:
+      value:
+        data:
+          type: "adtRow"
+          id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                formulationAction: "recalculate"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchRowWithReasonRequest:
+      value:
+        meta:
+          reasonId: "1"
+          comment: "optional"
+        data:
+          type: "adtRow"
+          id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchWorksheetRequest:
+      value:
+        data:
+          type: "worksheet"
+          id: "worksheet:4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            fields:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchWorksheetWithReasonRequest:
+      value:
+        data:
+          type: "worksheet"
+          id: "worksheet:4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            fields:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  reasonId: "1"
+                  comment: "comment is optional"
+                  value: "To update the requiresReasonOnChange field, the reasonId is required."
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  reasonId: "2"
+                  comment: "comment is optional"
+                  value: "To update none requiresReasonOnChange field, the reasonId and comment will be discarded if provided."
+    patchWorksheetTimestampRequest:
+      value:
+        data:
+          type: "worksheet"
+          id: "worksheet:4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            fields:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  action: "now"
+    fetchingWorksheetResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/worksheet/worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+        data:
+          type: worksheet
+          id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+          links:
+            self: https://snb.example.com/api/rest/v1.0/worksheet/worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+          attributes:
+            fields:
+              - key: 2166d224-cab6-4829-976a-3a043bb63ec4
+                name: testField
+                type: text
+                content:
+                  value: updated value
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+              data:
+                type: entity
+                id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+            fieldsDefinition:
+              data:
+                type: worksheetFieldsDefinition
+                id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+        included:
+          - type: worksheetFieldsDefinition
+            id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+            attributes:
+              id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+              type: worksheetFieldsDefinition
+              fieldsDefinition:
+                - key: 2166d224-cab6-4829-976a-3a043bb63ec4
+                  title: testField
+                  type: text
+                  readOnly: false
+                  multiSelect: false
+          - type: entity
+            id: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+            attributes:
+              type: worksheet
+              eid: worksheet:58c25058-2fa9-4607-85e9-4c28cf058e11
+              name: trial
+              digest: '34969583'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: trial
+    worksheetFieldDefinitionsResponse:
+      value:
+        data:
+          - type: text
+            id: unknown
+            attributes:
+              key: f0548883-910b-4512-8642-8592283f8261
+              title: my name
+              type: text
+              clearValueOnPaste: true
+              allowEndUserEntry: false
+              readOnly: false
+              requiresReasonOnChange: true
+              isRequiredOnCompletion: false
+          - type: number
+            id: unknown
+            attributes:
+              key: 526ca663-e209-45f2-aa98-2600c41d2ce3
+              title: my age
+              type: number
+              clearValueOnPaste: true
+              allowEndUserEntry: false
+              readOnly: true
+              requiresReasonOnChange: true
+              isRequiredOnCompletion: false
+              requiresValidOnChange: true
+          - type: externalLink
+            id: unknown
+            attributes:
+              key: 1abf7a6d-5973-4a4d-89b0-d522366b46a1
+              title: a link
+              type: externalLink
+              clearValueOnPaste: true
+              allowEndUserEntry: false
+              readOnly: false
+              requiresReasonOnChange: false
+              isRequiredOnCompletion: false
+    fetchingWorksheetUnlockReasonsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/worksheet/settings/unlock/reasons
+        data:
+          - type: worksheetFieldUnlockReason
+            id: '1'
+            attributes:
+              id: '1'
+              type: worksheetFieldUnlockReason
+              reason: reason 1
+          - type: worksheetFieldUnlockReason
+            id: '2'
+            attributes:
+              id: '2'
+              type: worksheetFieldUnlockReason
+              reason: reason 2
+          - type: worksheetFieldUnlockReason
+            id: '3'
+            attributes:
+              id: '3'
+              type: worksheetFieldUnlockReason
+              reason: reason 3
+          - type: worksheetFieldUnlockReason
+            id: '4'
+            attributes:
+              id: '4'
+              type: worksheetFieldUnlockReason
+              reason: reason 4
+    putVariationTableContentRequest:
+      value:
+        data:
+          type: "variationsTable"
+          id: "variationsGrid:cbd3744c-80ef-4614-ba30-5ef9fa7a2257"
+          attributes:
+            componentTable:
+              id: "variationsGrid:cbd3744c-80ef-4614-ba30-5ef9fa7a2257"
+              rows:
+                - id: "e1ba53bb-7456-4f19-af01-3ad698316861"
+                  cells:
+                  - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                    content:
+                      value: "new value"
+            variantsTables:
+              - id: "b8c374a1-57ee-4f08-b116-9729068c3f09"
+                rows:
+                  - id: "0751d9cd-415f-46be-8621-350a2b5f0c82"
+                    componentRowId: "e1ba53bb-7456-4f19-af01-3ad698316861"
+                    cells:
+                      - key: "20f7c773-6b00-4fb8-b439-665bc1767568"
+                        content:
+                          value: "new value"
+    addNewVariantRequest:
+      value:
+        data:
+          - type: "variant"
+            attributes:
+              action: "create"
+    deleteVariantRequest:
+      value:
+        data:
+          - type: "variant"
+            id: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+            attributes:
+              action: "delete"
+    cloneVariantRequest:
+      value:
+        data:
+          - type: "variant"
+            id: "4de17b6f-751e-4a54-af90-d0a17668d6ee"
+            attributes:
+              action: "clone"
+    patchVariationsRowRequest:
+      value:
+        data:
+          type: "variationsTableRow"
+          id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                content:
+                  value: "updated value"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    patchVariationsFormulaRowRequest:
+      value:
+        data:
+          type: "variationsTableRow"
+          id: "4de17b6f-751e-4a54-af90-d0a17668d6d9"
+          attributes:
+            cells:
+              - key: "0cba9c0d-263c-49be-8f9b-a835235b76ac"
+                formulationAction: "recalculate"
+              - key: "b81d7782-d023-4ebe-a803-66622182267b"
+                content:
+                  value: 123
+    fetchingVariationsTableResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/variationsTables/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        data:
+          type: variationsTable
+          id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+          links:
+            self: https://snb.example.com/api/rest/v1.0/variationsTables/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+          attributes:
+            eid: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            type: variationsTable
+            componentTable:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              name: Component
+              rows:
+                - id: f9056987-3146-4c03-b28c-734989924516
+                  cells:
+                    - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                      type: text
+                      name: component-text
+                      content:
+                        value: hello
+            variantsTables:
+              - id: 55af522f-7fcb-48e6-89be-ad3a3dd3af1e
+                name: Variant-1
+                rows:
+                  - id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+                    componentRowId: f9056987-3146-4c03-b28c-734989924516
+                    cells:
+                      - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                        type: text
+                        name: component-text
+                        content:
+                          value: hello
+                      - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                        type: text
+                        name: variant-text
+                        content:
+                          value: world
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              data:
+                type: entity
+                id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            componentColumnDefinition:
+              data:
+                type: componentColumnDefinition
+                id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            variantColumnDefinition:
+              data:
+                type: variantColumnDefinition
+                id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        included:
+          - type: user
+            id: '100'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/100
+            attributes:
+              userId: '100'
+              userName: foo.bar@example.com
+              flags:
+                isSystemStandardUser: true
+              email: foo.bar@example.com
+              firstName: foo
+              lastName: bar
+              isEnabled: true
+            relationships:
+              systemGroups:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100/systemGroups
+          - type: entity
+            id: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+            attributes:
+              type: experiment
+              eid: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+              name: exp-001
+              digest: '25450853'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: exp-001
+              flags: {}
+          - type: componentColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: componentColumnDefinition
+              columns:
+                - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  title: component-text
+                  type: text
+          - type: variantColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: variantColumnDefinition
+              columns:
+                - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                  title: component-text
+                  type: text
+                  componentKey: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  readOnly: true
+                - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                  title: variant-text
+                  type: text
+          - type: entity
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              eid: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              name: simpleVarTable
+              description: ''
+              createdAt: '2024-01-11T05:24:02.211Z'
+              editedAt: '2024-01-11T05:24:36.371Z'
+              type: variationsGrid
+              digest: '52955291'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: simpleVarTable
+              flags:
+                canEdit: true
+            relationships:
+              createdBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              editedBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              ancestors:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df/ancestors
+                data:
+                  - type: entity
+                    id: experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+                    meta:
+                      links:
+                        self: https://snb.example.com/api/rest/v1.0/entities/experiment:4ef83b8e-f114-40e4-933b-3f3f825119d6
+              owner:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+              source:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df/export
+    fetchComponentTableResponse:
+      value:
+        data:
+          - type: variationsTableRow
+            id: f9056987-3146-4c03-b28c-734989924516
+            attributes:
+              id: f9056987-3146-4c03-b28c-734989924516
+              type: variationsTableRow
+              cells:
+                - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  type: text
+                  name: component-text
+                  content:
+                    value: hello
+            relationships:
+              columnDefinitions:
+                data:
+                  type: componentColumnDefinition
+                  id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        included:
+          - type: componentColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: componentColumnDefinition
+              columns:
+                - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  title: component-text
+                  type: text
+    fetchComponentTableRowResponse:
+      value:
+        data:
+          type: variationsTableRow
+          id: f9056987-3146-4c03-b28c-734989924516
+          attributes:
+            id: f9056987-3146-4c03-b28c-734989924516
+            type: variationsTableRow
+            cells:
+              - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                type: text
+                name: component-text
+                content:
+                  value: hello
+          relationships:
+            columnDefinitions:
+              data:
+                type: componentColumnDefinition
+                id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        included:
+          - type: componentColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: componentColumnDefinition
+              columns:
+                - key: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  title: component-text
+                  type: text
+    fetchVariantTableResponse:
+      value:
+        data:
+          - type: variationsTableRow
+            id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+            attributes:
+              id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+              type: variationsTableRow
+              cells:
+                - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                  type: text
+                  name: component-text
+                  content:
+                    value: hello
+                - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                  type: text
+                  name: variant-text
+                  content:
+                    value: world
+              componentRowId: f9056987-3146-4c03-b28c-734989924516
+            relationships:
+              columnDefinitions:
+                data:
+                  type: variantColumnDefinition
+                  id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        included:
+          - type: variantColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: variantColumnDefinition
+              columns:
+                - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                  title: component-text
+                  type: text
+                  componentKey: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  readOnly: true
+                - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                  title: variant-text
+                  type: text
+    fetchVariantTableRowResponse:
+      value:
+        data:
+          type: variationsTableRow
+          id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+          attributes:
+            id: a87d2fc3-4ce4-4867-942a-b8bb2791b957
+            type: variationsTableRow
+            cells:
+              - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                type: text
+                name: component-text
+                content:
+                  value: hello
+              - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                type: text
+                name: variant-text
+                content:
+                  value: world
+            componentRowId: f9056987-3146-4c03-b28c-734989924516
+          relationships:
+            columnDefinitions:
+              data:
+                type: variantColumnDefinition
+                id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+        included:
+          - type: variantColumnDefinition
+            id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+            attributes:
+              id: variationsGrid:d018e8f2-7d28-43a2-9734-8489371ce4df
+              type: variantColumnDefinition
+              columns:
+                - key: 1257ec9c-48ad-45a2-b348-97b9eaa2b4ff
+                  title: component-text
+                  type: text
+                  componentKey: 2651e7f0-7454-41f6-912e-67c88a4d6920
+                  readOnly: true
+                - key: 64c7d27f-f55d-40fa-8994-e288acb2a25a
+                  title: variant-text
+                  type: text
+    fetchVariantTableColumnDefinitionResponse:
+      value:
+        data:
+          type: variationsTableColumnDefinition
+          id: variationsGrid:065c51fd-739a-4641-a34b-1071c3ffdab3
+          attributes:
+            type: variationsTableColumnDefinition
+            id: variationsGrid:065c51fd-739a-4641-a34b-1071c3ffdab3
+            tables:
+              - id: componentTable
+                columns:
+                  - method: header
+                    key: d70548aa-3aa5-4797-a195-10634274c113
+                    title: header text
+                    type: text
+                  - key: 30e1f6c5-a669-44b4-80ea-bea9ef2d746f
+                    title: My Text
+                    type: text
+                  - contextualList:
+                      source: current
+                      contentType: sample
+                      propertyName: Chemical Name
+                    key: f78d4819-d2be-48dd-841d-6e9363ed046e
+                    title: Contextual Picklist
+                    type: text
+              - id: variantTable
+                columns:
+                  - key: e60fe81a-c7cb-436c-9e20-ea830b210ee8
+                    title: My Text
+                    type: text
+                    componentKey: 30e1f6c5-a669-44b4-80ea-bea9ef2d746f
+                    readOnly: true
+                  - contextualList:
+                      source: current
+                      contentType: sample
+                      propertyName: Chemical Name
+                    key: e52f1868-6662-41b3-b57d-9472640e7f9f
+                    title: Contextual Picklist
+                    type: text
+                    componentKey: f78d4819-d2be-48dd-841d-6e9363ed046e
+                    readOnly: true
+                  - contextualList:
+                      source: current
+                      contentType: sample
+                      propertyName: Chemical Name
+                    key: 13733a10-b689-4f52-936f-86eff3b79c71
+                    title: Sample Names
+                    type: text

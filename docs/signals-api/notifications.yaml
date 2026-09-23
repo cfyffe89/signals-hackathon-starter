@@ -1,0 +1,728 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: [ ]
+paths:
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: 'Fetch all notifications'
+      description: |
+        Fetch all notifications in JSON:API format.
+      operationId: 'fetchAllNotifications'
+      parameters:
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/notificationStatusParam'
+        - $ref: '#/components/parameters/fromParam'
+        - $ref: '#/components/parameters/toParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/NotificationListApiResponse'
+              examples:
+                Notifications:
+                  $ref: '#/components/examples/notificationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /notifications/{id}:
+    get:
+      tags:
+        - Notifications
+      summary: 'Get notification by notification-id'
+      description: |
+        Get notification by notification-id.
+      operationId: 'fetchNotificationById'
+      parameters:
+        - $ref: '#/components/parameters/notificationIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/NotificationApiResponse'
+              examples:
+                Notifications:
+                  $ref: '#/components/examples/notificationApiByIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notifications as read or dismiss by notification-id'
+      description: |
+        Mark notifications as read or dismiss by notification-id.
+      operationId: 'patchNotificationById'
+      parameters:
+        - $ref: '#/components/parameters/notificationIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/NotificationPropertiesRequest'
+            examples:
+              NotificationProperties:
+                $ref: '#/components/examples/notificationPropertiesPatchRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/NotificationApiResponse'
+              examples:
+                Notifications:
+                  $ref: '#/components/examples/notificationApiByIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    offsetParam:
+      name: page[offset]
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        default: 0
+    limitParam:
+      name: page[limit]
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 100
+        default: 20
+    notificationStatusParam:
+      name: 'status'
+      in: query
+      description: |
+        The notification status to be shown in "status" field.
+        Example value: "dismissed, notdismissed".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+        default: notdismissed
+    fromParam:
+      name: 'from'
+      in: query
+      description: |
+        From param to limit notification by dateRange.
+        Example value: "2020-01-06T15:22:47.309Z"
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    toParam:
+      name: 'to'
+      in: query
+      description: |
+        To param to limit notification by dateRange.
+        Example value: "2020-03-06T15:22:47.309Z"
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    deliveryTypeParam:
+      name: 'deliveryType'
+      in: query
+      description: |
+        The related delivery type to be shown in "deliverytype" field.
+
+        Example value: "external, inapp".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    notificationIdParam:
+      name: 'id'
+      in: path
+      description: |
+        Unique notification identifier.
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+  schemas:
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+    ExtNotification:
+      type: object
+      title: 'ExtNotification'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtNotificationAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            data:
+              type: object
+              additionalProperties: true
+            createdAt:
+              type: string
+            flags:
+              type: object
+            comment:
+              type: object
+            isDismissed:
+              type: boolean
+            isRead:
+              type: boolean
+            isFlagged:
+              type: boolean
+        relationships:
+          type: object
+          title: 'ExtEntityRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            batch:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            previousLocation:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            location:
+              $ref: '#/components/schemas/JsonApiRelationship'
+          additionalProperties: true
+
+    NotificationListApiResponse:
+      type: object
+      title: 'NotificationListApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtNotification'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    NotificationApiResponse:
+      type: object
+      title: 'NotificationsApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtNotification'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    NotificationPropertiesRequest:
+      title: 'NotificationPropertiesRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            title: Property
+            required: [attributes]
+            properties:
+              attributes:
+                type: object
+                required: [name, value]
+                properties:
+                  name:
+                    type: string
+                  value:
+                    type: string
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict: #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    notificationPropertiesPatchRequest:
+      value:
+        data:
+          - attributes:
+              name: 'isFlagged'
+              value: 'true'
+          - attributes:
+              name: 'isDismissed'
+              value: 'true'
+    notificationApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/notifications?page[offset]=0&page[limit]=30
+          first: https://snb.example.com/api/rest/v1.0/notifications?page[offset]=0&page[limit]=30
+        data:
+          - type: notification
+            id: '86'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/notifications/86
+            attributes:
+              id: '86'
+              eid: '86'
+              createdAt: '2020-03-02T21:34:13.296Z'
+              type: close
+              isDismissed: false
+              isRead: false
+              comment:
+                comment: ''
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/experiment:47da85b7-cd5b-42bc-803f-2fc269943f96
+                data:
+                  type: experiment
+                  id: experiment:47da85b7-cd5b-42bc-803f-2fc269943f96
+              createdBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/102
+                data:
+                  type: user
+                  id: '102'
+          - type: notification
+            id: '84'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/notifications/84
+            attributes:
+              id: '84'
+              eid: '84'
+              createdAt: '2020-03-02T21:33:52.924Z'
+              type: close
+              isDismissed: false
+              isRead: false
+              comment:
+                comment: ''
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/experiment:96150018-986f-4154-b1a4-773c0a4e49f3
+                data:
+                  type: experiment
+                  id: experiment:96150018-986f-4154-b1a4-773c0a4e49f3
+              createdBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/102
+                data:
+                  type: user
+                  id: '102'
+          - type: notification
+            id: '79'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/notifications/79
+            attributes:
+              id: '79'
+              eid: '79'
+              createdAt: '2020-03-02T16:33:29.162Z'
+              type: close_without_signing
+              isDismissed: false
+              isRead: false
+              comment: {}
+            relationships:
+              entity:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/entities/experiment:5b27647d-29e0-4a54-be91-f8d2cd8037c8
+                data:
+                  type: experiment
+                  id: experiment:5b27647d-29e0-4a54-be91-f8d2cd8037c8
+              createdBy:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100
+                data:
+                  type: user
+                  id: '100'
+        included:
+          - type: user
+            id: '100'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/100
+            attributes:
+              id: '100'
+              username: march.pkitest@gmail.com
+              email: march.pkitest@gmail.com
+              firstName: march
+              lastName: pkie
+              picture: {}
+          - type: experiment
+            id: experiment:96150018-986f-4154-b1a4-773c0a4e49f3
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:96150018-986f-4154-b1a4-773c0a4e49f3
+            attributes:
+              eid: experiment:96150018-986f-4154-b1a4-773c0a4e49f3
+              type: experiment
+              isTemplate: false
+              name: test01
+          - type: experiment
+            id: experiment:47da85b7-cd5b-42bc-803f-2fc269943f96
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:47da85b7-cd5b-42bc-803f-2fc269943f96
+            attributes:
+              eid: experiment:47da85b7-cd5b-42bc-803f-2fc269943f96
+              type: experiment
+              isTemplate: false
+              name: test02
+          - type: user
+            id: '102'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/102
+            attributes:
+              id: '102'
+              username: nivesh.singh@example.com
+              email: nivesh.singh@example.com
+              firstName: nivesh
+              lastName: singh
+              picture: {}
+          - type: experiment
+            id: experiment:5b27647d-29e0-4a54-be91-f8d2cd8037c8
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:5b27647d-29e0-4a54-be91-f8d2cd8037c8
+            attributes:
+              eid: experiment:5b27647d-29e0-4a54-be91-f8d2cd8037c8
+              type: experiment
+              isTemplate: false
+              name: adfadad
+    notificationApiByIdResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/notifications/90
+        data:
+          type: notification
+          id: '90'
+          links:
+            self: https://snb.example.com/api/rest/v1.0/notifications/90
+          attributes:
+            id: '90'
+            eid: '90'
+            createdAt: '2020-03-02T21:36:35.422Z'
+            type: close
+            isDismissed: true
+            isRead: true
+            comment:
+              comment: ''
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/experiment:2a91f303-dafc-4a4f-91e3-9d8ef288bb34
+              data:
+                type: experiment
+                id: experiment:2a91f303-dafc-4a4f-91e3-9d8ef288bb34
+            createdBy:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/102
+              data:
+                type: user
+                id: '102'
+        included:
+          - type: experiment
+            id: experiment:2a91f303-dafc-4a4f-91e3-9d8ef288bb34
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/experiment:2a91f303-dafc-4a4f-91e3-9d8ef288bb34
+            attributes:
+              eid: experiment:2a91f303-dafc-4a4f-91e3-9d8ef288bb34
+              type: experiment
+              isTemplate: false
+              name: test03
+          - type: user
+            id: '102'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/102
+            attributes:
+              id: '102'
+              username: nivesh.singh@example.com
+              email: nivesh.singh@example.com
+              firstName: nivesh
+              lastName: singh
+              picture: {}

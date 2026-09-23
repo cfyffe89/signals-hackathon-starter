@@ -1,0 +1,114 @@
+import os
+import sys
+import logging
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env
+dotenv_path = Path(__file__).parent.parent / ".env"
+if dotenv_path.exists():
+    load_dotenv(dotenv_path)
+else:
+    load_dotenv()
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+
+from .signals_client import SignalsClient
+from .ai_client import AIClient
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("hackathon_starter")
+
+app = FastAPI(
+    title="Revvity Signals EMEA Hackathon 2026 Starter",
+    description="Universal template for rapid prototyping with Signals Notebook REST APIs & AI",
+    version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+signals_client = SignalsClient()
+ai_client = AIClient()
+
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+DOCS_DIR = Path(__file__).parent.parent / "docs"
+
+class AIPromptRequest(BaseModel):
+    prompt: str = "Explain the significance of the force=true parameter when uploading child entities to Signals Notebook."
+
+@app.get("/api/health")
+def health():
+    # Count installed packages
+    import importlib.util
+    core_pkgs = ["fastapi", "streamlit", "rdkit", "Bio", "pandas", "numpy", "openai", "google.genai", "PIL"]
+    available_pkgs = [p for p in core_pkgs if importlib.util.find_spec(p.split('.')[0]) is not None]
+
+    return {
+        "status": "online",
+        "pythonVersion": sys.version.split()[0],
+        "installedPackages": available_pkgs,
+        "signals": {
+            "tenant": signals_client.base_url,
+            "mockMode": signals_client.mock_mode
+        },
+        "ai": ai_client.check_status()
+    }
+
+@app.get("/api/test-signals")
+def test_signals():
+    """Validates Signals Notebook connection and fetches experiment list."""
+    try:
+        conn = signals_client.check_connection()
+        experiments = signals_client.list_experiments(limit=5)
+        return {
+            "status": "success",
+            "connection": conn,
+            "experiments": experiments
+        }
+    except Exception as e:
+        logger.error(f"Signals test failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+@app.post("/api/test-ai")
+def test_ai(req: AIPromptRequest):
+    """Executes a test prompt against Gemini / Hackathon Gateway."""
+    try:
+        res = ai_client.generate_text(req.prompt)
+        return {"status": "success", "result": res}
+    except Exception as e:
+        logger.error(f"AI test failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/docs-list")
+def list_docs():
+    """Lists available OpenAPI specs in docs/signals-api/."""
+    yaml_dir = DOCS_DIR / "signals-api"
+    specs = []
+    if yaml_dir.exists():
+        for f in yaml_dir.glob("*.yaml"):
+            specs.append({
+                "filename": f.name,
+                "name": f.stem.capitalize(),
+                "sizeKb": round(f.stat().st_size / 1024, 1)
+            })
+    return {"specs": sorted(specs, key=lambda x: x["filename"])}
+
+if FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
+    @app.get("/")
+    def index():
+        return FileResponse(FRONTEND_DIR / "index.html")

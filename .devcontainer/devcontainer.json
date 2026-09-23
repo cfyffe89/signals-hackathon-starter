@@ -1,0 +1,31 @@
+{
+  "name": "Signals EMEA Hackathon 2026 Starter",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "Continue.continue"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.useEnvFile": true
+      }
+    }
+  },
+  "forwardPorts": [8000, 8501],
+  "portsAttributes": {
+    "8000": {
+      "label": "Hello World & Signals API Dashboard",
+      "visibility": "public",
+      "onAutoForward": "openBrowser"
+    },
+    "8501": {
+      "label": "Streamlit Data & Analytics Dashboard",
+      "visibility": "public",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && cp -n .env.example .env || true"
+}

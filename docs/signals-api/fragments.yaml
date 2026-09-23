@@ -1,0 +1,1095 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: [ ]
+paths:
+  /fragments/salts:
+    get:
+      tags:
+        - Fragments
+      summary: 'Fetch Salts'
+      description: |
+        Fetch Salts.
+      operationId: 'fetchAllSalts'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Salts:
+                  $ref: '#/components/examples/fetchingSaltsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    put:
+      tags:
+        - Fragments
+      summary: 'Replace all Salts'
+      description: |
+        Replace all Salts.
+      operationId: 'putAllSalts'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PutSaltsRequest'
+            examples:
+              Fragments:
+                $ref: '#/components/examples/putSaltsRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Salts:
+                  $ref: '#/components/examples/fetchingSaltsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Fragments
+      summary: 'Create Salt'
+      description: |
+        Create Salt.
+      operationId: 'postNewSalt'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PostSaltRequest'
+            examples:
+              Salt:
+                $ref: '#/components/examples/postSaltRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Salt:
+                  $ref: '#/components/examples/fetchingSaltResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /fragments/solvates:
+    get:
+      tags:
+        - Fragments
+      summary: 'Fetch Solvates'
+      description: |
+        Fetch Solvates.
+      operationId: 'fetchAllSolvates'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Solvates:
+                  $ref: '#/components/examples/fetchingSolvatesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    put:
+      tags:
+        - Fragments
+      summary: 'Replace all Solvates'
+      description: |
+        Replace all Solvates.
+      operationId: 'putAllSolvates'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PutSolvatesRequest'
+            examples:
+              Solvates:
+                $ref: '#/components/examples/putSolvatesRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Fragments:
+                  $ref: '#/components/examples/fetchingSolvatesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Fragments
+      summary: 'Create Solvate'
+      description: |
+        Create Solvate.
+      operationId: 'postNewSolvate'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PostSolvateRequest'
+            examples:
+              Solvate:
+                $ref: '#/components/examples/postSolvateRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Solvate:
+                  $ref: '#/components/examples/fetchingSolvateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /fragments/salts/{id}:
+    get:
+      tags:
+        - Fragments
+      summary: 'Fetch Salt by id'
+      description: |
+        Fetch Salt by id.
+
+        Example usages:
+
+          /fragments/salts/1
+
+      operationId: 'fetchSaltById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentResponse'
+              examples:
+                Salt:
+                  $ref: '#/components/examples/fetchingSaltResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Fragments
+      summary: 'Update Salt by id'
+      description: |
+        Update Salt by id.
+      operationId: 'patchSaltById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchFragmentRequest'
+            examples:
+              Salt:
+                $ref: '#/components/examples/patchSaltRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Salt:
+                  $ref: '#/components/examples/fetchingSaltResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Fragments
+      summary: 'Delete Salt by id'
+      description: |
+        Delete Salt by id.
+
+      operationId: 'deleteSaltById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /fragments/solvates/{id}:
+    get:
+      tags:
+        - Fragments
+      summary: 'Fetch Solvate by id'
+      description: |
+        Fetch Solvate by id.
+
+        Example usages:
+
+          /fragments/solvates/1
+
+      operationId: 'fetchSolvateById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentResponse'
+              examples:
+                Solvate:
+                  $ref: '#/components/examples/fetchingSolvateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Fragments
+      summary: 'Update Solvate by id'
+      description: |
+        Update Solvate by id.
+      operationId: 'updateSolvateById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchFragmentRequest'
+            examples:
+              Solvate:
+                $ref: '#/components/examples/patchSolvateRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/FragmentsResponse'
+              examples:
+                Solvate:
+                  $ref: '#/components/examples/fetchingSolvateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Fragments
+      summary: 'Delete Solvate by id'
+      description: |
+        Delete Solvate by id.
+
+      operationId: 'deleteSolvateById'
+      parameters:
+        - $ref: '#/components/parameters/fragmentIdParam'
+      responses:
+        '204':
+          description: 'No Content'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    fragmentIdParam:
+      name: 'id'
+      in: path
+      description: |
+        Unique Fragment identifier. Format: Integer.
+
+        Example value: 1, 2, 3.
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: integer
+        deprecated: false
+    offsetParam:
+      name: page[offset]
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        default: 0
+    limitParam:
+      name: page[limit]
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 100
+        default: 20
+    includeParam:
+      name: 'include'
+      in: query
+      description: 'The related resources to be shown in "included" field. Example value: "children, owner". Leave it blank will show all related resources.'
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [ errors ]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    ExtFragment:
+      type: object
+      title: 'ExtFragment'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtFragmentAttributes'
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+              pattern: '^(?!\s*$).+'
+            mf:
+              type: string
+              pattern: '^(?!\s*$).+'
+            mw:
+              type: string
+              pattern: '^\d*\.?\d* g/mol$'
+            smiles:
+              type: string
+          additionalProperties: true
+        relationships:
+          type: object
+
+    FragmentsResponse:
+      type: object
+      title: 'FragmentsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtFragment'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    FragmentResponse:
+      type: object
+      title: 'FragmentResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtFragment'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    FragmentAttributes:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+          pattern: '^(?!\s*$).+'
+        mf:
+          type: string
+          pattern: '^(?!\s*$).+'
+        mw:
+          type: string
+          pattern: '^\d*\.?\d* g/mol$'
+        smiles:
+          type: string
+
+    PutSaltsRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            required: [ attributes ]
+            properties:
+              attributes:
+                type: object
+                additionalProperties: true
+                required: [ name, mf, mw ]
+                properties:
+                  name:
+                    type: string
+                    pattern: '^(?!\s*$).+'
+                  mf:
+                    type: string
+                    pattern: '^(?!\s*$).+'
+                  mw:
+                    type: string
+                    pattern: '^\d*\.?\d* g/mol$'
+                  smiles:
+                    type: string
+    PutSolvatesRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            required: [ attributes ]
+            properties:
+              attributes:
+                type: object
+                additionalProperties: true
+                required: [ name, mf, mw ]
+                properties:
+                  name:
+                    type: string
+                    pattern: '^(?!\s*$).+'
+                  mf:
+                    type: string
+                    pattern: '^(?!\s*$).+'
+                  mw:
+                    type: string
+                    pattern: '^\d*\.?\d* g/mol$'
+    PostSaltRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              additionalProperties: true
+              required: [ name, mf, mw ]
+              properties:
+                name:
+                  type: string
+                  pattern: '^(?!\s*$).+'
+                mf:
+                  type: string
+                  pattern: '^(?!\s*$).+'
+                mw:
+                  type: string
+                  pattern: '^\d*\.?\d* g/mol$'
+                smiles:
+                  type: string
+    PostSolvateRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              additionalProperties: true
+              required: [ name, mf, mw ]
+              properties:
+                name:
+                  type: string
+                  pattern: '^(?!\s*$).+'
+                mf:
+                  type: string
+                  pattern: '^(?!\s*$).+'
+                mw:
+                  type: string
+                  pattern: '^\d*\.?\d* g/mol$'
+    PatchFragmentRequest:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+          required: [ attributes ]
+          properties:
+            attributes:
+              $ref: '#/components/schemas/FragmentAttributes'
+  responses:
+    BadRequest: #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized: #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden: #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound: #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed: #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable: #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout: #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict: #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone: #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired: #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge: #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong: #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType: #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType: #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm: #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity: #422
+      description: 'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch: #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests: #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError: #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented: #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway: #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable: #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout: #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    fetchingSaltsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments
+        data:
+          - type: salt
+            id: 1
+            links:
+              self: https://snb.example.com/api/rest/v1.0/fragments/salts/1
+            attributes:
+              id: 1
+              type: SALT
+              name: 'Acetate'
+              mf: 'C2H3O2-'
+              mw: '59.0445 g/mol'
+              smiles: "CC([O-])=O"
+    fetchingSolvatesResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments
+        data:
+          - type: solvate
+            id: 1
+            links:
+              self: https://snb.example.com/api/rest/v1.0/fragments/solvates/1
+            attributes:
+              id: 1
+              type: SOLVATE
+              name: '1,4-dioxane'
+              mf: 'C4H8O2'
+              mw: '88.1060 g/mol'
+    fetchingSaltResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments/salts/1
+        data:
+          type: salt
+          id: 1
+          attributes:
+            id: 1
+            type: SALT
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    fetchingSolvateResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/fragments/solvates/1
+        data:
+          type: solvate
+          id: 1
+          attributes:
+            id: 1
+            type: SOLVATE
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'
+    putSaltsRequest:
+      value:
+        data:
+          - attributes:
+              name: 'Acetate'
+              mf: 'C2H3O2-'
+              mw: '59.0445 g/mol'
+              smiles: "CC([O-])=O"
+          - attributes:
+              name: 'triethylamine'
+              mf: 'C6H15N'
+              mw: '101.19 g/mol'
+              smiles: "CCN(CC)CC"
+    putSolvatesRequest:
+      value:
+        data:
+          - attributes:
+              name: '1,4-dioxane'
+              mf: 'C4H8O2'
+              mw: '88.1060 g/mol'
+          - attributes:
+              name: '2-methylpropan-2-ol'
+              mf: 'C4H10O'
+              mw: '74.1230 g/mol'
+    postSaltRequest:
+      value:
+        data:
+          attributes:
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    postSolvateRequest:
+      value:
+        data:
+          attributes:
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'
+    patchSaltRequest:
+      value:
+        data:
+          attributes:
+            name: 'Acetate'
+            mf: 'C2H3O2-'
+            mw: '59.0445 g/mol'
+            smiles: "CC([O-])=O"
+    patchSolvateRequest:
+      value:
+        data:
+          attributes:
+            name: '1,4-dioxane'
+            mf: 'C4H8O2'
+            mw: '88.1060 g/mol'

@@ -1,0 +1,3477 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: [ ]
+
+paths:
+  /paraexp/{eid}/reset:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Reset and delete all subexperiments of a paraexperiment'
+      description: |
+        Reset and delete all subexperiments of current paraexperiment.
+        This includes the manually added or enumerated subexperiments. Once deleted, they cannot be restored.
+        
+        This is an asynchronous API. If the request is accepted, server will start a job to do it.
+        - The job status can be checked with API "/paraexp/{eid}/reset/{jobId}".
+        - The job status is "IN_PROGRESS" while the the job is in processing.
+        - The job status should be "COMPLETED" or "FAILED" after the job is finished.
+        - If the status is "FAILED", the detail error message will be shown in the response.
+
+        Accepted entity types: paraexp
+
+        Example usage:
+
+        /paraexp/paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/reset
+
+      operationId: 'resetParaexpAsync'
+      parameters:
+        - $ref: '#/components/parameters/paraexpEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+
+      responses:
+        '202':
+          description: 'Accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpResetJobResponse'
+              examples:
+                ResetParaexpAsync:
+                  $ref: '#/components/examples/startAsyncResetParaexpApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /paraexp/{eid}/reset/{jobId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the status of paraexperiment resetting job'
+      description: |
+        Get the status of paraexperiment resetting job.
+        - The job status is "IN_PROGRESS" while the the job is in processing.
+        - The job status should be "COMPLETED" or "FAILED" after the job is finished.
+        - If the status is "FAILED", the detail error message will be shown in the response.
+
+        Accepted entity types: paraexp
+
+        Example usage:
+
+        /paraexp/paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/reset/42
+
+      operationId: 'fetchStatusOfParaexpResetting'
+      parameters:
+        - $ref: '#/components/parameters/paraexpEid'
+        - name: 'jobId'
+          in: path
+          description: 'Job ID of paraexperiment resetting.'
+          required: true
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+            deprecated: false
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpResetJobResponse'
+              examples:
+                ResetParaexpSucceed:
+                  $ref: '#/components/examples/getAsyncResetParaexpSuccessStatusApiResponse'
+                ResetParaexpFailed:
+                  $ref: '#/components/examples/getAsyncResetParaexpFailedStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /enumerator/{eid}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get content of an enumerator'
+      description: |
+        Get content of an enumerator by the specified Id.
+        
+        Accepted entity types: paraenum
+
+        Example usage:
+
+        /enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce
+
+      operationId: 'fetchEnumeratorContentById'
+      parameters:
+        - $ref: '#/components/parameters/enumeratorEid'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpEnumeratorResponse'
+              examples:
+                EnumeratorContent:
+                  $ref: '#/components/examples/getEnumeratorContentApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /enumerator/{eid}/addCompound:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Add compound to an enumerator'
+      description: |
+        Add compound(s) to an enumerator by uploading a file.
+
+        "Content-Type" in Header is required for this API. Such as, "Content-Type: chemical/x-cdxml", "Content-Type: chemical/x-mdl-molfile" etc.
+        
+        Here are the accepted content types and its file extension:
+        - "chemical/x-cdxml" -> "cdxml"
+        - "chemical/x-mdl-molfile" -> "mol"
+        - "chemical/x-daylight-smiles" -> "smiles"
+        - "chemical/x-inchi" -> "inchi"
+        - "chemical/x-mdl-sdfile" -> "sdf"
+
+        SDF file is used to add multiple compounds. The others are used to add single compound.
+        
+        For adding compounds from SDF file, the column fields are mapped by the exact name match.
+        To be consistent with the exported SDF file from UI, the 7 characters, "-.<>=% ", in name are replaced with "_".
+
+        Accepted entity types: paraenum
+
+        Example usage:
+
+        /enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/addCompound
+
+      operationId: 'addCompoundToReactionGroup'
+      parameters:
+        - $ref: '#/components/parameters/enumeratorEid'
+        - $ref: '#/components/parameters/enumeratorReactionGroupId'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        content:
+          chemical/x-cdxml:
+            schema:
+              type: string
+              format: binary
+          chemical/x-daylight-smiles:
+            schema:
+              type: string
+              format: binary
+          chemical/x-mdl-molfile:
+            schema:
+              type: string
+              format: binary
+          chemical/x-inchi:
+            schema:
+              type: string
+              format: binary
+          chemical/x-mdl-sdfile:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/EntityApiResponse'
+              examples:
+                AddCompound:
+                  $ref: '#/components/examples/getEnumeratorEntityApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /enumerator/{eid}/refreshGroups:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Refresh groups of an enumerator'
+      description: |
+        Refresh enumerator groups with the selected reaction.
+
+        This API is used to refresh the groups if the currently selected reaction changed. 
+        It is also used to switch reactions by specifying a new reaction ID in the request body.
+
+        The "selectedReactionEid" is the EID of the chemical drawing. It is required in the request body.
+
+        If the "checksum" of the reaction and chemical drawing stoichiometry data is different,
+        this means that the reaction changed after it was selected.
+
+        Accepted entity types: paraenum
+
+        Example usage:
+
+        /enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/refreshGroups
+
+      operationId: 'refreshEnumeratorReactionGroups'
+      parameters:
+        - $ref: '#/components/parameters/enumeratorEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/RefreshGroupsOfEnumeratorRequest'
+            examples:
+              RefreshGroups:
+                $ref: '#/components/examples/refreshEnumeratorGroupsExampleRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/EntityApiResponse'
+              examples:
+                RefreshGroups:
+                  $ref: '#/components/examples/getEnumeratorEntityApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /enumerator/{eid}/enumerate:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Enumerate to generate subexperiments'
+      description: |
+        Enumerate to generate subexperiments.
+        
+        This is an asynchronous API. If the request is accepted, server will start a job to do it.
+        - The job status can be checked with API "/enumerator/{eid}/enumerate/{jobId}".
+        - The job status is "IN_PROGRESS" while the the job is in processing.
+        - The job status should be "COMPLETED" or "FAILED" after the job is finished.
+        - If the status is "FAILED", the detail error message will be shown in the response.
+
+        The "contentsToCopy" is required in the request body.
+        It is used to decide which children in the paraexperiment will be cloned into the new subexperiments.
+
+        Keep the value as an empty array if no content is needed.
+
+        And also, paraexperiment particular items can not be cloned into subexperiment, such as
+        - paraGrid
+        - parasamplesgrid
+        - paralayout
+        - paraenum
+
+        Accepted entity types: paraenum
+
+        Example usage:
+
+        /enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate
+
+      operationId: 'enumerateParaexpAsync'
+      parameters:
+        - $ref: '#/components/parameters/enumeratorEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/EnumerateParaexpRequest'
+            examples:
+              Enumerate:
+                $ref: '#/components/examples/enumerateParaexpExampleRequest'
+      responses:
+        '202':
+          description: 'Accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpEnumerateJobResponse'
+              examples:
+                AsyncEnumerate:
+                  $ref: '#/components/examples/startAsyncEnumerateParaexpApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /enumerator/{eid}/enumerate/{jobId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the status of enumerating job'
+      description: |
+        Get the status of paraexperiment enumerating job.
+        - The job status is "IN_PROGRESS" while the the job is in processing.
+        - The job status should be "COMPLETED" or "FAILED" after the job is finished.
+        - If the status is "FAILED", the detail error message will be shown in the response.
+
+        Accepted entity types: paraenum
+
+        Example usage:
+
+        /enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+
+      operationId: 'fetchStatusOfParaexpEnumerating'
+      parameters:
+        - $ref: '#/components/parameters/enumeratorEid'
+        - name: 'jobId'
+          in: path
+          description: 'Job ID of paraexperiment enumerating.'
+          required: true
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+            deprecated: false
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpEnumerateJobResponse'
+              examples:
+                EnumerateParaexpSucceed:
+                  $ref: '#/components/examples/getAsyncEnumerateParaexpSuccessStatusApiResponse'
+                EnumerateParaexpFailed:
+                  $ref: '#/components/examples/getAsyncEnumerateParaexpFailedStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/{eid}/upload:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Upload csv, sdf, or rdf to an external enumerator'
+      description: |
+        Uploading a file csv, sdf, rdf to an external enumerator.
+
+        "Content-Type" in Header is required for this API. Such as, "Content-Type: text/csv", "Content-Type: chemical/x-mdl-sdfile", "Content-Type: chemical/x-mdl-rdfile".
+
+        Accepted entity types: extparaenum
+
+        Example usage:
+
+        /extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/upload
+
+      operationId: 'uploadToExternalEnumerator'
+      parameters:
+        - $ref: '#/components/parameters/extenumeratorEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - in: header
+          name: X-Filename
+          required: false
+          schema:
+            type: string
+          description: >
+            Indicates the upload file name. If this header is omitted or empty,
+            the service falls back to `enumeratorEntity.name`. When provided,
+            the value should be UTF-8 header-encoded (URL-encoded).
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+              format: binary
+          chemical/x-mdl-sdfile:
+            schema:
+              type: string
+              format: binary
+          chemical/x-mdl-rdfile:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/EntityApiResponse'
+              examples:
+                AddCompound:
+                  $ref: '#/components/examples/getEnumeratorEntityApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/mapping/template:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get mapping template for patching to external enumerator'
+      description: |
+        Get mapping template for patching to external enumerator.
+
+        This mapping template is a structure without any settings, user can use it to construct own mapping and patch to external enumerator
+
+        Example usage:
+
+        /extenumerator/mapping/template
+
+      operationId: 'fetchMappingTemplate'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtExternalEnumeratorMappingResponse'
+              examples:
+                EnumeratorContent:
+                  $ref: '#/components/examples/patchMappingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/{eid}/mapping:
+    patch:
+      tags:
+        - ParallelExperiments
+      summary: 'Patch mapping to an external enumerator'
+      description: |
+        Patch Mapping to an External Enumerator
+
+        Use `GET /extenumerator/mapping/template` to fetch the field definitions for `reactants`, `products`, `conditions`, and `solvents` in order to construct the mapping.
+
+        - `externalField`: maps to a column in the file.
+
+        - `key`: maps to a key in the definitions. For other details, please refer to the examples.
+
+        - `isBase64Encoded`, `isChemicalField`: relate to chemical structure columns. When setting a chemical structure, you must also set `type`; accepted values are: `Mol2k`, `Mol3k`, `SMILES`, `INCHI`, `CDXML`.
+
+        - `unit`: applies when `type` is `unit`. Accepted values are the unit of value and measure (e.g., molecular mass displays as `g/mol`, `kg/mol`, etc.).
+
+        - `isFixed`: indicates that the column value is provided by the user; used together with `fixedValue`.
+
+        Accepted entity types: extparaenum
+
+        Example usage:
+
+        /extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/mapping
+
+      operationId: 'patchMappingToExternalEnumerator'
+      parameters:
+        - $ref: '#/components/parameters/extenumeratorEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchMappingRequest'
+            examples:
+              patchReactants:
+                $ref: '#/components/examples/patchReactants'
+              patchProducts:
+                $ref: '#/components/examples/patchProducts'
+              patchConditions:
+                $ref: '#/components/examples/patchConditions'
+              patchSolvents:
+                $ref: '#/components/examples/patchSolvents'
+              patchTextFixedValue:
+                $ref: '#/components/examples/patchTextFixedValue'
+              patchUnitFixedValue:
+                $ref: '#/components/examples/patchUnitFixedValue'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtExternalEnumeratorMappingResponse'
+              examples:
+                patchMapping:
+                  $ref: '#/components/examples/patchMappingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/{eid}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get content of an external enumerator'
+      description: |
+        Get content of an external enumerator by the specified Id.
+
+        Accepted entity types: extparaenum
+
+        Example usage:
+
+        /extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce
+
+      operationId: 'fetchExternalEnumeratorContentById'
+      parameters:
+        - $ref: '#/components/parameters/extenumeratorEid'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtExternalEnumeratorMappingResponse'
+              examples:
+                patchMapping:
+                  $ref: '#/components/examples/patchMappingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/{eid}/enumerate:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'External Enumerate to generate subexperiments'
+      description: |
+        External Enumerate to generate subexperiments.
+
+        This is an asynchronous API. If the request is accepted, the server will start a job to process it.
+        - The job status can be checked with the API "/extenumerator/{eid}/enumerate/{jobId}".
+        - The job status is "IN_PROGRESS" while the job is being processed.
+        - The job status will be "COMPLETED" or "FAILED" after the job is finished.
+        - If the status is "FAILED", the detailed error message will be shown in the response.
+
+        "contentsToCopy" is required in the request body.
+        It is used to decide which children in the paraexperiment will be cloned into the new subexperiments.
+
+        Keep the value as an empty array if no content is needed.
+
+        Also, paraexperiment-specific items cannot be cloned into a subexperiment, such as:
+        - paraGrid
+        - parasamplesgrid
+        - paralayout
+        - paraenum
+        - extparaenum
+
+        Accepted entity types: extparaenum
+
+        Example usage:
+
+        /extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate
+
+      operationId: 'externalEnumerateParaexpAsync'
+      parameters:
+        - $ref: '#/components/parameters/extenumeratorEid'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/EnumerateParaexpRequest'
+            examples:
+              Enumerate:
+                $ref: '#/components/examples/enumerateParaexpExampleRequest'
+      responses:
+        '202':
+          description: 'Accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpEnumerateJobResponse'
+              examples:
+                AsyncEnumerate:
+                  $ref: '#/components/examples/startAsyncExternalEnumerateParaexpApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /extenumerator/{eid}/enumerate/{jobId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the status of external enumerating job'
+      description: |
+        Get the status of paraexperiment external enumerating job.
+        - The job status is "IN_PROGRESS" while the job is being processed.
+        - The job status should be "COMPLETED", "WARNING", or "FAILED" after the job is finished.
+        - If the status is "WARNING", it means the enumeration result exceeded the maximum limit of 1600, and only the first 1600 sub-experiments were created and processed.
+        - If the status is "FAILED", the detailed error message will be shown in the response.
+
+        Accepted entity types: extparaenum
+
+        Example usage:
+
+        /extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+
+      operationId: 'fetchStatusOfParaexpExternalEnumerating'
+      parameters:
+        - $ref: '#/components/parameters/extenumeratorEid'
+        - name: 'jobId'
+          in: path
+          description: 'Job ID of paraexperiment external enumerating.'
+          required: true
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+            deprecated: false
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ParaexpEnumerateJobResponse'
+              examples:
+                EnumerateParaexpSucceed:
+                  $ref: '#/components/examples/getAsyncExternalEnumerateParaexpSuccessStatusApiResponse'
+                EnumerateParaexpFailed:
+                  $ref: '#/components/examples/getAsyncExternalEnumerateParaexpFailedStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /subexpSummary/{subexpSummaryId}/rows:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Fetch content of subexperiment summary table'
+      description: |
+        Fetch content of subexperiment summary table.
+
+      operationId: 'fetchSubexpSummaryTableRows'
+      parameters:
+        - $ref: '#/components/parameters/subexpSummaryId'
+        - $ref: '#/components/parameters/includeParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpSummaryResponse'
+              examples:
+                SubexperimentSummary:
+                  $ref: '#/components/examples/getSubexpSummaryApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /subexpSummary/{subexpSummaryId}/bulkUpdate:
+    patch:
+      tags:
+        - ParallelExperiments
+      summary: 'Bulk update subexperiment summary table'
+      description: |
+        Bulk update content of subexperiment summary table asynchronously.
+
+        This is an asynchronous API.
+
+        If the request is accepted, server will start a job to execute and return a report with a bulk update ID to client.
+
+        Client can check the status of the job with API "/subexpSummary/{subexpSummaryId}/bulkUpdate/{bulkUpdateId}".
+
+        While the job is finished, the job status should be "SUCCESS" or "FAILED".
+
+        Examples for properties with different data types:
+        - number, {"value": 3.0 }
+        - date,  {"value":"2019-09-06T15:22:47.309Z"}
+        - list,  {"value": "list1"}
+        - unit,  {"value": "78.11 g/mol"}
+        - multiSelect, {"value": "select1, select2"}
+        - attributeList(multiple option), {"values": ["select1", "select2"]}
+        - boolean, {"value": true}
+        - link, {"value": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}
+        - link(multiple option), {"values": [{"eid": "experiment:a2f9bba9-a4c7-9999-a676-251de965c234"}]}
+        - externalLink, {"user": "Google", "value": "http://www.google.com"}
+        - ontologyList, {"value": {"id": "123", "iri": "http://example.com/iri", "preferredName": "Term A"}}
+        - ontologyList(multiple option), {"values": [{"id": "123", "iri": "http://example.com/iriA", "preferredName": "Term A"}, {"id": "456", "iri": "http://example.com/iriB", "preferredName": "Term B"}]}
+
+      operationId: 'patchSubexpSummaryTableContent'
+      parameters:
+        - $ref: '#/components/parameters/subexpSummaryId'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/SubexpSummaryUpdateRequest'
+            examples:
+              UpdateSubexpSummary:
+                $ref: '#/components/examples/updateSubexpSummaryApiRequest'
+      responses:
+        '202':
+          description: 'Accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpBulkUpdateJobResponse'
+              examples:
+                SubexperimentSummary:
+                  $ref: '#/components/examples/updateSubexpSummaryApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /subexpSummary/{subexpSummaryId}/bulkUpdate/{bulkUpdateId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the status of bulk update'
+      description: |
+        Get the status of bulk update.
+
+        While the update work is finished, the job status should be "SUCCESS" or "FAILED".
+
+      operationId: 'fetchStatusOfBulkUpdateParagrid'
+      parameters:
+        - $ref: '#/components/parameters/subexpSummaryId'
+        - name: 'bulkUpdateId'
+          in: path
+          description: 'bulkUpdate ID'
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpBulkUpdateJobResponse'
+              examples:
+                EntityJob:
+                  $ref: '#/components/examples/getUpdateParagridStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /subexpSummary/{subexpSummaryId}/samples/bulkCreate:
+    post:
+      tags:
+        - ParallelExperiments
+      summary: 'Bulk create samples for product(s) in a parallel experiment summary table'
+      description: |
+        Bulk create samples for product(s) in a parallel experiment summary table (paraGrid) asynchronously.
+
+        This is an asynchronous API. If the request is accepted, the server will schedule a job and return a job ID.
+        
+        User can check the status of the job with API `GET /subexpSummary/{subexpSummaryId}/samples/bulkCreate/{jobId}`.
+
+        **URL parameters:**
+        - `sampleCount`: Number of samples to create per product. Must be an integer between 1 and 3.
+
+        **Request body:**
+        - `rowIds` (optional): List of row IDs to specify which sub-experiments to generate samples from.
+          Defaults to all sub-experiments if not provided.
+        
+          Row IDs can be retrieved from `GET /subexpSummary/{subexpSummaryId}/rows`.
+        - `sampleProperties` (optional): List of sample property values to apply to all created samples.
+          If not provided, samples will be created with default properties.
+        
+          Available property definitions can be retrieved from `GET /samples/{sampleId}/properties`, sampleId is the id of default chemical sample template. 
+          
+          Note that only a subset of properties are writable (e.g., Description, Comments, Amount); system-managed and read-only properties will be rejected.
+
+        Accepted entity types: paragrid
+
+        Example usage:
+
+        /subexpSummary/paragrid:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/samples/bulkCreate?sampleCount=2
+
+      operationId: 'bulkCreateSamplesFromParaGrid'
+      parameters:
+        - $ref: '#/components/parameters/subexpSummaryId'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+        - name: 'sampleCount'
+          in: query
+          description: 'Number of samples to create per product. Must be an integer between 1 and 3 (inclusive).'
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 3
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/BulkCreateSamplesRequest'
+            examples:
+              BulkCreateWithRowsAndProperties:
+                $ref: '#/components/examples/bulkCreateSamplesWithRowsAndPropertiesRequest'
+              BulkCreateDefault:
+                $ref: '#/components/examples/bulkCreateSamplesDefaultRequest'
+      responses:
+        '202':
+          description: 'Accepted'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpBulkUpdateJobResponse'
+              examples:
+                BulkCreateSamples:
+                  $ref: '#/components/examples/bulkCreateSamplesSubexpSummaryApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /subexpSummary/{subexpSummaryId}/samples/bulkCreate/{jobId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the status of bulk create'
+      description: |
+        Get the status of bulk create job.
+
+        When the bulk create work is finished, the job status should be "SUCCESS" or "FAILED".
+
+      operationId: 'fetchStatusOfBulkCreateParagrid'
+      parameters:
+        - $ref: '#/components/parameters/subexpSummaryId'
+        - name: 'jobId'
+          in: path
+          description: 'Scheduled job Id from the bulk create samples request.'
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpBulkUpdateJobResponse'
+              examples:
+                EntityJob:
+                  $ref: '#/components/examples/getBulkCreateSamplesParagridStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /subexpLayout/{layoutId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Fetch subexperiment layout'
+      description: |
+        Fetch subexperiment layout.
+
+        This API is used to fetch the layout information of each subexperiment.
+
+      operationId: 'fetchSubexpLayout'
+      parameters:
+        - $ref: '#/components/parameters/paraLayoutId'
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpLayoutResponse'
+              examples:
+                SubexpLayout:
+                  $ref: '#/components/examples/getSubexpLayoutApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - ParallelExperiments
+      summary: 'Update subexperiment layout'
+      description: |
+        Update subexperiment layout.
+
+        This API is used to update the layout of subexperiments. So, only the position of subexperiment can be updated by this API. Other properties of subexperiment can not be updated by this API.
+
+        The PositionX and PositionY are started from "0".
+
+        For the ID of plates,
+        - The plate in the request with an existing ID will be updated.
+        - The plate with any ID which is NOT in the request will not be changed.
+        - The plate in the request with a non-existent ID will be taken as creating a new plate.
+
+        For the action of plates,
+        - add, add the specified subexperiments to current plate.
+        - remove, remove the specified subexperiments from current plate.
+        - removeAll, remove all the subexperiments from current plate.
+
+      operationId: 'patchSubexpLayout'
+      parameters:
+        - $ref: '#/components/parameters/paraLayoutId'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/ParaLayoutUpdateRequest'
+            examples:
+              AddSubexpsToPlate:
+                $ref: '#/components/examples/paraLayoutAddSubexpsApiRequest'
+              RemoveSubexpsFromPlate:
+                $ref: '#/components/examples/paraLayoutRemoveSubexpsApiRequest'
+              RemoveAllSubexpsFromPlate:
+                $ref: '#/components/examples/paraLayoutRemoveAllApiRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubexpLayoutResponse'
+              examples:
+                SubexpLayout:
+                  $ref: '#/components/examples/getSubexpLayoutApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /subexpLayout/{layoutId}/reset:
+    patch:
+      tags:
+        - ParallelExperiments
+      summary: 'Reset/autoFill subexperiment layout asynchronously'
+      description: |
+        Reset/autoFill subexperiment layout asynchronously. The layout will be reset with the new layout pattern.
+
+        User can systematically layout the Subexperiments on the plate(s) by selecting one of the following patterns:
+        - "keep_fill": keep the original subexperiment place but change the plate size. The new size must be able to keep all the placed subexperiments.
+        - "across_row": left to right repeated. For example, for a 96 well plate A1 to A12, then B1 to B12, then C1 to C12 and so on, and then subsequently onto other plates if needed.
+        - "left_to_right_row": left to right, then reversed right to left, repeated. For example, for a 96 well plate A1 to A12, then B12 to B1, then C1 to C12 and so on, and then subsequently onto other plates if needed.
+        - "down_column": up to Down repeated. For example, for a 96 well plate A1 to H1, then A2 to H2, then A3 to H3 and so on, and then subsequently onto other plates if needed.
+        - "down_and_up_column": up to Down, then reversed Down to Up, repeated. For example, for a 96 well plate A1 to H1, then H2 to A2, then A3 to H3 and so on, and then subsequently onto other plates if needed.
+
+        Any wells indicated as blocked will be skipped.
+
+        This is an asynchronous API.
+
+        If the request is accepted, server will start a job to execute and return a report with a job ID to client.
+
+        Client can check the status of the job with API "/subexpLayout/{layoutId}/reset/{jobId}".
+
+        While the job is finished, the job status should be "SUCCESS" or "FAILED".
+
+      operationId: 'resetSubexpLayout'
+      parameters:
+        - $ref: '#/components/parameters/paraLayoutId'
+        - $ref: '#/components/parameters/digestParam'
+        - $ref: '#/components/parameters/forceParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/ResetParaLayoutRequest'
+            examples:
+              ResizeLayout:
+                $ref: '#/components/examples/ResizeParaLayoutApiRequest'
+              ResetLayout:
+                $ref: '#/components/examples/ResetParaLayoutApiRequest'
+      responses:
+        '202':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiResponse'
+              examples:
+                ResetSubexpLayoutAsync:
+                  $ref: '#/components/examples/asyncResetSubexpLayoutApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /subexpLayout/{layoutId}/reset/{jobId}:
+    get:
+      tags:
+        - ParallelExperiments
+      summary: 'Get the job status of subexperiment layout resetting'
+      description: |
+        Get the job status of subexperiment layout resetting.
+
+        While the resetting work is finished, the job status should be "SUCCESS" or "FAILED".
+
+      operationId: 'fetchStatusOfSubexpLayoutResetting'
+      parameters:
+        - $ref: '#/components/parameters/paraLayoutId'
+        - name: 'jobId'
+          in: path
+          description: 'Job ID of subexperiment layout resetting.'
+          required: true
+          schema:
+            type: integer
+            format: int64
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiResponse'
+              examples:
+                ResetSubexpLayoutAsync:
+                  $ref: '#/components/examples/getAsyncResetSubexpLayoutStatusApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    subexpSummaryId:
+      name: 'subexpSummaryId'
+      in: path
+      description: |
+        Unique subexperiment summary table identifier. Format: EID.
+
+        Accepted entity types: paragrid.
+
+        Example value: "paragrid:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    paraLayoutId:
+      name: 'layoutId'
+      in: path
+      description: |
+        Unique layout identifier. Format: EID.
+
+        Accepted entity types: paraLayout.
+
+        Example value: "paraLayout:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    paraexpEid:
+      name: 'eid'
+      in: path
+      description: |
+        Unique paraexperiment identifier. Format: EID.
+
+        Accepted entity types: paraexp.
+
+        Example value: "paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    enumeratorEid:
+      name: 'eid'
+      in: path
+      description: |
+        Unique enumerator identifier. Format: EID.
+
+        Accepted entity types: paraenum.
+
+        Example value: "paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    extenumeratorEid:
+      name: 'eid'
+      in: path
+      description: |
+        Unique external enumerator identifier. Format: EID.
+
+        Accepted entity types: extparaenum.
+
+        Example value: "extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    enumeratorReactionGroupId:
+      name: 'groupId'
+      in: query
+      description: |
+        Unique enumerator reaction group ID.
+        Example value: "7".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    digestParam:
+      name: 'digest'
+      in: query
+      description: >
+        Indicate digest of entity.
+        It is used to avoid conflict while concurrent editing.
+        If the parameter 'force' is true, this parameter is optional.
+        If the parameter 'force' is false, this parameter is required.
+      schema:
+        type: string
+        deprecated: false
+    forceParam:
+      name: 'force'
+      in: query
+      description: >
+        Force to update without checking the provided digest.
+        If true, the system will get and use the latest digest from server, ignoring the provided digest.
+      schema:
+        type: boolean
+        deprecated: false
+    includeParam:
+      name: 'include'
+      in: query
+      description: |
+        The related resources to be shown in "included" field.
+
+        Example value: "columnDefinition".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [ errors ]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtEntity:
+      type: object
+      title: 'ExtEntity'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtEntityAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            name:
+              type: string
+            synonyms:
+              type: array
+              items:
+                type: string
+            description:
+              type: string
+            type:
+              type: string
+            createdAt:
+              type: string
+            editedAt:
+              type: string
+            digest:
+              type: string
+            fields:
+              title: 'fields'
+              type: object
+              additionalProperties:
+                type: object
+            state:
+              type: string
+            flags:
+              type: object
+            signedAt:
+              type: string
+            acceptedAt:
+              type: string
+            rejectedAt:
+              type: string
+            fragments:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            data:
+              type: object
+              additionalProperties: true
+          additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtEntityRelationships'
+          properties:
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            editedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            ancestors:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            children:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            systemTemplate:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            template:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            pdf:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            signedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            acceptedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            rejectedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            source:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            drawing:
+              $ref: '#/components/schemas/JsonApiRelationship'
+          additionalProperties: true
+    EntityApiResponse:
+      type: object
+      title: 'EntityApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtEntity'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtParaexpResetJob:
+      type: object
+      title: 'ExtParaexpResetJob'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtParaexpResetJobAttributes'
+          properties:
+            jobId:
+              type: string
+            status:
+              type: string
+            error:
+              type: string
+        relationships:
+          type: object
+
+    ParaexpResetJobResponse:
+      type: object
+      title: 'ParaexpResetJobResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtParaexpResetJob'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtParaexpEnumerator:
+      type: object
+      title: 'ExtParaexpEnumerator'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtParaexpEnumeratorAttributes'
+          properties:
+            selectedReaction:
+              type: object
+              properties:
+                  eid:
+                    type: string
+                  name:
+                    type: string
+                  checksum:
+                    type: string
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        smiles:
+                          type: string
+            enumerated:
+              type: boolean
+        relationships:
+          type: object
+          title: 'ExtParaexpEnumeratorRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    ParaexpEnumeratorResponse:
+      type: object
+      title: 'ParaexpEnumeratorResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtParaexpEnumerator'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtParaexpEnumerateJob:
+      type: object
+      title: 'ExtParaexpEnumerateJob'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtParaexpEnumerateJobAttributes'
+          properties:
+            jobId:
+              type: string
+            status:
+              type: string
+            error:
+              type: string
+        relationships:
+          type: object
+
+    ParaexpEnumerateJobResponse:
+      type: object
+      title: 'ParaexpEnumerateJobResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtParaexpEnumerateJob'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtSubexpSummaryRow:
+      type: object
+      title: 'ExtSubexpSummaryRow'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtSubexpSummaryRowAttributes'
+          properties:
+            id:
+              type: string
+            columns:
+              type: array
+              items:
+                type: object
+        relationships:
+          type: object
+          title: 'ExtSubexpSummaryRowRelationships'
+          properties:
+            columnDefinitions:
+              $ref: '#/components/schemas/JsonApiRelationship'
+    SubexpSummaryResponse:
+      type: object
+      title: 'SubexpSummaryResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+              $ref: '#/components/schemas/ExtSubexpSummaryRow'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtSubexpBulkUpdateJob:
+      type: object
+      title: 'ExtSubexpBulkUpdateJob'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtSubexpBulkUpdateJobAttributes'
+          properties:
+            bulkUpdateId:
+              type: integer
+              format: int64
+            subexpSummaryId:
+              type: string
+            jobType:
+              type: string
+            state:
+              type: string
+            jobStatus:
+              type: string
+            digest:
+              type: string
+        relationships:
+          type: object
+    SubexpBulkUpdateJobResponse:
+      type: object
+      title: 'SubexpBulkUpdateJobResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtSubexpBulkUpdateJob'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtSubexpLayout:
+      type: object
+      title: 'ExtSubexpLayout'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtSubexpLayoutAttributes'
+          properties:
+            plates:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  numberOfRows:
+                    type: integer
+                  numberOfColumns:
+                    type: integer
+                  wells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        wellId:
+                          type: string
+                        row:
+                          type: string
+                        column:
+                          type: string
+                        positionX:
+                          type: integer
+                        positionY:
+                          type: integer
+                        subexpEid:
+                          type: string
+                        fields:
+                          type: object
+                      additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtSubexpLayoutRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            subexpList:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            wellFieldsDefinition:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    SubexpLayoutResponse:
+      type: object
+      title: 'SubexpLayoutResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtSubexpLayout'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtParaexpResetLayoutJob:
+      type: object
+      title: 'ExtParaexpResetLayoutJob'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtParaexpResetLayoutJobAttributes'
+          properties:
+            jobId:
+              type: string
+            description:
+              type: string
+            name:
+              type: string
+            status:
+              type: string
+        relationships:
+          type: object
+    ParaexpResetLayoutJobResponse:
+      type: object
+      title: 'ParaexpResetLayoutJobResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtParaexpResetLayoutJob'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+
+    SubexpSummaryUpdateRequest:
+      title: 'UpdateSubexpSummary'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubexpSummaryRequestItem'
+    SubexpSummaryRequestItem:
+      type: object
+      required: [ type,attributes ]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [ 'subexpSummaryRow' ]
+        attributes:
+          type: object
+          required: [ columns ]
+          properties:
+            columns:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    nullable: true
+
+    BulkCreateSamplesRequest:
+      title: 'BulkCreateSamplesRequest'
+      description: 'Request body for bulk creating samples from a paraGrid. All fields are optional.'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              properties:
+                rowIds:
+                  type: array
+                  description: |
+                    List of row IDs to specify which sub-experiments to generate samples from. 
+                    Defaults to all sub-experiments if not provided.
+                  items:
+                    type: string
+                sampleProperties:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        required: [ id, attributes ]
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          attributes:
+                            $ref: '#/components/schemas/SamplePropertyRequestData'
+                      - type: object
+                        required: [ name, attributes ]
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          attributes:
+                            $ref: '#/components/schemas/SamplePropertyRequestData'
+    SamplePropertyRequestData:
+      title: 'SamplePropertyRequestData'
+      type: object
+      required: [ content ]
+      properties:
+        content:
+          type: object
+          nullable: true
+          properties:
+            value:
+              oneOf:
+                - type: string
+                - type: number
+                - type: boolean
+                - type: object
+            values:
+              type: array
+              items:
+                oneOf:
+                  - type: string
+                  - type: object
+
+    ParaLayoutUpdateRequest:
+      title: 'UpdateParaLayout'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              required: [ plates ]
+              properties:
+                plates:
+                  type: array
+                  items:
+                    type: object
+                    required: [ id, action, wells ]
+                    properties:
+                      id:
+                        type: number
+                        format: int64
+                        minimum: 1
+                        maximum: 99
+                      action:
+                        type: string
+                        enum: [ 'add', 'remove', 'removeAll' ]
+                      wells:
+                        type: array
+                        items:
+                          type: object
+                          required: [ positionX, positionY, subexpEid ]
+                          properties:
+                            positionX:
+                              type: number
+                              format: int64
+                              minimum: 0
+                              maximum: 47
+                            positionY:
+                              type: number
+                              format: int64
+                              minimum: 0
+                              maximum: 47
+                            subexpEid:
+                              type: string
+    ResetParaLayoutRequest:
+      title: 'ResetParaLayout'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              required: [ layoutPattern,numberOfRows,numberOfColumns ]
+              properties:
+                layoutPattern:
+                  type: string
+                  enum: [ 'keep_fill', 'across_row', 'left_to_right_row', 'down_column', 'down_and_up_column' ]
+                numberOfRows:
+                  type: number
+                  format: int64
+                  minimum: 1
+                  maximum: 48
+                numberOfColumns:
+                  type: number
+                  format: int64
+                  minimum: 1
+                  maximum: 48
+                plates:
+                  type: array
+                  items:
+                    type: object
+                    required: [ id ]
+                    properties:
+                      id:
+                        type: number
+                        format: int64
+                        minimum: 1
+                        maximum: 99
+                      blockedWells:
+                        type: array
+                        items:
+                          type: object
+                          required: [ positionX, positionY ]
+                          properties:
+                            positionX:
+                              type: number
+                              format: int64
+                              minimum: 0
+                              maximum: 47
+                            positionY:
+                              type: number
+                              format: int64
+                              minimum: 0
+                              maximum: 47
+    EnumerateParaexpRequest:
+      title: 'EnumerateParaexpRequest'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              enum: ['enumerateSettings']
+              maxLength: 99
+            attributes:
+              type: object
+              properties:
+                contentsToCopy:
+                  type: array
+                  items:
+                    type: object
+                    required: [ eid ]
+                    properties:
+                      eid:
+                        type: string
+                        maxLength: 99
+    RefreshGroupsOfEnumeratorRequest:
+      title: 'RefreshEnumeratorGroupsRequest'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, attributes ]
+          properties:
+            type:
+              type: string
+              enum: ['refreshGroups']
+              maxLength: 99
+            attributes:
+              type: object
+              properties:
+                selectedReactionEid:
+                  type: string
+                  maxLength: 99
+
+    ExtExternalEnumeratorMappingResponse:
+      type: object
+      title: 'ExtExternalEnumeratorMappingResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtExternalEnumeratorMapping'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    PatchMappingRequest:
+      title: 'PatchMappingRequest'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ attributes ]
+          properties:
+            attributes:
+              type: object
+              required: [ groups ]
+              properties:
+                groups:
+                  type: object
+                  minProperties: 1
+                  properties:
+                    reactants:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MappingGroupCandidate'
+                    products:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MappingGroupCandidate'
+                    conditions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MappingGroupCandidate'
+                    solvents:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MappingGroupCandidate'
+
+    MappingGroupCandidate:
+      title: 'MappingGroupCandidate'
+      type: object
+      required: [ id, mapping ]
+      properties:
+        id:
+          type: string
+        mapping:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        fromRdf:
+          type: boolean
+
+    ExtExternalEnumeratorMapping:
+      type: object
+      title: 'ExtExternalEnumeratorMapping'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtExternalEnumeratorMappingAttributes'
+          properties:
+            groups:
+              type: object
+              properties:
+                reactants:
+                  $ref: '#/components/schemas/MappingGroupCandidate'
+                products:
+                  $ref: '#/components/schemas/MappingGroupCandidate'
+                conditions:
+                  $ref: '#/components/schemas/MappingGroupCandidate'
+                solvents:
+                  $ref: '#/components/schemas/MappingGroupCandidate'
+            enumerated:
+              type: boolean
+        relationships:
+          type: object
+          title: 'ExtExternalEnumeratorMappingRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+  responses:
+    BadRequest: #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized: #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden: #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound: #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed: #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable: #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout: #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict: #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone: #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired: #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge: #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong: #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType: #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType: #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm: #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity: #422
+      description: 'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch: #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests: #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError: #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented: #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway: #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable: #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout: #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    updateSubexpSummaryApiRequest:
+      value:
+        data:
+          - id: 'chemicalDrawing:7c162245-1b2d-4639-8fff-6ddfaf510efe'
+            type: 'subexpSummaryRow'
+            attributes:
+              columns:
+                "r2:sm":
+                  content:
+                    value: '28 g'
+          - id: 'chemicalDrawing:5d4258b0-612c-4a11-aa39-a9dbc581fe0a'
+            type: 'subexpSummaryRow'
+            attributes:
+              columns:
+                "r2:sm":
+                  content:
+                    value: '28 g'
+
+    bulkCreateSamplesWithRowsAndPropertiesRequest:
+      value:
+        data:
+          attributes:
+            rowIds:
+              - chemicalDrawing:47550aa4-f8b6-4bed-bfac-723af057ede1
+            sampleProperties:
+              - id: "2"
+                attributes:
+                  content:
+                    value: "test content"
+    bulkCreateSamplesDefaultRequest:
+      value:
+        data:
+          attributes: {}
+                    
+    paraLayoutAddSubexpsApiRequest:
+      value:
+        data:
+          attributes:
+            plates:
+              - id: 1
+                action: add
+                wells:
+                  - positionX: 0
+                    positionY: 0
+                    subexpEid: parasubexp:09690a00-69fd-474a-adb9-d3a329e79bbe
+                  - positionX: 1
+                    positionY: 1
+                    subexpEid: parasubexp:3f46e915-cf66-4957-abb0-1566861c7760
+    paraLayoutRemoveSubexpsApiRequest:
+      value:
+        data:
+          attributes:
+            plates:
+              - id: 1
+                action: remove
+                wells:
+                  - positionX: 0
+                    positionY: 0
+                    subexpEid: parasubexp:09690a00-69fd-474a-adb9-d3a329e79bbe
+                  - positionX: 1
+                    positionY: 1
+                    subexpEid: parasubexp:3f46e915-cf66-4957-abb0-1566861c7760
+    paraLayoutRemoveAllApiRequest:
+      value:
+        data:
+          attributes:
+            plates:
+              - id: 1
+                action: removeAll
+                wells: [ ]
+    ResizeParaLayoutApiRequest:
+      value:
+        data:
+          attributes:
+            layoutPattern: keep_fill
+            numberOfRows: 6
+            numberOfColumns: 12
+    ResetParaLayoutApiRequest:
+      value:
+        data:
+          attributes:
+            layoutPattern: across_row
+            numberOfRows: 6
+            numberOfColumns: 12
+            plates:
+              - id: 1
+                blockedWells:
+                  - positionX: 0
+                    positionY: 0
+                  - positionX: 11
+                    positionY: 0
+                  - positionX: 0
+                    positionY: 5
+                  - positionX: 11
+                    positionY: 5
+    enumerateParaexpExampleRequest:
+      value:
+        data:
+          type: enumerateSettings
+          attributes:
+            contentsToCopy:
+              - eid: text:3f46e915-cf66-4957-abb0-1566861c7760
+              - eid: grid:c620c3e7-6016-4aca-ae4f-d29ea4a91222
+    refreshEnumeratorGroupsExampleRequest:
+      value:
+        data:
+          type: refreshGroups
+          attributes:
+            selectedReactionEid: "chemicalDrawing:9806bc56-cdfe-4e92-85fc-b836dc13aac7"
+
+    updateSubexpSummaryApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/bulkUpdate
+        data:
+          type: bulkUpdateParagrid
+          id: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+          attributes:
+            subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+            bulkUpdateId: 20
+            description: Your request has been accepted. We have created a job to execute it. Please follow the status link to check the status.
+          relationships:
+            status:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/bulkUpdate/20
+              data:
+                type: subexpSummaryBulkUpdateReport
+                id: '20'
+        included:
+          - type: subexpSummaryBulkUpdateReport
+            id: '20'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/bulkUpdate/20
+            attributes:
+              bulkUpdateId: 20
+              subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+              jobType: ASYNC_TASK
+              state: IN_PROGRESS
+              jobStatus: READY
+              digest: zVTZWu2Ub96+0o1p4UHvJs90xcCNN8ni6/hrJG4r4hFMg0NlO/Mz1AuuQembw540ohLNIAWeWe+T2AjSoQwN9Q==
+    getSubexpSummaryApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:fcd8311e-2855-4904-89a3-f2fede33effe/rows
+        data:
+          - type: subexpSummaryRow
+            id: chemicalDrawing:31a73212-afec-4e4a-8518-15cde03ced3a
+            attributes:
+              id: chemicalDrawing:31a73212-afec-4e4a-8518-15cde03ced3a
+              columns:
+                - key: '2'
+                  display: Sub-experiment-1
+                  value: parasubexp:09690a00-69fd-474a-adb9-d3a329e79bbe
+                  linkedEntityType: parasubexp
+                - key: r1:sm
+                  display: 123 g
+                  value: 123
+                  units: g
+                - key: r1:moles
+                  display: 1.31 mol
+                  value: 1.306287170773152
+                  units: mol
+            relationships:
+              columnDefinition:
+                data:
+                  type: columnDefinition
+                  id: paragrid:fcd8311e-2855-4904-89a3-f2fede33effe
+        included:
+          - type: columnDefinition
+            id: paragrid:fcd8311e-2855-4904-89a3-f2fede33effe
+            attributes:
+              id: paragrid:fcd8311e-2855-4904-89a3-f2fede33effe
+              cols:
+                - key: '2'
+                  title: Name
+                  type: link
+                  isUserDefined: false
+                  readOnly: true
+                - key: r1:sm
+                  title: R1:Sample Mass
+                  type: unit
+                  measure: mass
+                  isUserDefined: true
+                  section: REACTANTS
+                  templateColumnKey: sm
+                - key: r1:moles
+                  title: R1:Moles
+                  type: unit
+                  measure: amount of substance
+                  isUserDefined: true
+                  section: REACTANTS
+                  templateColumnKey: moles
+    getUpdateParagridStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/bulkUpdate/20
+        data:
+          type: subexpSummaryBulkUpdateReport
+          id: '20'
+          links:
+            self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/bulkUpdate/20
+          attributes:
+            bulkUpdateId: 20
+            subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+            jobType: ASYNC_TASK
+            state: SCHEDULED
+            jobStatus: SUCCESS
+            digest: B7wcvn7GJZFeXh9APOvdhnutfnP9fWufdIlyhDX/GmWBC/dztZMTsXXLthSF2sB8BNQ80q63Tgj0s6HeOBSX1A==
+    
+    bulkCreateSamplesSubexpSummaryApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/samples/bulkCreate
+        data:
+          type: bulkCreateSamplesParagrid
+          id: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+          attributes:
+            subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+            bulkUpdateId: 20
+            description: Your request has been accepted. We have created a job to execute it. Please follow the status link to check the status.
+          relationships:
+            status:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/samples/bulkCreate/20
+              data:
+                type: subexpSummaryBulkCreateSamplesReport
+                id: '20'
+        included:
+          - type: subexpSummaryBulkCreateSamplesReport
+            id: '20'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/samples/bulkCreate/20
+            attributes:
+              bulkUpdateId: 20
+              subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+              jobType: BULK_SAMPLES_CREATE
+              state: IN_PROGRESS
+              jobStatus: READY
+              digest: zVTZWu2Ub96+0o1p4UHvJs90xcCNN8ni6/hrJG4r4hFMg0NlO/Mz1AuuQembw540ohLNIAWeWe+T2AjSoQwN9Q==
+    
+    getBulkCreateSamplesParagridStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/samples/bulkCreate/20
+        data:
+          type: subexpSummaryBulkCreateSamplesReport
+          id: '20'
+          links:
+            self: https://snb.example.com/api/rest/v1.0/subexpSummary/paragrid:3f46e915-cf66-4957-abb0-1566861c7760/samples/bulkCreate/20
+          attributes:
+            bulkUpdateId: 20
+            subexpSummaryId: paragrid:3f46e915-cf66-4957-abb0-1566861c7760
+            jobType: BULK_SAMPLES_CREATE
+            state: SCHEDULED
+            jobStatus: SUCCESS
+            digest: B7wcvn7GJZFeXh9APOvdhnutfnP9fWufdIlyhDX/GmWBC/dztZMTsXXLthSF2sB8BNQ80q63Tgj0s6HeOBSX1A==
+    getSubexpLayoutApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+        data:
+          type: subexpLayout
+          id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+          links:
+            self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+          attributes:
+            plates:
+              - id: 1
+                name: Plate-1
+                numberOfRows: 16
+                numberOfColumns: 12
+                wells:
+                  - wellId: A2
+                    row: A
+                    column: '2'
+                    positionX: 1
+                    positionY: 0
+                    subexpEid: parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+                    fields:
+                      - key: '2'
+                        name: Name
+                        type: LINK
+                        content:
+                          type: parasubexp
+                          display: Sub-experiment-1
+                          value: parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+                      - key: '10'
+                        name: Plate
+                        type: TEXT
+                        content:
+                          value: '1'
+                      - key: '11'
+                        name: Well
+                        type: TEXT
+                        content:
+                          value: A2
+                      - key: '12'
+                        name: Row
+                        type: TEXT
+                        content:
+                          value: A
+                      - key: '13'
+                        name: Column
+                        type: TEXT
+                        content:
+                          value: '2'
+                      - key: r1:name
+                        name: R1:Reactant
+                        type: TEXT
+                        content:
+                          value: 1,1'-bi(cyclopropane)
+                      - key: r1:formula
+                        name: R1:MF
+                        type: HTML
+                        content:
+                          value: C<sub>6</sub>H<sub>10</sub>
+                      - key: r1:mf
+                        name: R1:FM
+                        type: UNIT
+                        content:
+                          display: 82.15 g/mol
+                          value: 82.15
+                          units: g/mol
+                      - key: r1:sm
+                        name: R1:Sample Mass
+                        type: UNIT
+                        content:
+                          display: 100 g
+                          value: 100
+                          units: g
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+              data:
+                type: entity
+                id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            subexpList:
+              data:
+                - type: entity
+                  id: parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+                - type: entity
+                  id: parasubexp:ad0c3bdc-31bd-4654-98ca-cad5ea4f87ac
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:ad0c3bdc-31bd-4654-98ca-cad5ea4f87ac
+                - type: entity
+                  id: parasubexp:55047a61-e764-43b9-92a5-79e01f624e55
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:55047a61-e764-43b9-92a5-79e01f624e55
+                - type: entity
+                  id: parasubexp:5fad6f91-9d42-4830-bd06-268185e0d5ea
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:5fad6f91-9d42-4830-bd06-268185e0d5ea
+            wellFieldsDefinition:
+              data:
+                type: paraLayoutWellFieldsDefinition
+                id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+        included:
+          - type: entity
+            id: parasubexp:5fad6f91-9d42-4830-bd06-268185e0d5ea
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:5fad6f91-9d42-4830-bd06-268185e0d5ea
+            attributes:
+              type: parasubexp
+              eid: parasubexp:5fad6f91-9d42-4830-bd06-268185e0d5ea
+              name: Sub-experiment-4
+              fields: { }
+              flags:
+                isInUse: false
+          - type: entity
+            id: parasubexp:ad0c3bdc-31bd-4654-98ca-cad5ea4f87ac
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:ad0c3bdc-31bd-4654-98ca-cad5ea4f87ac
+            attributes:
+              type: parasubexp
+              eid: parasubexp:ad0c3bdc-31bd-4654-98ca-cad5ea4f87ac
+              name: Sub-experiment-2
+              fields: { }
+              flags:
+                isInUse: false
+          - type: entity
+            id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            attributes:
+              type: paraLayout
+              eid: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+              name: Subexperiment Layout
+              digest: '60498150'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Subexperiment Layout
+          - type: entity
+            id: parasubexp:55047a61-e764-43b9-92a5-79e01f624e55
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:55047a61-e764-43b9-92a5-79e01f624e55
+            attributes:
+              type: parasubexp
+              eid: parasubexp:55047a61-e764-43b9-92a5-79e01f624e55
+              name: Sub-experiment-3
+              fields: { }
+              flags:
+                isInUse: false
+          - type: paraLayoutWellFieldsDefinition
+            id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            attributes:
+              id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+              type: paraLayoutWellFieldsDefinition
+              fieldsDefinition:
+                - key: '2'
+                  title: Name
+                  type: LINK
+                  dataType: LINK
+                  readOnly: true
+                - key: '4'
+                  title: Preview
+                  type: PREVIEW
+                  dataType: PREVIEW
+                  readOnly: true
+                - key: r1:name
+                  title: R1:Reactant
+                  type: TEXT
+                  dataType: TEXT
+                - key: r1:formula
+                  title: R1:MF
+                  type: HTML
+                  dataType: HTML
+                  readOnly: true
+                - key: r1:mf
+                  title: R1:FM
+                  type: UNIT
+                  dataType: UNIT
+                  measure: molecular mass
+                  readOnly: true
+                - key: r1:sm
+                  title: R1:Sample Mass
+                  type: UNIT
+                  dataType: UNIT
+                  measure: mass
+                - key: '10'
+                  title: Plate
+                  type: TEXT
+                  dataType: TEXT
+                  readOnly: true
+                - key: '11'
+                  title: Well
+                  type: TEXT
+                  dataType: TEXT
+                  readOnly: true
+                - key: '12'
+                  title: Row
+                  type: TEXT
+                  dataType: TEXT
+                  readOnly: true
+                - key: '13'
+                  title: Column
+                  type: TEXT
+                  dataType: TEXT
+                  readOnly: true
+          - type: entity
+            id: parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+            attributes:
+              type: parasubexp
+              eid: parasubexp:711a0e7d-940b-4af4-9302-920c6a4e91ee
+              name: Sub-experiment-1
+              fields: { }
+              flags:
+                isInUse: true
+    asyncResetSubexpLayoutApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb/reset
+        data:
+          type: asyncUpdateResult
+          id: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+          attributes:
+            name: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            jobId: 27
+            description: Your request has been accepted. We have created a job to execute
+              it. Please follow the status link to check the status.
+          relationships:
+            status:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb/reset/27
+              data:
+                type: asyncUpdateReport
+                id: '27'
+        included:
+          - type: asyncUpdateReport
+            id: '27'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb/reset/27
+            attributes:
+              jobId: 27
+              name: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+              jobType: ASYNC_TASK
+              jobStatus: READY
+              digest: BdcCFPyJewm0iEwn7X0qj5LGh+3UAALooq5MGDUSwgWHjqcWuZ/aHGUwMP0c3qVuVUlAOcO8LfY6iZg6mrYRpw==
+    getAsyncResetSubexpLayoutStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb/reset/27
+        data:
+          type: asyncUpdateReport
+          id: '27'
+          links:
+            self: https://snb.example.com/api/rest/v1.0/subexpLayout/paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb/reset/27
+          attributes:
+            jobId: 27
+            name: paraLayout:91d4d7a8-9dfb-47e6-b01c-bb03c6e9e2bb
+            jobType: ASYNC_TASK
+            jobStatus: SUCCESS
+            digest: DEsO3nPs0IqK6sLdWe3YCL/QQJE68UicM8eJzqgAI8CV7/odNtmT2CksSUzHhuoSBVDQ+gwPYNVu9XcUt1eFCQ==
+    startAsyncResetParaexpApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/paraexp/paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/reset
+        data:
+          type: asyncResetParaexp
+          id: '42'
+          attributes:
+            jobId: '42'
+            status: IN_PROGRESS
+    getAsyncResetParaexpSuccessStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/paraexp/paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/reset/42
+        data:
+          type: asyncResetParaexp
+          id: '42'
+          attributes:
+            jobId: '42'
+            status: 'COMPLETED'
+    getAsyncResetParaexpFailedStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/paraexp/paraexp:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/reset/42
+        data:
+          type: asyncResetParaexp
+          id: '42'
+          attributes:
+            jobId: '42'
+            status: 'FAILED'
+            error: 'Detail error message'
+    getEnumeratorContentApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+        data:
+          type: paraenum
+          id: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+          attributes:
+            selectedReaction:
+              eid: chemicalDrawing:9806bc56-cdfe-4e92-85fc-b836dc13aac7
+              name: Generic Reaction
+              checksum: 159b7eb9064e52f699f7ac60df89cf8a
+              groups:
+                - id: '8'
+                  smiles: "[R]C1CCCC1"
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+              data:
+                type: entity
+                id: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+        included:
+          - type: entity
+            id: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            attributes:
+              type: paraenum
+              eid: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+              name: Enumerator
+              digest: '69006630'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: Enumerator
+    getEnumeratorEntityApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973/addCompound
+        data:
+          type: entity
+          id: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+          attributes:
+            id: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            eid: paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            name: Enumerator
+            description: ''
+            createdAt: '2024-07-22T07:43:02.588Z'
+            editedAt: '2024-07-22T08:13:15.183Z'
+            type: paraenum
+            digest: '51247804'
+            fields:
+              Description:
+                value: ''
+              Name:
+                value: Enumerator
+            flags:
+              canEdit: true
+          relationships:
+            createdBy:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+            editedBy:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+            ancestors:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973/ancestors
+              data:
+                - type: entity
+                  id: paraexp:f93ba9ab-ee4e-4edc-be32-e534266cfb39
+                  meta:
+                    links:
+                      self: https://snb.example.com/api/rest/v1.0/entities/paraexp:f93ba9ab-ee4e-4edc-be32-e534266cfb39
+            owner:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+            source:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/paraenum:289e3df5-4f94-4b53-9f2e-69c20a403973/export
+        included:
+          - type: user
+            id: '100'
+            links:
+              self: https://snb.example.com/api/rest/v1.0/users/100
+            attributes:
+              userId: '100'
+              userName: foo.bar@revvity.com
+              flags:
+                isSystemStandardUser: true
+              email: foo.bar@revvity.com
+              firstName: foo
+              lastName: bar
+              isEnabled: true
+            relationships:
+              systemGroups:
+                links:
+                  self: https://snb.example.com/api/rest/v1.0/users/100/systemGroups
+          - type: entity
+            id: paraexp:f93ba9ab-ee4e-4edc-be32-e534266cfb39
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/paraexp:f93ba9ab-ee4e-4edc-be32-e534266cfb39
+            attributes:
+              type: paraexp
+              eid: paraexp:f93ba9ab-ee4e-4edc-be32-e534266cfb39
+              name: para-exp-0001
+              digest: '23196240'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: para-exp-0001
+              flags: {}
+    startAsyncEnumerateParaexpApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: IN_PROGRESS
+    startAsyncExternalEnumerateParaexpApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: IN_PROGRESS
+    getAsyncEnumerateParaexpSuccessStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: 'COMPLETED'
+    getAsyncEnumerateParaexpFailedStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/paraenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: 'FAILED'
+            error: 'Detail error message'
+    getAsyncExternalEnumerateParaexpSuccessStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: 'COMPLETED'
+    getAsyncExternalEnumerateParaexpFailedStatusApiResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/extenumerator/extparaenum:fc87f321-6b74-4046-bde0-0e1cf18bd8ce/enumerate/47
+        data:
+          type: asyncEnumerate
+          id: '47'
+          attributes:
+            jobId: '47'
+            status: 'FAILED'
+            error: 'Detail error message'
+    patchUnitFixedValue:
+      value:
+        data:
+          attributes:
+            groups:
+              reactants:
+                - id: reactants-1
+                  mapping:
+                    - key: mw
+                      title: MW
+                      type: unit
+                      measure: molecular mass
+                      externalField: Fixed Value
+                      isFixed: true
+                      fixedValue:
+                        value: '1.1'
+                        user: 1.1 g/mol
+    patchTextFixedValue:
+      value:
+        data:
+          attributes:
+            groups:
+              reactants:
+                - id: reactants-1
+                  mapping:
+                    - key: name
+                      type: text
+                      title: Reactant Name
+                      externalField: Fixed Value
+                      isFixed: true
+                      fixedValue:
+                        value: abc
+                        user: abc
+    patchReactants:
+      value:
+        data:
+          attributes:
+            groups:
+              reactants:
+                - id: reactants-1
+                  mapping:
+                    - key: chemical
+                      type: Mol3k
+                      externalField: Chemical Structure
+                      isBase64Encoded: false
+                      isChemicalField: true
+                    - key: mw
+                      title: MW
+                      type: unit
+                      measure: molecular mass
+                      externalField: A_MW
+                      unit: g/mol
+    patchProducts:
+      value:
+        data:
+          attributes:
+            groups:
+              products:
+                - id: products-1
+                  mapping:
+                    - key: chemical
+                      type: Mol3k
+                      externalField: Chemical Structure
+                      isBase64Encoded: false
+                      isChemicalField: true
+                    - key: mw
+                      title: MW
+                      type: unit
+                      measure: molecular mass
+                      externalField: A_MW
+                      unit: g/mol
+    patchConditions:
+      value:
+        data:
+          attributes:
+            groups:
+              conditions:
+                - id: conditions-1
+                  mapping:
+                    - key: pressure
+                      title: Pressure
+                      type: unit
+                      measure: pressure
+                      externalField: A_P
+                      unit: atm
+    patchSolvents:
+      value:
+        data:
+          attributes:
+            groups:
+              solvents:
+                - id: solvents-1
+                  mapping:
+                    - key: mL/g
+                      title: mL/g
+                      type: unit
+                      externalField: A_M
+    patchMappingResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/enumerator/extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+        data:
+          type: extparaenum
+          id: extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+          attributes:
+            groups:
+              reactants:
+                - id: reactants-1
+                  mapping:
+                    - key: chemical
+                      type: Mol3k
+                      isBase64Encoded: false
+                      externalField: Chemical Structure
+                      isChemicalField: true
+                    - key: mw
+                      title: MW
+                      type: unit
+                      measure: molecular mass
+                      externalField: A_MW
+                      unit: g/mol
+              products:
+                - id: products-1
+                  mapping:
+                    - key: chemical
+                      type: CDXML
+                      isBase64Encoded: false
+                      isChemicalField: true
+                      isFixed: true
+                      fixedValue: <CDXML />
+                    - key: mw
+                      title: MW
+                      type: unit
+                      measure: molecular mass
+                      externalField: Fixed Value
+                      isFixed: true
+                      fixedValue:
+                        value: '1.1'
+                        user: 1.1 g/mol
+              conditions:
+                id: conditions-1
+                mapping: []
+              solvents:
+                id: solvents-1
+                mapping:
+                  - key: mL/g
+                    title: mL/g
+                    type: unit
+                    externalField: Fixed Value
+                    isFixed: true
+                    fixedValue:
+                      value: '8'
+                      user: '8'
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+              data:
+                type: entity
+                id: extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+        included:
+          - type: entity
+            id: extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+            attributes:
+              type: extparaenum
+              eid: extparaenum:289e3df5-4f94-4b53-9f2e-69c20a403973
+              name: External Enumerator
+              digest: '69006630'
+              fields:
+                Description:
+                  value: ''
+                Name:
+                  value: External Enumerator

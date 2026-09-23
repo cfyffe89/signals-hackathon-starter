@@ -1,0 +1,1985 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+paths:
+  /attributes:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch all Attributes'
+      description: |
+        Fetch all Attributes.
+        
+        Accepted entity types: attribute.
+        
+        Example usages:
+
+          /attributes
+
+      operationId: 'fetchAllAttributes'
+
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeListResponse'
+              examples:
+                attributes:
+                  $ref: '#/components/examples/fetchingAllAttributesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    post:
+      tags:
+        - Attributes
+      summary: 'Create a new Attribute'
+      description: |
+        Create a new list Attribute(type is 'choice').
+
+        - Create a new list attribute.
+
+          Options can be used to init the list options.
+
+        Accepted entity types: attribute.
+
+        Example usages:
+
+          /attributes
+
+      operationId: 'postNewAttribute'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PostAttributeRequest'
+            examples:
+              CreateListAttribute:
+                $ref: '#/components/examples/postAttributeRequest'
+              CreateHierarchicalAttribute:
+                $ref: '#/components/examples/postHierarchicalAttributeRequest'
+      responses:
+        '201':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeResponse'
+              examples:
+                attribute:
+                  $ref: '#/components/examples/fetchingAttributeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '501':
+          $ref: '#/components/responses/NotImplemented'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /attributes/{eid}:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch content of Attribute'
+      description: |
+        Fetch content of Attribute.
+        
+        Accepted entity types: attribute.
+        
+        Example usages:
+
+          /attributes/attribute:1234
+
+      operationId: 'fetchAttrContentById'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+        - $ref: '#/components/parameters/attributeStatisticParam'
+        - $ref: '#/components/parameters/includeParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeResponse'
+              examples:
+                attribute:
+                  $ref: '#/components/examples/fetchingAttributeResponse'
+                externalListAttribute:
+                  $ref: '#/components/examples/fetchingExternalListAttributeResponse'
+                hierarchicalAttribute:
+                  $ref: '#/components/examples/fetchingHierarchicalAttributeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Attributes
+      summary: 'Update content of Attribute'
+      description: |
+        Update content of Attribute.
+        This API can be used for replacing the whole options of list Attribute in a quick way.
+
+        - Use "hierarchicalOptions" for hierarchical attributes.
+        - Use "options" for other attributes.
+
+        Accepted entity types: attribute.
+
+        Example usages:
+
+          /attributes/attribute:1234
+
+      operationId: 'patchAttrContentById'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+        - $ref: '#/components/parameters/attributeStatisticParam'
+        - $ref: '#/components/parameters/includeParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PatchAttributeRequest'
+            examples:
+              UpdateAttributeOptions:
+                $ref: '#/components/examples/patchAttributeRequest'
+              UpdateHierarchicalAttributeOptions:
+                $ref: '#/components/examples/patchHierarchicalAttributeRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeResponse'
+              examples:
+                attribute:
+                  $ref: '#/components/examples/fetchingAttributeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    delete:
+      tags:
+        - Attributes
+      summary: 'Delete an Attribute'
+      description: |
+        Delete an Attribute.
+        
+        Accepted entity types: attribute.
+        
+        Example usages:
+
+          /attributes/attribute:1234
+
+      operationId: 'deleteAttributeById'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+      responses:
+        '204':
+          description: 'OK'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /attributes/{eid}/options:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch options of Attribute'
+      description: |
+        Fetch options of Attribute.
+        
+        Accepted entity types: attribute.
+        
+        Example usages:
+
+          /attributes/attribute:1234/options
+
+      operationId: 'fetchAttrOptionsById'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/termParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeOptionListResponse'
+              examples:
+                attribute:
+                  $ref: '#/components/examples/fetchingAttributeOptionsResponse'
+                hierarchicalAttribute:
+                  $ref: '#/components/examples/fetchingHierarchicalAttributeOptionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+    patch:
+      tags:
+        - Attributes
+      summary: 'Update options of Attribute'
+      description: |
+        Update options of Attribute.
+
+        Accepted entity types: attribute.
+
+        Specify expected 'action' values in request body while adding/updating/deleting options.
+
+        There are 3 actions are accepted,
+        - create, Add a new option.
+        - update, Update existing option.
+        - delete, Delete existing option.
+
+        Example usages:
+
+          /attributes/attribute:1234/options
+
+      operationId: 'patchAttrOptionsById'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/termParam'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttributeOptionsRequest'
+            examples:
+              UpdateAttributeOptions:
+                $ref: '#/components/examples/updateAttributeOptionsRequest'
+              UpdateExternalListAttributeOptions:
+                $ref: '#/components/examples/updateExternalListAttributeOptionsRequest'
+              UpdateHierarchicalAttributeOptions:
+                $ref: '#/components/examples/updateHierarchicalAttributeOptionsRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AttributeOptionListResponse'
+              examples:
+                attributeOptions:
+                  $ref: '#/components/examples/fetchingAttributeOptionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /attributes/{eid}/refresh:
+    post:
+      tags:
+        - Attributes
+      summary: 'Refresh content of an external list Attribute'
+      description: |
+        Refresh content of an external list Attribute. 
+
+        This is an synchronize API.
+        If the request is accepted, server will start a job to refresh the content of the specified external list attribute.
+        To get the status of refreshing, please use "GET /attributes/eid"(see externalListAttribute example for detail). 
+
+        Accepted entity types: attribute.
+        
+        Example usages:
+
+          /attributes/attribute:1234/refresh
+
+        Note: For an external list attribute, there should be an "externalSource" field in the response if fetching it by "GET /attributes/eid".
+
+      operationId: 'refreshOptions'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+      responses:
+        '202':
+          description: 'Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /attributes/ontology/options/{optionId}/details:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch ontology option details by option ID'
+      description: |
+        Fetch detailed information about a specific ontology term that has been selected for an ontology list attribute.
+
+        This endpoint returns comprehensive information about an ontology term including:
+        - Preferred name and IRI (International Resource Identifier)
+        - Definitions and synonyms
+        - Hierarchical relationships (ancestors and subclasses)
+        - Associated attribute information
+
+        Example usages:
+
+          /attributes/ontology/options/12345/details
+
+      operationId: 'fetchOntologyOptionDetailsById'
+      parameters:
+        - $ref: '#/components/parameters/ontologyOptionIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/OntologyOptionDetailsResponse'
+              examples:
+                ontologyOptionDetails:
+                  $ref: '#/components/examples/fetchingOntologyOptionDetailsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /attributes/{eid}/ontology/options:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch ontology options for an attribute'
+      description: |
+        Fetch ontology options (terms) for a given ontology list attribute.
+        Search matches against preferredName, IRI, and synonyms.
+
+        Example usages:
+
+          # Fetch root-level ontology options
+          GET /attributes/attribute:123/ontology/options
+
+          # Search for terms
+          GET /attributes/attribute:123/ontology/options?search=cancer
+
+          # With pagination
+          GET /attributes/attribute:123/ontology/options?search=cancer&page[offset]=0&page[limit]=10
+
+      operationId: 'fetchOntologyOptions'
+      parameters:
+        - $ref: '#/components/parameters/attributeIdParam'
+        - name: search
+          in: query
+          description: 'Search keyword to match against preferredName, IRI, and synonyms.'
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/offsetParam'
+        - name: page[limit]
+          in: query
+          description: Maximum number of items to return.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 10000
+            default: 100
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/OntologyOptionsResponse'
+              examples:
+                ontologyOptions:
+                  $ref: '#/components/examples/fetchingOntologyOptionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /autotext/lists/{autotextListId}:
+    get:
+      tags:
+        - Attributes
+      summary: 'Fetch content of autotext list'
+      description: |
+        Fetch content of autotext list.
+        
+        Example usages:
+
+          /autotext/lists/8166e780-0eb4-4510-9e57-9c798a7b82d3
+
+      operationId: 'fetchAutotextListContentById'
+      parameters:
+        - $ref: '#/components/parameters/autotextListIdParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/AutotextListResponse'
+              examples:
+                autotextList:
+                  $ref: '#/components/examples/fetchingAutotextListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    attributeIdParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique Attribute identifier. Format: EID.
+        Accepted entity types: attribute.
+
+        Example value: "attribute:1234".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    attributeStatisticParam:
+      name: 'statistics'
+      in: query
+      description: |
+        If true, the API will return the 'counts' object in the response and the default will be false.
+        
+        The 'counts' object contains statistics on the usage of the specified attribute throughout Signals.
+      schema:
+        type: boolean
+        deprecated: false
+    autotextListIdParam:
+      name: 'autotextListId'
+      in: path
+      description: |
+        Unique autotext list identifier.
+
+        Example value: "8166e780-0eb4-4510-9e57-9c798a7b82d3".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    includeParam:
+      name: 'include'
+      in: query
+      description: |
+        The related resources to be shown in "included" field.
+
+        Example value: "entity".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+    offsetParam:
+      name: page[offset]
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        default: 0
+    limitParam:
+      name: page[limit]
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 10000
+        default: 20
+    termParam:
+      name: term
+      in: query
+      description: Parameter used to search for options whose value contains this term.
+      required: false
+      schema:
+        type: string
+        format: ''
+        maxLength: 200
+    ontologyOptionIdParam:
+      name: 'optionId'
+      in: path
+      description: |
+        Unique ontology option identifier.
+
+        Example value: "12345".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: integer
+        format: int64
+        description: 'ID of the ontology option'
+        deprecated: false
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+
+    ExtEntity:
+      type: object
+      title: 'ExtEntity'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtEntityAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            name:
+              type: string
+            synonyms:
+              type: array
+              items:
+                type: string
+            description:
+              type: string
+            type:
+              type: string
+            createdAt:
+              type: string
+            editedAt:
+              type: string
+            digest:
+              type: string
+            fields:
+              title: 'fields'
+              type: object
+              additionalProperties:
+                type: object
+            state:
+              type: string
+            flags:
+              type: object
+            signedAt:
+              type: string
+            acceptedAt:
+              type: string
+            rejectedAt:
+              type: string
+            fragments:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            data:
+              type: object
+              additionalProperties: true
+          additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtEntityRelationships'
+          properties:
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            editedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            ancestors:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            children:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            systemTemplate:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            template:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            pdf:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            signedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            acceptedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            rejectedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            source:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            drawing:
+              $ref: '#/components/schemas/JsonApiRelationship'
+          additionalProperties: true
+
+    ExtAttribute:
+      type: object
+      title: 'ExtAttribute'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtAttributeAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            options:
+              type: array
+              items:
+                type: string
+            hierarchicalOptions:
+              type: array
+              items:
+                type: object
+            canEditOptions:
+              type: boolean
+            value:
+              type: string
+            format:
+              type: string
+            externalSource:
+              type: object
+            flags:
+              type: object
+              additionalProperties: true
+            counts:
+              type: object
+            parentEid:
+              type: string
+            schedule:
+              type: object
+        relationships:
+          type: object
+          title: 'ExtAttributeRelationships'
+          properties:
+            entity:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            parentAttribute:
+              $ref: '#/components/schemas/JsonApiRelationship'
+
+    AttributeResponse:
+      type: object
+      title: 'AttributeResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtAttribute'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    AttributeListResponse:
+      type: object
+      title: 'AttributeListResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtEntity'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtAttributeOption:
+        type: object
+        title: 'ExtAttributeOption'
+        properties:
+          links:
+            $ref: '#/components/schemas/JsonApiLinks'
+          type:
+            type: string
+          id:
+            type: string
+          attributes:
+            type: object
+            title: 'ExtAttrOptionAttributes'
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+              parentValue:
+                type: string
+              action:
+                type: string
+              description:
+                type: string
+              details:
+                type: object
+                additionalProperties: true
+          relationships:
+            type: object
+    AttributeOptionListResponse:
+      type: object
+      title: 'AttributeOptionListResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiPagingLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtAttributeOption'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    AutotextListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        data:
+          type: object
+          title: AutotextListResponseData
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              $ref: '#/components/schemas/AutotextListDataAttributes'
+            relationships:
+              $ref: '#/components/schemas/JsonApiRelationship'
+        included:
+          type: object
+          additionalProperties: true
+    AutotextListDataAttributes:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+
+    OntologyOptionDetailsResponse:
+      type: object
+      title: 'OntologyOptionDetailsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          type: object
+          title: 'OntologyOptionDetailsData'
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            links:
+              $ref: '#/components/schemas/JsonApiLinks'
+            attributes:
+              type: object
+              title: 'OntologyOptionDetailsAttributes'
+              properties:
+                id:
+                  type: string
+                preferredName:
+                  type: string
+                iri:
+                  type: string
+                value:
+                  type: string
+                attributeId:
+                  type: integer
+                definitions:
+                  type: array
+                  items:
+                    type: string
+                synonyms:
+                  type: array
+                  items:
+                    type: string
+                ancestors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      iri:
+                        type: string
+                      preferredName:
+                        type: string
+                subclassOf:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      iri:
+                        type: string
+                      preferredName:
+                        type: string
+            relationships:
+              type: object
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    OntologyOptionsResponse:
+      type: object
+      title: 'OntologyOptionsResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: 'Total number of matching terms'
+            count:
+              type: integer
+              description: 'Number of terms in current page'
+        data:
+          type: array
+          items:
+            type: object
+            title: 'OntologyOptionData'
+            properties:
+              type:
+                type: string
+              id:
+                type: string
+              links:
+                $ref: '#/components/schemas/JsonApiLinks'
+              attributes:
+                type: object
+                title: 'OntologyOptionAttributes'
+                properties:
+                  id:
+                    type: integer
+                  iri:
+                    type: string
+                  preferredName:
+                    type: string
+                  isSelectable:
+                    type: boolean
+                  hasChildren:
+                    type: boolean
+                  ancestors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        iri:
+                          type: string
+                        preferredName:
+                          type: string
+                  matchPreferredName:
+                    type: boolean
+                  matchIri:
+                    type: boolean
+                  matchSynonyms:
+                    type: boolean
+                  isRestricted:
+                    type: boolean
+
+    UpdateAttributeOptionsRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array 
+          items:
+            $ref: '#/components/schemas/UpdateOptionsRequestData'
+    UpdateOptionsRequestData:
+      type: object 
+      required: [type, attributes]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        attributes:
+          type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+            key:
+              type: string
+            value:
+              type: string
+            parentValue:
+              type: string
+            description:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    PatchAttributeRequest:
+      title: 'PatchAttributeRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type,id,attributes]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              title: 'attributes'
+              properties:
+                options:
+                  type: array
+                  items:
+                    type: string
+                hierarchicalOptions:
+                  type: array
+                  items:
+                    type: object
+                    title: 'hierarchicalOptions'
+                    required: [parentValue,options]
+                    properties:
+                      parentValue:
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          type: string
+    PostAttributeRequest:
+      title: 'PostAttributeRequest'
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type,attributes]
+          properties:
+            type:
+              type: string
+              pattern: '^(attribute)$'
+              minLength: 1
+              maxLength: 99
+            attributes:
+              type: object
+              title: 'attributes'
+              required: [name,type]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 99
+                type:
+                  type: string
+                  pattern: '^(choice)$'
+                  minLength: 1
+                  maxLength: 99
+                description:
+                  type: string
+                parentEid:
+                  type: string
+                options:
+                  type: array
+                  items:
+                    type: string
+                hierarchicalOptions:
+                  type: array
+                  items:
+                    type: object
+                    title: 'hierarchicalOption'
+                    properties:
+                      parentValue:
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          type: string
+                externalSource:
+                  type: object
+                  title: 'externalSource'
+                  required: [id]
+                  properties:
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 99
+                schedule:
+                  type: object
+                  title: 'schedule'
+                  required: [type,recurrence]
+                  properties:
+                    type:
+                      type: string
+                      pattern: '^(EXTERNAL_ATTRIBUTE_REFRESH)$'
+                      minLength: 1
+                      maxLength: 99
+                    recurrence:
+                      type: string
+                      enum: ['HOURLY','DAILY','NEVER']
+                      minLength: 1
+                      maxLength: 99
+                    hour:
+                      type: string
+                      enum: ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23']
+                      minLength: 1
+                      maxLength: 99
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    fetchingAttributeResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:8
+        data:
+          type: attribute
+          id: attribute:8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/attributes/attribute:8
+          attributes:
+            id: attribute:8
+            name: attr
+            type: choice
+            options:
+            - option1
+            - option2
+            - option3
+            canEditOptions: true
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/attribute:8
+              data:
+                type: entity
+                id: attribute:8
+        included:
+        - type: entity
+          id: attribute:8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/attribute:8
+          attributes:
+            type: attribute
+            eid: attribute:8
+            name: attr
+            digest: '0'
+            fields: {}
+
+    fetchingExternalListAttributeResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:25
+        data:
+          type: attribute
+          id: attribute:25
+          links:
+            self: https://snb.example.com/api/rest/v1.0/attributes/attribute:25
+          attributes:
+            id: attribute:25
+            name: externalListAttribute
+            type: choice
+            options:
+              - '101'
+              - '102'
+            externalSource:
+              id: 9474cc49-d552-4fe7-be16-1e319e3f1e8e
+              type: list
+              params: {}
+            counts:
+              total: 0
+              templates:
+                total: 0
+                system: 0
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/attribute:25
+              data:
+                type: entity
+                id: attribute:25
+            schedule:
+              data:
+                type: attributeSchedule
+                id: attribute:25
+        included:
+          - type: attributeSchedule
+            id: attribute:25
+            attributes:
+              id: attribute:25
+              jobType: EXTERNAL_ATTRIBUTE_REFRESH
+              lastRuntime: '2023-05-04T08:32:44.607Z'
+              status: success
+          - type: entity
+            id: attribute:25
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/attribute:25
+            attributes:
+              type: attribute
+              eid: attribute:25
+              name: extList3
+              digest: '0'
+              fields: {}
+
+    fetchingHierarchicalAttributeResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:30
+        data:
+          type: attribute
+          id: attribute:30
+          links:
+            self: https://snb.example.com/api/rest/v1.0/attributes/attribute:30
+          attributes:
+            id: attribute:30
+            name: ha001
+            type: choice
+            options:
+              - aaa
+              - aa1
+              - aa2
+              - aa3
+              - aa5
+              - aa4
+            hierarchicalOptions:
+              - parentValue: ''
+                options:
+                  - aaa
+              - parentValue: '1'
+                options:
+                  - aa1
+              - parentValue: '2'
+                options:
+                  - aa2
+              - parentValue: '3'
+                options:
+                  - aa3
+                  - aa5
+              - parentValue: '4'
+                options:
+                  - aa4
+            counts:
+              total: 0
+              templates:
+                total: 0
+                system: 0
+          relationships:
+            entity:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/attribute:30
+              data:
+                type: entity
+                id: attribute:30
+            parentAttribute:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/entities/attribute:10
+              data:
+                type: entity
+                id: attribute:10
+        included:
+          - type: entity
+            id: attribute:10
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/attribute:10
+            attributes:
+              type: attribute
+              eid: attribute:10
+              name: testList
+              digest: '0'
+              fields: {}
+          - type: entity
+            id: attribute:30
+            links:
+              self: https://snb.example.com/api/rest/v1.0/entities/attribute:30
+            attributes:
+              type: attribute
+              eid: attribute:30
+              name: ha001
+              digest: '0'
+              fields: {}
+
+    fetchingAllAttributesResponse:
+      value:
+        data:
+        - type: entity
+          id: attribute:1
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/attribute:1
+          attributes:
+            id: attribute:1
+            eid: attribute:1
+            name: Text
+            type: attribute
+            digest: '0'
+            fields: {}
+        - type: entity
+          id: attribute:6
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/attribute:6
+          attributes:
+            id: attribute:6
+            eid: attribute:6
+            name: Material Library Type
+            type: attribute
+            digest: '0'
+            fields: {}
+        - type: entity
+          id: attribute:8
+          links:
+            self: https://snb.example.com/api/rest/v1.0/entities/attribute:8
+          attributes:
+            id: attribute:8
+            eid: attribute:8
+            name: attr
+            type: attribute
+            digest: '0'
+            fields: {}
+    fetchingAttributeOptionsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:8/options
+        data:
+        - type: option
+          id: option1
+          attributes:
+            key: option1
+            value: option1
+        - type: option
+          id: option2
+          attributes:
+            key: option2
+            value: option2
+        - type: option
+          id: option3
+          attributes:
+            key: option3
+            value: option3
+    fetchingHierarchicalAttributeOptionsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:30/options
+        data:
+          - type: option
+            id: option1
+            attributes:
+              key: option1
+              value: option1
+              parentValue: ""
+          - type: option
+            id: option2
+            attributes:
+              key: option2
+              value: option2
+              parentValue: "p1"
+          - type: option
+            id: option3
+            attributes:
+              key: option3
+              value: option3
+              parentValue: "p2"
+    updateAttributeOptionsRequest:
+      value:
+        data:
+          - id: "option1"
+            type: "option"
+            attributes:
+              action: "update"
+              value: "updated option1"
+          - type: "option"
+            attributes:
+              action: "create"
+              value: "option10"
+          - id: "option2"
+            type: "option"
+            attributes:
+              action: "delete"
+    updateExternalListAttributeOptionsRequest:
+      value:
+        data:
+          - id: "option1"
+            type: "option"
+            attributes:
+              action: "update"
+              value: "updated option1"
+              description: "updated description"
+              details:
+                status.code: 'Stopped'
+          - type: "option"
+            attributes:
+              action: "create"
+              value: "option10"
+              description: "description"
+              details:
+                description: 'External List'
+                status.code: 'Stopped'
+          - id: "option2"
+            type: "option"
+            attributes:
+              action: "delete"
+    updateHierarchicalAttributeOptionsRequest:
+      value:
+        data:
+          - id: "option1"
+            type: "option"
+            attributes:
+              action: "update"
+              value: "updated option1"
+          - type: "option"
+            attributes:
+              action: "create"
+              value: "option10"
+              parentValue: "parentOption1"
+          - id: "option2"
+            type: "option"
+            attributes:
+              action: "delete"
+    patchAttributeRequest:
+      value:
+        data:
+          type: 'attribute'
+          id: 'attribute:1'
+          attributes:
+            options: 
+              - 'option1'
+              - 'option2'
+              - 'option3'
+    patchHierarchicalAttributeRequest:
+      value:
+        data:
+          type: 'attribute'
+          id: 'attribute:1'
+          attributes:
+            hierarchicalOptions:
+              - parentValue: ''
+                options:
+                  - 'option1'
+              - parentValue: 'parentOption1'
+                options:
+                  - 'option2'
+                  - 'option3'
+              - parentValue: 'parentOption2'
+                options:
+                  - 'option4'
+    postAttributeRequest:
+      value:
+        data:
+          type: 'attribute'
+          attributes:
+            name: 'newAttribute'
+            type: 'choice'
+            description: 'Test'
+            options:
+              - 'option1'
+              - 'option2'
+              - 'option3'
+    postHierarchicalAttributeRequest:
+      value:
+        data:
+          type: 'attribute'
+          attributes:
+            name: 'newHierarchicalAttribute'
+            type: 'choice'
+            description: 'Create hierarchical attribute needs to set parent ID and hierarchicalOptions'
+            parentEid: 'attribute:10'
+            hierarchicalOptions:
+              - parentValue: ''
+                options:
+                  - 'option1'
+              - parentValue: 'parentOption1'
+                options:
+                  - 'option2'
+                  - 'option3'
+              - parentValue: 'parentOption2'
+                options:
+                  - 'option4'
+    postExtListAttributeRequest:
+      value:
+        data:
+          type: 'attribute'
+          attributes:
+            name: 'newAttribute'
+            type: 'choice'
+            description: 'Test'
+            externalSource:
+              id: 'cd82af8b-3993-4881-996a-202516a5a241'
+            schedule:
+              type: 'EXTERNAL_ATTRIBUTE_REFRESH'
+              recurrence: 'DAILY'
+              hour: "0"
+    fetchingAutotextListResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/autotext/lists/8166e780-0eb4-4510-9e57-9c798a7b82d3
+        data:
+          type: autotextList
+          id: 8166e780-0eb4-4510-9e57-9c798a7b82d3
+          links:
+            self: https://snb.example.com/api/rest/v1.0/autotext/lists/8166e780-0eb4-4510-9e57-9c798a7b82d3
+          attributes:
+            id: 8166e780-0eb4-4510-9e57-9c798a7b82d3
+            type: autotextList
+            name: autotextList-0001
+            options:
+              - option1
+              - option2
+              - option3
+
+    fetchingOntologyOptionDetailsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/ontology/options/12345/details
+        data:
+          type: ontologyOption
+          id: "12345"
+          links:
+            self: https://snb.example.com/api/rest/v1.0/attributes/ontology/options/12345/details
+          attributes:
+            id: "12345"
+            attributeId: 456
+            preferredName: "Ontology Term 1"
+            iri: "http://example.org/ontology/0000001"
+            value: "{\"iri\":\"http://example.org/ontology/0000001\",\"preferredName\":\"Ontology Term 1\"}"
+            definitions:
+              - "Definition of ontology term 1"
+              - "Additional description of the term"
+            synonyms:
+              - "Synonym 1"
+              - "Synonym 2"
+              - "Synonym 3"
+            ancestors:
+              - iri: "http://example.org/ontology/0000000"
+                preferredName: "Parent Category"
+              - iri: "http://example.org/ontology/0000100"
+                preferredName: "Grandparent Category"
+            subclassOf:
+              - iri: "http://example.org/ontology/0000002"
+                preferredName: "Subclass Term 1"
+              - iri: "http://example.org/ontology/0000003"
+                preferredName: "Subclass Term 2"
+              - iri: "http://example.org/ontology/0000004"
+                preferredName: "Some terms restricted"
+
+    fetchingOntologyOptionsResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/attributes/attribute:456/ontology/options
+        meta:
+          total: 150
+          count: 3
+        data:
+          - type: ontologyOption
+            id: "12345"
+            links:
+              self: https://snb.example.com/api/rest/v1.0/attributes/ontology/options/12345/details
+            attributes:
+              id: 12345
+              iri: "http://purl.obolibrary.org/obo/MONDO_0004992"
+              preferredName: "cancer"
+              isSelectable: true
+              hasChildren: true
+              ancestors:
+                - iri: "http://purl.obolibrary.org/obo/MONDO_0000001"
+                  preferredName: "disease"
+              matchPreferredName: true
+              matchIri: false
+              matchSynonyms: false
+              isRestricted: false
+          - type: ontologyOption
+            id: "12346"
+            links:
+              self: https://snb.example.com/api/rest/v1.0/attributes/ontology/options/12346/details
+            attributes:
+              id: 12346
+              iri: "http://purl.obolibrary.org/obo/MONDO_0005105"
+              preferredName: "melanoma"
+              isSelectable: true
+              hasChildren: false
+              ancestors:
+                - iri: "http://purl.obolibrary.org/obo/MONDO_0000001"
+                  preferredName: "disease"
+                - iri: "http://purl.obolibrary.org/obo/MONDO_0004992"
+                  preferredName: "cancer"
+              matchPreferredName: false
+              matchIri: false
+              matchSynonyms: true
+              isRestricted: false
+          - type: ontologyOption
+            id: "12347"
+            links:
+              self: https://snb.example.com/api/rest/v1.0/attributes/ontology/options/12347/details
+            attributes:
+              id: 12347
+              iri: "http://purl.obolibrary.org/obo/MONDO_XXXXX"
+              preferredName: "Some terms restricted"
+              isSelectable: false
+              hasChildren: true
+              ancestors: []
+              matchPreferredName: false
+              matchIri: false
+              matchSynonyms: false
+              isRestricted: true
