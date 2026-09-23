@@ -200,20 +200,36 @@ def sync_continue_config():
                     elif m.get("provider") == "openai" and gateway_key and "your-" not in gateway_key:
                         m["apiKey"] = gateway_key
 
-            with open(target, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
+            new_text = json.dumps(data, indent=2) + "\n"
+            if target.exists():
+                try:
+                    if target.read_text(encoding="utf-8").strip() == new_text.strip():
+                        continue  # Content already identical, do not touch the file!
+                except Exception:
+                    pass
+
+            target.write_text(new_text, encoding="utf-8")
             logger.info(f"Synced AI credentials into {target}")
     except Exception as e:
         logger.warning(f"Continue config sync note: {e}")
 
 sync_continue_config()
 
-# Auto-reload .env whenever a request arrives so editing .env in VS Code takes effect immediately
+_last_env_mtime = 0.0
+
+# Auto-reload .env only when the file is actually modified on disk
 @app.middleware("http")
 async def auto_reload_env(request: Request, call_next):
+    global _last_env_mtime
     if dotenv_path.exists():
-        smart_load_env(dotenv_path)
-        sync_continue_config()
+        try:
+            mtime = dotenv_path.stat().st_mtime
+            if mtime > _last_env_mtime:
+                _last_env_mtime = mtime
+                smart_load_env(dotenv_path)
+                sync_continue_config()
+        except Exception:
+            pass
     return await call_next(request)
 
 app.add_middleware(
