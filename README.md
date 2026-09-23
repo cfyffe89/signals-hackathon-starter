@@ -73,8 +73,11 @@ This avoids 409 conflict and digest mismatch errors during rapid uploads!
 
 ### Track 1: Fast Web / Mobile PWA
 ```bash
-# Start FastAPI backend & static PWA server on port 8000
-uvicorn backend.app:app --host 0.0.0.0 --port 8000 --reload
+# The server starts automatically! View live logs:
+tail -f /tmp/uvicorn.log
+
+# Or restart the server anytime interactively:
+./restart-server.sh
 ```
 
 ### Track 2: Streamlit Data & Analytics Dashboard
