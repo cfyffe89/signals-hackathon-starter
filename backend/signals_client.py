@@ -29,6 +29,7 @@ class SignalsClient:
             os.getenv("MOCK_MODE", "false").lower() == "true" 
             or not key 
             or "your-" in key
+            or "your_" in key
         )
 
     def _headers(self, content_type: str = "application/vnd.api+json") -> Dict[str, str]:

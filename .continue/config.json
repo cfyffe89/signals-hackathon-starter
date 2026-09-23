@@ -22,8 +22,14 @@
     }
   ],
   "contextProviders": [
-    { "name": "diff" },
-    { "name": "terminal" },
-    { "name": "codebase" }
+    {
+      "name": "diff"
+    },
+    {
+      "name": "terminal"
+    },
+    {
+      "name": "codebase"
+    }
   ]
 }

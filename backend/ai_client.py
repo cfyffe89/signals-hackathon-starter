@@ -35,6 +35,7 @@ class AIClient:
             os.getenv("MOCK_MODE", "false").lower() == "true"
             or not key
             or "your-" in key
+            or "your_" in key
             or ("sk-team" in key and "revvity-hackathon.com" in self.gateway_url)
         )
 
