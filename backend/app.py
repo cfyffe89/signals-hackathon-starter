@@ -8,33 +8,70 @@ from dotenv import dotenv_values
 dotenv_path = Path(__file__).parent.parent / ".env"
 dotenv_example_path = Path(__file__).parent.parent / ".env.example"
 
+import re
+import base64
+
 def parse_secret_bundle(raw_str: str) -> dict:
-    """Parses a multi-line KEY=VAL string or JSON object into a dict."""
-    raw = (raw_str or "").strip()
-    if not raw:
+    """Robustly parses multi-line, JSON, escaped newlines, or semicolon-delimited secret bundles."""
+    if not raw_str or not isinstance(raw_str, str):
         return {}
+    raw = raw_str.strip()
+
+    # Check if base64 encoded
+    try:
+        decoded = base64.b64decode(raw).decode("utf-8")
+        if ("SIGNALS_" in decoded or "GEMINI_" in decoded) and ("=" in decoded or "{" in decoded):
+            raw = decoded.strip()
+    except Exception:
+        pass
+
+    # Unescape literal \n or \r\n if present
+    raw = raw.replace("\\r\\n", "\n").replace("\\n", "\n")
+
+    # Check if JSON or Python dict
     if raw.startswith("{") and raw.endswith("}"):
         try:
             return json.loads(raw)
         except Exception:
-            pass
+            try:
+                import ast
+                val = ast.literal_eval(raw)
+                if isinstance(val, dict):
+                    return val
+            except Exception:
+                pass
+
     res = {}
-    for line in raw.splitlines():
+    lines = re.split(r"[\r\n;]+", raw)
+    for line in lines:
         line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[7:].strip()
+        if "=" not in line:
             continue
         k, v = line.split("=", 1)
-        res[k.strip()] = v.strip().strip("'\"")
+        k = k.strip()
+        v = v.strip().strip("'\"")
+        if k and v:
+            res[k] = v
     return res
 
 def get_bundle_secret() -> str:
     """Checks for single bundled secret in common environment variables or auto-detects any variable containing the keys."""
-    # 1. Common conventional names
+    # 1. Direct check for HACKATHON first!
+    val = os.getenv("HACKATHON")
+    if val and val.strip():
+        return val
+
+    # 2. Common conventional names
     for name in ["ENV_FILE", "APP_ENV", "HACKATHON_ENV", "CODESPACE_ENV", "SECRETS", "ENV", "HACKATHON_SECRETS", "KEYS", "DOTENV"]:
         val = os.getenv(name)
         if val and val.strip():
             return val
-    # 2. Dynamic auto-detection: scan all env vars for any multi-line or JSON string containing Signals or Gemini keys
+
+    # 3. Dynamic auto-detection: scan all env vars for any string containing Signals or Gemini keys
     for k, v in os.environ.items():
         if not v or not isinstance(v, str) or k in ("PATH", "LS_COLORS", "PROMPT"):
             continue
