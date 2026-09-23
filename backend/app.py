@@ -28,11 +28,18 @@ def parse_secret_bundle(raw_str: str) -> dict:
     return res
 
 def get_bundle_secret() -> str:
-    """Checks for single bundled secret in common environment variables."""
-    for name in ["ENV_FILE", "APP_ENV", "HACKATHON_ENV", "CODESPACE_ENV", "SECRETS"]:
+    """Checks for single bundled secret in common environment variables or auto-detects any variable containing the keys."""
+    # 1. Common conventional names
+    for name in ["ENV_FILE", "APP_ENV", "HACKATHON_ENV", "CODESPACE_ENV", "SECRETS", "ENV", "HACKATHON_SECRETS", "KEYS", "DOTENV"]:
         val = os.getenv(name)
         if val and val.strip():
             return val
+    # 2. Dynamic auto-detection: scan all env vars for any multi-line or JSON string containing Signals or Gemini keys
+    for k, v in os.environ.items():
+        if not v or not isinstance(v, str) or k in ("PATH", "LS_COLORS", "PROMPT"):
+            continue
+        if ("SIGNALS_" in v or "GEMINI_" in v or "AI_GATEWAY_" in v) and ("=" in v or "{" in v):
+            return v
     return ""
 
 def init_env_file():
