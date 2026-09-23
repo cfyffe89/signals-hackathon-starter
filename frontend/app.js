@@ -16,14 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/health');
       const data = await res.json();
       
-      diagPython.textContent = Python  (Linux);
+      diagPython.textContent = 'Python ' + data.pythonVersion;
       diagSignals.innerHTML = data.signals.mockMode 
-        ? '<span class=\"text-amber-400 font-semibold\">Mock Mode (Offline)</span>' 
-        : <span class=\"text-emerald-400 font-semibold\">Connected</span> <span class=\"text-slate-400 text-xs truncate\">()</span>;
+        ? '<span class="text-amber-400 font-semibold">Mock Mode (Offline)</span>' 
+        : '<span class="text-emerald-400 font-semibold">Connected</span> <span class="text-slate-400 text-xs truncate">(' + data.signals.tenant + ')</span>';
       
-      diagAI.innerHTML = <span class=\"text-cyan-400 font-semibold\"></span> <span class=\"text-slate-400 text-[11px]\">()</span>;
-      diagPkgs.textContent = ${data.installedPackages.length} Ready (...);
+      diagAI.innerHTML = '<span class="text-cyan-400 font-semibold">' + data.ai.model + '</span> <span class="text-slate-400 text-[11px]">(' + data.ai.provider + ')</span>';
+      diagPkgs.textContent = data.installedPackages.length + ' Ready (' + data.installedPackages.slice(0, 4).join(', ') + '...)';
     } catch (err) {
+      console.error(err);
       diagPython.textContent = 'Server starting...';
     }
   }
@@ -38,23 +39,22 @@ document.addEventListener('DOMContentLoaded', () => {
       (data.specs || []).forEach(spec => {
         const card = document.createElement('div');
         card.className = 'bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-brand-500/50 transition cursor-default flex flex-col justify-between';
-        card.innerHTML = 
-          <span class=\"text-[11px] font-bold text-white truncate\"></span>
-          <span class=\"text-[10px] text-slate-500 font-mono mt-1\"></span>
-          <span class=\"text-[9px] text-slate-600 mt-0.5\"> KB</span>
-        ;
+        card.innerHTML = '<span class="text-[11px] font-bold text-white truncate">' + spec.name + '</span>' +
+          '<span class="text-[10px] text-slate-500 font-mono mt-1">' + spec.filename + '</span>' +
+          '<span class="text-[9px] text-slate-600 mt-0.5">' + spec.sizeKb + ' KB</span>';
         specsContainer.appendChild(card);
       });
     } catch (err) {
-      specsContainer.innerHTML = '<div class=\"text-xs text-rose-400 col-span-full\">Failed to load specifications.</div>';
+      console.error(err);
+      specsContainer.innerHTML = '<div class="text-xs text-rose-400 col-span-full">Failed to load specifications.</div>';
     }
   }
 
   // 3. Test Signals Connection
   btnTestSignals.addEventListener('click', async () => {
     btnTestSignals.disabled = true;
-    btnTestSignals.textContent = '? Querying Signals...';
-    signalsResultBox.innerHTML = '<span class=\"text-cyan-400\">Sending GET /entities?filter[type]=experiment to Signals Notebook...</span>';
+    btnTestSignals.textContent = 'Querying Signals...';
+    signalsResultBox.innerHTML = '<span class="text-cyan-400">Sending GET /entities?filter[type]=experiment to Signals Notebook...</span>';
 
     try {
       const res = await fetch('/api/test-signals');
@@ -62,22 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'success') {
         const exps = data.experiments || [];
-        let html = <div class=\"text-emerald-400 font-bold mb-2\">? Status: </div>;
-        html += <div class=\"text-slate-400 mb-2\">Retrieved  experiment(s):</div>;
-        html += '<ul class=\"space-y-1.5 pl-1\">';
+        let html = '<div class="text-emerald-400 font-bold mb-2">Status: ' + (data.connection.status || 'OK').toUpperCase() + '</div>';
+        html += '<div class="text-slate-400 mb-2">Retrieved ' + exps.length + ' experiment(s):</div>';
+        html += '<ul class="space-y-1.5 pl-1">';
         exps.forEach(e => {
-          html += <li class=\"border-b border-slate-800 pb-1\"><strong class=\"text-white\"></strong><br><span class=\"text-[10px] text-slate-500 font-mono\"></span></li>;
+          html += '<li class="border-b border-slate-800 pb-1"><strong class="text-white">' + e.name + '</strong><br><span class="text-[10px] text-slate-500 font-mono">' + e.eid + '</span></li>';
         });
         html += '</ul>';
         signalsResultBox.innerHTML = html;
       } else {
-        signalsResultBox.innerHTML = <span class=\"text-rose-400\">? Error: </span>;
+        signalsResultBox.innerHTML = '<span class="text-rose-400">Error: ' + data.error + '</span>';
       }
     } catch (err) {
-      signalsResultBox.innerHTML = <span class=\"text-rose-400\">Network error: </span>;
+      signalsResultBox.innerHTML = '<span class="text-rose-400">Network error: ' + err.message + '</span>';
     } finally {
       btnTestSignals.disabled = false;
-      btnTestSignals.textContent = '? Run Test Query';
+      btnTestSignals.textContent = 'Run Test Query';
     }
   });
 
@@ -87,8 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prompt) return;
 
     btnTestAI.disabled = true;
-    btnTestAI.textContent = '? Querying AI...';
-    aiResultBox.innerHTML = '<span class=\"text-cyan-400\">Sending prompt to Gemini 3.5 Flash...</span>';
+    btnTestAI.textContent = 'Querying AI...';
+    aiResultBox.innerHTML = '<span class="text-cyan-400">Sending prompt to Gemini 3.5 Flash...</span>';
 
     try {
       const res = await fetch('/api/test-ai', {
@@ -100,19 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'success') {
         const r = data.result;
-        let html = <div class=\"flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2\">;
-        html += <span class=\"text-[10px] bg-slate-800 text-cyan-300 font-mono px-2 py-0.5 rounded\"></span>;
-        html += </div>;
-        html += <div class=\"text-slate-200 whitespace-pre-wrap\"></div>;
+        let html = '<div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">';
+        html += '<span class="text-[10px] bg-slate-800 text-cyan-300 font-mono px-2 py-0.5 rounded">' + r.source + '</span>';
+        html += '</div>';
+        html += '<div class="text-slate-200 whitespace-pre-wrap">' + r.text + '</div>';
         aiResultBox.innerHTML = html;
       } else {
-        aiResultBox.innerHTML = <span class=\"text-rose-400\">AI Error: </span>;
+        aiResultBox.innerHTML = '<span class="text-rose-400">AI Error: ' + data.detail + '</span>';
       }
     } catch (err) {
-      aiResultBox.innerHTML = <span class=\"text-rose-400\">Network error: </span>;
+      aiResultBox.innerHTML = '<span class="text-rose-400">Network error: ' + err.message + '</span>';
     } finally {
       btnTestAI.disabled = false;
-      btnTestAI.textContent = '? Send Prompt';
+      btnTestAI.textContent = 'Send Prompt';
     }
   });
 
