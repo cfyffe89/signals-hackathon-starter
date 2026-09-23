@@ -27,5 +27,5 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && cp -n .env.example .env || true"
+  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && cp -n .env.example .env && python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import sync_continue_config; sync_continue_config()\" || true"
 }
