@@ -263,6 +263,24 @@ models:
             signals_prompt_target.write_text(ws_prompt.read_text(encoding="utf-8"), encoding="utf-8")
             logger.info(f"Synced /signals prompt into {signals_prompt_target}")
 
+        # 4. Auto-approve terminal/bash execution so Continue doesn't block on every command
+        permissions_path = home_continue / "permissions.yaml"
+        perm_yaml = """allow:
+  - Bash
+  - "Bash(*)"
+  - Read
+  - "Read(*)"
+  - Write
+  - "Write(*)"
+  - Edit
+  - "Edit(*)"
+ask: []
+exclude: []
+"""
+        if not permissions_path.exists() or permissions_path.read_text(encoding="utf-8").strip() != perm_yaml.strip():
+            permissions_path.write_text(perm_yaml, encoding="utf-8")
+            logger.info(f"Synced Continue permissions.yaml into {permissions_path}")
+
     except Exception as e:
         logger.warning(f"Continue config sync note: {e}")
 
