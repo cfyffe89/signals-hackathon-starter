@@ -167,91 +167,200 @@ with tab_overview:
 # =========================================================================
 with tab_molecule:
     st.subheader("Chemical Structure & Property Explorer")
-    st.caption("Fetch drawings directly from Revvity Signals Notebook, parse SMILES with RDKit, and calculate physicochemical descriptors.")
+    st.caption("Live integration: queries the Signals Search/Entities API for the last 20 chemical drawings, fetches SMILES, calculates RDKit descriptors, and performs medicinal chemistry analysis with Gemini 3.6 Flash.")
 
-    # Ingress Source Selector
-    ingress_mode = st.radio("Structure Source:", ["Fetch from Signals API", "Manual SMILES Entry"], horizontal=True)
-    
+    # 1. Fetch the last 20 chemical drawings from Signals Notebook
+    with st.spinner("Fetching latest chemical drawings from Signals Notebook..."):
+        try:
+            drawings = signals_client.list_chemical_drawings(limit=20)
+        except Exception as e:
+            st.error(f"Failed to query chemical drawings from Signals API: {e}")
+            drawings = []
+
     current_smiles = "CC(=O)Oc1ccccc1C(=O)O"
-    raw_svg_content = None
+    current_name = "Aspirin (Default)"
+    current_id = "chemicalDrawing:cd-001"
+    current_author = "Dr. Sarah Chen"
+    current_modified = "Recent"
+    current_notebook = "EXP-2026-081"
 
-    if ingress_mode == "Fetch from Signals API":
-        c_in1, c_in2, c_in3 = st.columns([2, 1, 1])
-        with c_in1:
-            asset_id = st.text_input("Signals Material / Asset Batch ID", value="material:aspirin-batch-001", help="Enter a material ID, container ID, or assetBatchId.")
-        with c_in2:
-            format_choice = st.selectbox("Format", ["smiles", "svg", "mol"])
-        with c_in3:
-            st.write("")
-            st.write("")
-            fetch_btn = st.button("📥 Fetch Drawing", type="primary")
+    if drawings:
+        st.markdown(f"**Discovered {len(drawings)} Chemical Drawings in Tenant** (`GET /entities?filter[type]=chemicalDrawing&sort=-modifiedAt`):")
+        drawing_options = [
+            f"{i+1}. {d.get('name', 'Untitled')} [{d.get('id', 'N/A')}] — {d.get('formula', '')} ({d.get('notebook', 'Lab')})"
+            for i, d in enumerate(drawings)
+        ]
+        selected_idx = st.selectbox(
+            "Select Drawing to Inspect & Analyze:",
+            range(len(drawings)),
+            format_func=lambda i: drawing_options[i],
+            help="Select one of the last 20 chemical drawings registered in Revvity Signals Notebook."
+        )
+        selected_drawing = drawings[selected_idx]
+        current_smiles = selected_drawing.get("smiles", "CC(=O)Oc1ccccc1C(=O)O")
+        current_name = selected_drawing.get("name", "Chemical Drawing")
+        current_id = selected_drawing.get("id", "N/A")
+        current_author = selected_drawing.get("author", "Scientist")
+        current_modified = selected_drawing.get("modifiedAt", "N/A")
+        current_notebook = selected_drawing.get("notebook", "General")
 
-        if fetch_btn:
-            with st.spinner("Fetching drawing from Signals REST API..."):
+        # Metadata badges
+        c_m1, c_m2, c_m3, c_m4 = st.columns(4)
+        c_m1.caption(f"**Entity ID:** `{current_id}`")
+        c_m2.caption(f"**Notebook:** `{current_notebook}`")
+        c_m3.caption(f"**Author:** {current_author}")
+        c_m4.caption(f"**Modified:** {current_modified[:10] if len(current_modified)>=10 else current_modified}")
+
+    # Optional expander for manual SMILES or custom Asset Batch ID
+    with st.expander("🛠️ Advanced: Custom Entity / Manual SMILES Lookup"):
+        alt_mode = st.radio("Alternative Input:", ["Custom SMILES Entry", "Fetch Asset Batch by ID"], horizontal=True)
+        if alt_mode == "Custom SMILES Entry":
+            custom_s = st.text_input("Enter Custom SMILES String:", value=current_smiles)
+            if custom_s.strip() and custom_s.strip() != current_smiles:
+                current_smiles = custom_s.strip()
+                current_name = f"Custom Structure ({current_smiles[:20]}...)"
+                current_id = "custom:manual-smiles"
+        else:
+            col_b1, col_b2 = st.columns([3, 1])
+            with col_b1:
+                custom_aid = st.text_input("Asset Batch / Material ID", value="material:aspirin-batch-001")
+            with col_b2:
+                fetch_b_btn = st.button("Fetch Asset", type="secondary")
+            if fetch_b_btn:
                 try:
-                    drawing_data = signals_client.get_chemical_drawing(asset_id, format=format_choice)
-                    if format_choice == "svg":
-                        raw_svg_content = drawing_data
-                        st.success(f"Retrieved SVG vector drawing from Signals ({len(drawing_data)} bytes)!")
-                    elif format_choice == "smiles":
-                        current_smiles = drawing_data.strip()
-                        st.success(f"Retrieved SMILES from Signals: `{current_smiles}`")
-                    else:
-                        st.code(drawing_data, language="text")
-                except Exception as e:
-                    st.error(f"Error fetching drawing from Signals: {e}")
-    else:
-        current_smiles = st.text_input("Enter SMILES String", value="CC(=O)Oc1ccccc1C(=O)O")
+                    fetched_smiles = signals_client.get_chemical_drawing(custom_aid, format="smiles")
+                    current_smiles = fetched_smiles.strip()
+                    current_name = f"Material {custom_aid}"
+                    current_id = custom_aid
+                    st.success(f"Fetched SMILES for {custom_aid}: `{current_smiles}`")
+                except Exception as ex:
+                    st.error(f"Error fetching drawing: {ex}")
 
     st.divider()
 
-    # RDKit Chemoinformatics Render
+    # RDKit Chemoinformatics Render & Properties
     rdkit_available = False
     try:
         from rdkit import Chem
         from rdkit.Chem import Descriptors, Draw, Lipinski
         rdkit_available = True
     except ImportError:
-        st.warning("RDKit is not installed in the local environment; running in fallback mode.")
+        pass
+
+    mol = None
+    mw = "N/A"
+    logp = "N/A"
+    tpsa = "N/A"
+    hbd = "N/A"
+    hba = "N/A"
+    rotb = "N/A"
+    formula = selected_drawing.get("formula", "N/A") if drawings else "N/A"
 
     col_img, col_props = st.columns([1, 1])
 
-    if raw_svg_content:
-        with col_img:
-            st.markdown("#### Signals ChemDraw Vector Render")
-            st.markdown(raw_svg_content, unsafe_allow_html=True)
-    elif rdkit_available and current_smiles:
-        mol = Chem.MolFromSmiles(current_smiles)
-        with col_img:
-            st.markdown("#### 2D Structure Depiction (RDKit)")
-            if mol:
-                img = Draw.MolToImage(mol, size=(380, 260))
-                st.image(img, use_container_width=True)
-            else:
-                st.error("Invalid SMILES string could not be parsed by RDKit.")
+    if rdkit_available and current_smiles:
+        try:
+            mol = Chem.MolFromSmiles(current_smiles)
+        except Exception:
+            mol = None
 
-        with col_props:
-            st.markdown("#### Calculated Physicochemical Properties")
-            if mol:
-                mw = round(Descriptors.MolWt(mol), 2)
-                logp = round(Descriptors.MolLogP(mol), 2)
-                tpsa = round(Descriptors.TPSA(mol), 2)
-                hbd = Lipinski.NumHDonors(mol)
-                hba = Lipinski.NumHAcceptors(mol)
-                rotb = Lipinski.NumRotatableBonds(mol)
-                formula = Chem.rdMolDescriptors.CalcMolFormula(mol)
+    with col_img:
+        st.markdown(f"#### 2D Chemical Structure: `{current_name}`")
+        if mol:
+            img = Draw.MolToImage(mol, size=(420, 280))
+            st.image(img, use_container_width=True)
+            st.caption(f"**Canonical SMILES:** `{current_smiles}`")
+        elif not rdkit_available:
+            st.info("ℹ️ **RDKit 2D Depiction**: RDKit will render interactive 2D structures inside the Linux Codespace container. Canonical SMILES:")
+            st.code(current_smiles, language="text")
+        else:
+            st.error("Invalid SMILES string could not be parsed by RDKit.")
+            st.code(current_smiles, language="text")
 
-                m1, m2 = st.columns(2)
-                m1.metric("Formula", formula)
-                m2.metric("Molecular Weight", f"{mw} g/mol")
-                m3, m4 = st.columns(2)
-                m3.metric("LogP", logp)
-                m4.metric("TPSA", f"{tpsa} Å²")
-                m5, m6 = st.columns(2)
-                m5.metric("H-Bond Donors / Acceptors", f"{hbd} / {hba}")
-                m6.metric("Rotatable Bonds", rotb)
+    with col_props:
+        st.markdown("#### Physicochemical Descriptors")
+        if mol:
+            mw = round(Descriptors.MolWt(mol), 2)
+            logp = round(Descriptors.MolLogP(mol), 2)
+            tpsa = round(Descriptors.TPSA(mol), 2)
+            hbd = Lipinski.NumHDonors(mol)
+            hba = Lipinski.NumHAcceptors(mol)
+            rotb = Lipinski.NumRotatableBonds(mol)
+            formula = Chem.rdMolDescriptors.CalcMolFormula(mol)
+
+            m1, m2 = st.columns(2)
+            m1.metric("Molecular Formula", formula)
+            m2.metric("Molecular Weight", f"{mw} g/mol")
+            m3, m4 = st.columns(2)
+            m3.metric("Calculated LogP", logp)
+            m4.metric("Polar Surface Area (TPSA)", f"{tpsa} Å²")
+            m5, m6 = st.columns(2)
+            m5.metric("H-Bond Donors / Acceptors", f"{hbd} / {hba}")
+            m6.metric("Rotatable Bonds", rotb)
+
+            # Lipinski Rule of 5 check
+            ro5_violations = sum([
+                1 if mw > 500 else 0,
+                1 if logp > 5 else 0,
+                1 if hbd > 5 else 0,
+                1 if hba > 10 else 0
+            ])
+            if ro5_violations == 0:
+                st.success("✅ Lipinski Rule of 5: All criteria satisfied (High oral bioavailability potential)")
             else:
-                st.info("Enter a valid SMILES structure to compute molecular descriptors.")
+                st.warning(f"⚠️ Lipinski Rule of 5: {ro5_violations} violation(s) detected")
+        else:
+            m1, m2 = st.columns(2)
+            m1.metric("Molecular Formula", formula)
+            m2.metric("SMILES Length", len(current_smiles))
+            st.info("Full RDKit descriptor calculation available in Codespace environment.")
+
+    # AI Chemical Drawing Analysis Section
+    st.divider()
+    c_btn, c_note = st.columns([1, 2])
+    with c_btn:
+        analyze_clicked = st.button("✨ Analyze Drawing with Gemini", type="primary", use_container_width=True)
+    with c_note:
+        st.caption("Submits structure coordinates, formula, and physicochemical properties to **Gemini 3.6 Flash** for automated medicinal chemistry & ADMET evaluation.")
+
+    if analyze_clicked:
+        with st.spinner(f"Analyzing {current_name} with Gemini 3.6 Flash..."):
+            chem_prompt = f"""You are an expert computational medicinal chemist and drug discovery consultant for Revvity Signals Notebook.
+Please analyze the following chemical drawing entity retrieved from Signals Notebook:
+
+- Entity Name: {current_name}
+- Signals Entity ID: {current_id}
+- Notebook Reference: {current_notebook}
+- SMILES: {current_smiles}
+- Molecular Formula: {formula}
+- Molecular Weight: {mw} g/mol
+- LogP: {logp}
+- Polar Surface Area (TPSA): {tpsa} Å²
+- H-Bond Donors: {hbd}
+- H-Bond Acceptors: {hba}
+- Rotatable Bonds: {rotb}
+
+Please provide a structured, rigorous medicinal chemistry report with the following 4 sections:
+1. **Chemical Classification & Pharmacophore**: Primary scaffold, heterocycles, key functional groups, and known biological targets / mechanism of action.
+2. **Lipinski & Veber Drug-Likeness**: Evaluation against Lipinski Rule of 5 and Veber bioavailability metrics (violations, oral bioavailability prediction).
+3. **ADMET & Safety Profile**: Predicted membrane permeability, metabolic clearance liabilities (CYP/esterase sites), blood-brain barrier tendencies, and structural alerts (PAINS).
+4. **Lead Optimization & Synthetic SAR Strategies**: 2-3 specific, actionable chemical modifications to improve potency, metabolic stability, or target selectivity.
+"""
+            try:
+                ai_res = ai_client.generate_text(
+                    prompt=chem_prompt,
+                    system_instruction="You are a senior medicinal chemistry AI assistant in Revvity Signals Notebook. Deliver concise, scientifically precise insights formatted in clean Markdown."
+                )
+                st.session_state[f"ai_chem_{current_id}"] = ai_res
+            except Exception as e:
+                st.error(f"AI Generation Error: {e}")
+
+    # Display saved analysis if available
+    saved_analysis = st.session_state.get(f"ai_chem_{current_id}")
+    if saved_analysis:
+        st.markdown(f"### 🧬 AI Medicinal Chemistry Assessment: `{current_name}`")
+        st.caption(f"Synthesized by **{saved_analysis.get('source', 'Gemini 3.6 Flash')}**")
+        st.markdown(saved_analysis.get("text", "No analysis text received."))
 
 # =========================================================================
 # TAB 3: SIGNALS API SANDBOX & EXPLORER

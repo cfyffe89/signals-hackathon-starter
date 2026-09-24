@@ -60,6 +60,53 @@ class AIClient:
     def generate_text(self, prompt: str, system_instruction: str = "You are an expert scientific lab copilot.") -> Dict[str, Any]:
         """Generates a text completion."""
         if self.mock_mode:
+            prompt_lower = prompt.lower()
+            if any(k in prompt_lower for k in ["drawing", "smiles", "chemical", "medicinal", "lipinski", "pharmacophore"]):
+                return {
+                    "source": "mock_simulator (medicinal chemistry)",
+                    "text": (
+                        "### [AI Analysis] Medicinal Chemistry Assessment (Simulated Flash Model)\n\n"
+                        "**1. Chemical Classification & Pharmacophore Architecture**\n"
+                        "- **Scaffold Core**: Functionalized aromatic/heterocyclic framework containing defined polar recognition elements.\n"
+                        "- **Key Motifs**: Hydrogen-bond donor/acceptor pairs positioned for complementary active site engagement.\n"
+                        "- **Class Affinity**: Structural topology resembles biologically validated small-molecule therapeutic chemical space.\n\n"
+                        "**2. Drug-Likeness & Lipinski Rule of 5 Evaluation**\n"
+                        "- **Molecular Weight**: Favorable (< 500 Da), supporting oral formulation.\n"
+                        "- **Calculated LogP**: Balanced lipophilicity (optimal range 1.0 - 3.5), suggesting clean partition kinetics.\n"
+                        "- **Polar Surface Area (TPSA)**: Within ideal window (40 - 110 A^2), predicting favorable cell permeability without rapid P-gp efflux.\n"
+                        "- **Rule of 5 Compliance**: 0 violations (Rule of 5 and Veber guidelines satisfied).\n\n"
+                        "**3. ADMET & Liability Assessment**\n"
+                        "- **Metabolic Clearance**: Benzylic and ester handles subject to Phase I/II metabolism; monitor microsomal stability.\n"
+                        "- **Toxicity Alerts**: Structure is clear of reactive electrophiles, quinone precursors, or promiscuous PAINS alerts.\n"
+                        "- **Solubility**: Estimated aqueous solubility is adequate for primary in vitro biochemical and phenotypic assays.\n\n"
+                        "**4. Discovery & Lead Optimization Recommendations**\n"
+                        "- *SAR Expansion*: Introduce fluorine or small lipophilic substituents at ortho/para aryl positions to tune metabolic half-life.\n"
+                        "- *Bioisosterism*: Screen oxadiazole or heterocyclic bioisosteres if carboxylate/ester hydrolytic stability is an issue.\n"
+                        "- *Selectivity*: Rigidify linkers to lock in bound bioactive conformation and increase target selectivity."
+                    )
+                }
+            elif any(k in prompt_lower for k in ["summarize", "experiment", "portfolio", "signals notebook", "lab"]):
+                return {
+                    "source": "mock_simulator (lab portfolio)",
+                    "text": (
+                        "### [AI Summary] Signals Notebook Experiment Portfolio Summary (Simulated Flash Model)\n\n"
+                        "**Executive Summary**\n"
+                        "The accessible experiment portfolio reflects an active multidisciplinary drug discovery and formulation pipeline spanning catalyst optimization, phenotypic cytotoxicity screening, and high-throughput reaction screening.\n\n"
+                        "**Active Research Tracks Identified:**\n"
+                        "1. **Suzuki-Miyaura Cross-Coupling Screening (EXP-2026-081)**\n"
+                        "   - *Objective*: Optimize catalyst/ligand combinations for biaryl coupling of functionalized 4-bromobenzonitriles.\n"
+                        "   - *Status*: High activity; multiple chemical drawings and stoichiometry sheets linked.\n"
+                        "2. **Cell Viability & IC50 Profiling (EXP-2026-102)**\n"
+                        "   - *Objective*: Evaluate compound library efficacy across cancer cell lines using automated microplate readouts.\n"
+                        "   - *Status*: Data collection complete; pending cross-referencing with compound registry.\n"
+                        "3. **Controlled-Release Polymer Formulation (EXP-2026-115)**\n"
+                        "   - *Objective*: Screen biodegradable excipients for sustained small-molecule dissolution kinetics.\n"
+                        "   - *Status*: Formulation batches characterized; stability testing underway.\n\n"
+                        "**Recommended Next Priorities:**\n"
+                        "- **Automate Chemical Drawing Extraction**: Directly sync verified reaction products into the centralized inventory register.\n"
+                        "- **Integrate In Silico ADMET**: Run pre-synthesis property calculations on proposed targets prior to wet-lab catalyst trials."
+                    )
+                }
             return {
                 "source": "mock_simulator",
                 "text": f"[MOCK AI RESPONSE] Synthesized scientific analysis for prompt: '{prompt[:60]}...'. All parameters verified compliant with standard lab protocol."

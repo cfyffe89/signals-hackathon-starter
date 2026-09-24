@@ -2,6 +2,13 @@ import os
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 def test_bundle():
     # Load environment
     try:
@@ -52,6 +59,11 @@ def test_bundle():
     print(f'  [OK] Retrieved {len(exps)} experiment(s). First: {exp_name}')
     
     # Test new helpers
+    drawings_20 = sc.list_chemical_drawings(limit=20)
+    assert len(drawings_20) == 20, f"Expected 20 chemical drawings, got {len(drawings_20)}"
+    assert all("smiles" in d and "id" in d for d in drawings_20), "drawings missing required fields"
+    print(f'  [OK] list_chemical_drawings(20) retrieved {len(drawings_20)} drawings. First: {drawings_20[0]["name"]}')
+
     drawing = sc.get_chemical_drawing("mat-test-1", format="smiles")
     assert drawing and "C" in drawing, "get_chemical_drawing failed"
     print(f'  [OK] get_chemical_drawing() retrieved SMILES: {drawing}')
@@ -73,17 +85,23 @@ def test_bundle():
     print(f'  [OK] create_experiment() created {new_exp.get("id")}')
 
     # 3. AI Client Test
-    print('\n[Step 3] Testing AIClient Module...')
+    print('\n[Step 3] Testing AIClient Module & Contextual Synthesis...')
     from backend.ai_client import AIClient
     ai = AIClient()
     status = ai.check_status()
     ai_provider = status.get("provider")
     ai_model = status.get("model")
     print(f'  [OK] AI Provider: {ai_provider}, Model: {ai_model}')
-    gen = ai.generate_text('Explain force=true in Signals Notebook API.')
-    gen_source = gen.get("source")
-    gen_snippet = gen.get("text", "")[:80]
-    print(f'  [OK] AI Response ({gen_source}): {gen_snippet}...')
+
+    # Test 3a: Chemical Drawing Analysis
+    chem_analysis = ai.generate_text('Analyze chemical drawing Aspirin SMILES CC(=O)Oc1ccccc1C(=O)O against Lipinski Rule of 5.')
+    assert chem_analysis.get("text"), "AI chemical analysis failed"
+    print(f'  [OK] AI Chemical Drawing Analysis ({chem_analysis.get("source")}): {chem_analysis.get("text")[:60]}...')
+
+    # Test 3b: Lab Experiments Portfolio Summarizer
+    lab_summary = ai.generate_text('Summarize active experiment portfolio in Signals Notebook.')
+    assert lab_summary.get("text"), "AI lab portfolio summary failed"
+    print(f'  [OK] AI Portfolio Summarization ({lab_summary.get("source")}): {lab_summary.get("text")[:60]}...')
 
     # 4. OpenAPI Specs & Master API Catalog Check
     print('\n[Step 4] Checking OpenAPI Specs & Master API Catalog...')

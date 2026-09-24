@@ -322,7 +322,8 @@ FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 DOCS_DIR = Path(__file__).parent.parent / "docs"
 
 class AIPromptRequest(BaseModel):
-    prompt: str = "Explain the significance of the force=true parameter when uploading child entities to Signals Notebook."
+    prompt: str = "Summarize the active Signals Notebook experiments retrieved from the API, identify key research themes, and recommend next scientific priorities."
+    include_experiments: bool = True
 
 @app.get("/api/health")
 def health():
@@ -362,9 +363,35 @@ def test_signals():
 
 @app.post("/api/test-ai")
 def test_ai(req: AIPromptRequest):
-    """Executes a test prompt against Gemini / Hackathon Gateway."""
+    """
+    Executes an AI synthesis prompt against Gemini / Hackathon Gateway.
+    By default, incorporates live Signals Notebook experiment data retrieved via API as grounding context.
+    """
     try:
-        res = ai_client.generate_text(req.prompt)
+        prompt_to_send = req.prompt
+        if req.include_experiments:
+            try:
+                exps = signals_client.list_experiments(limit=10)
+                exp_lines = []
+                for e in exps:
+                    exp_lines.append(f"- Experiment [{e.get('eid', 'N/A')}]: '{e.get('name', 'Untitled')}' (Modified: {e.get('modifiedAt', 'N/A')})")
+                context_str = "\n".join(exp_lines)
+                prompt_to_send = (
+                    f"{req.prompt}\n\n"
+                    f"### Ground-Truth Signals Notebook API Experiment Data (GET /entities):\n"
+                    f"{context_str}\n\n"
+                    f"Please synthesize these active lab experiments into an executive overview highlighting project focus areas and actionable next steps."
+                )
+            except Exception as ex_err:
+                logger.warning(f"Could not load experiments context for AI: {ex_err}")
+
+        res = ai_client.generate_text(
+            prompt=prompt_to_send,
+            system_instruction=(
+                "You are an expert scientific lab informatics copilot for Revvity Signals Notebook. "
+                "Analyze experimental data accurately, highlighting key findings, active chemistry/biology workflows, and actionable next steps."
+            )
+        )
         return {"status": "success", "result": res}
     except Exception as e:
         logger.error(f"AI test failed: {e}")

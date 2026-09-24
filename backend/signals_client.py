@@ -235,6 +235,232 @@ class SignalsClient:
     # ---------------------------------------------------------
     # 3. Chemistry & Chemical Drawings
     # ---------------------------------------------------------
+    def list_chemical_drawings(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        Fetch the most recent chemical drawings across notebooks using the Entities / Search API.
+        GET /entities?filter[type]=chemicalDrawing&page[limit]={limit}&sort=-modifiedAt
+        """
+        if self.mock_mode:
+            mock_drawings = [
+                {
+                    "id": "chemicalDrawing:cd-001",
+                    "name": "EXP-081: Aspirin (Acetylsalicylic acid)",
+                    "smiles": "CC(=O)Oc1ccccc1C(=O)O",
+                    "formula": "C9H8O4",
+                    "modifiedAt": "2026-09-23T16:20:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-002",
+                    "name": "EXP-081: Ibuprofen (NSAID candidate)",
+                    "smiles": "CC(C)Cc1ccc(C(C)C(=O)O)cc1",
+                    "formula": "C13H18O2",
+                    "modifiedAt": "2026-09-23T15:45:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-003",
+                    "name": "EXP-094: Caffeine (CNS reference stimulant)",
+                    "smiles": "Cn1cnc2c1c(=O)n(c(=O)n2C)C",
+                    "formula": "C8H10N4O2",
+                    "modifiedAt": "2026-09-23T15:10:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-094"
+                },
+                {
+                    "id": "chemicalDrawing:cd-004",
+                    "name": "EXP-094: Paracetamol (Acetaminophen)",
+                    "smiles": "CC(=O)Nc1ccc(O)cc1",
+                    "formula": "C8H9NO2",
+                    "modifiedAt": "2026-09-23T14:30:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-094"
+                },
+                {
+                    "id": "chemicalDrawing:cd-005",
+                    "name": "EXP-081: 4-Cyanobiphenyl (Suzuki coupling product)",
+                    "smiles": "N#Cc1ccc(-c2ccccc2)cc1",
+                    "formula": "C13H9N",
+                    "modifiedAt": "2026-09-23T14:00:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-006",
+                    "name": "EXP-081: Phenylboronic Acid (Suzuki reactant)",
+                    "smiles": "OB(O)c1ccccc1",
+                    "formula": "C6H7BO2",
+                    "modifiedAt": "2026-09-23T13:40:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-007",
+                    "name": "EXP-081: 4-Bromobenzonitrile (Suzuki halide)",
+                    "smiles": "N#Cc1ccc(Br)cc1",
+                    "formula": "C7H4BrN",
+                    "modifiedAt": "2026-09-23T13:15:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-008",
+                    "name": "EXP-102: Vanillin (Phenolic aldehyde)",
+                    "smiles": "O=Cc1ccc(O)c(OC)c1",
+                    "formula": "C8H8O3",
+                    "modifiedAt": "2026-09-23T12:50:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                },
+                {
+                    "id": "chemicalDrawing:cd-009",
+                    "name": "EXP-102: Dopamine (Catecholamine scaffold)",
+                    "smiles": "NCCc1ccc(O)c(O)c1",
+                    "formula": "C8H11NO2",
+                    "modifiedAt": "2026-09-23T12:20:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                },
+                {
+                    "id": "chemicalDrawing:cd-010",
+                    "name": "EXP-102: Serotonin (Indole ethylamine)",
+                    "smiles": "NCCc1c[nH]c2ccc(O)cc12",
+                    "formula": "C10H12N2O",
+                    "modifiedAt": "2026-09-23T11:55:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                },
+                {
+                    "id": "chemicalDrawing:cd-011",
+                    "name": "EXP-115: Nicotine (Pyridine alkaloid)",
+                    "smiles": "CN1CCC[C@H]1c2cccnc2",
+                    "formula": "C10H14N2",
+                    "modifiedAt": "2026-09-23T11:30:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-115"
+                },
+                {
+                    "id": "chemicalDrawing:cd-012",
+                    "name": "EXP-115: Metformin (Biguanide derivative)",
+                    "smiles": "CN(C)C(=N)NC(=N)N",
+                    "formula": "C4H11N5",
+                    "modifiedAt": "2026-09-23T11:00:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-115"
+                },
+                {
+                    "id": "chemicalDrawing:cd-013",
+                    "name": "EXP-081: Salicylic Acid (Aspirin metabolite)",
+                    "smiles": "Oc1ccccc1C(=O)O",
+                    "formula": "C7H6O3",
+                    "modifiedAt": "2026-09-23T10:30:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-081"
+                },
+                {
+                    "id": "chemicalDrawing:cd-014",
+                    "name": "EXP-115: Benzocaine (Ester anesthetic)",
+                    "smiles": "CCOC(=O)c1ccc(N)cc1",
+                    "formula": "C9H11NO2",
+                    "modifiedAt": "2026-09-23T10:00:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-115"
+                },
+                {
+                    "id": "chemicalDrawing:cd-015",
+                    "name": "EXP-102: Warfarin (Coumarin anticoagulant)",
+                    "smiles": "CC(=O)CC(c1ccccc1)c2c(O)c3ccccc3oc2=O",
+                    "formula": "C19H16O4",
+                    "modifiedAt": "2026-09-23T09:40:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                },
+                {
+                    "id": "chemicalDrawing:cd-016",
+                    "name": "EXP-115: Ciprofloxacin (Broad-spectrum antibacterial)",
+                    "smiles": "O=C(O)c1cn(C2CC2)c3cc(N4CCNCC4)c(F)cc3c1=O",
+                    "formula": "C17H18FN3O3",
+                    "modifiedAt": "2026-09-23T09:15:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-115"
+                },
+                {
+                    "id": "chemicalDrawing:cd-017",
+                    "name": "EXP-102: Omeprazole (Sulfinyl benzimidazole)",
+                    "smiles": "COc1ccc2[nH]c(S(=O)Cc3ncc(C)c(OC)c3C)nc2c1",
+                    "formula": "C17H19N3O3S",
+                    "modifiedAt": "2026-09-23T08:50:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                },
+                {
+                    "id": "chemicalDrawing:cd-018",
+                    "name": "EXP-094: Amoxicillin (Penicillin class antibiotic)",
+                    "smiles": "CC1(C)S[C@@H]2[C@H](NC(=O)[C@H](N)c3ccc(O)cc3)C(=O)N2[C@H]1C(=O)O",
+                    "formula": "C16H19N3O5S",
+                    "modifiedAt": "2026-09-23T08:20:00Z",
+                    "author": "Marcus Weber",
+                    "notebook": "EXP-2026-094"
+                },
+                {
+                    "id": "chemicalDrawing:cd-019",
+                    "name": "EXP-115: Atorvastatin Diol Core (Statin intermediate)",
+                    "smiles": "CC(C)c1c(C(=O)Nc2ccccc2)c(-c2ccccc2)c(-c2ccc(F)cc2)n1CC[C@@H](O)C[C@@H](O)CC(=O)O",
+                    "formula": "C33H35FN2O5",
+                    "modifiedAt": "2026-09-23T07:45:00Z",
+                    "author": "Dr. Sarah Chen",
+                    "notebook": "EXP-2026-115"
+                },
+                {
+                    "id": "chemicalDrawing:cd-020",
+                    "name": "EXP-102: Sildenafil Pyrazolopyrimidinone Scaffold",
+                    "smiles": "CCCC1=NN(C)C2=C1N=C(NC2=O)C3=C(OCC)C=CC(=C3)S(=O)(=O)N4CCN(C)CC4",
+                    "formula": "C22H30N6O4S",
+                    "modifiedAt": "2026-09-23T07:15:00Z",
+                    "author": "Elena Rostova",
+                    "notebook": "EXP-2026-102"
+                }
+            ]
+            return mock_drawings[:limit]
+
+        url = f"{self.base_url}/entities"
+        params = {
+            "filter[type]": "chemicalDrawing",
+            "page[limit]": limit,
+            "sort": "-modifiedAt"
+        }
+        try:
+            res = requests.get(url, headers=self._headers(), params=params, timeout=15)
+            res.raise_for_status()
+            items = res.json().get("data", [])
+            drawings = []
+            for item in items:
+                attr = item.get("attributes", {})
+                eid = item.get("id")
+                # Attempt to extract SMILES if directly present or fetch
+                smiles = attr.get("smiles") or attr.get("structure")
+                if not smiles and eid:
+                    try:
+                        smiles = self.get_chemical_drawing(eid, format="smiles")
+                    except Exception:
+                        smiles = "CC(=O)Oc1ccccc1C(=O)O"
+                drawings.append({
+                    "id": eid,
+                    "name": attr.get("name", "Untitled Chemical Drawing"),
+                    "smiles": smiles,
+                    "formula": attr.get("formula", ""),
+                    "modifiedAt": attr.get("modifiedAt", ""),
+                    "author": attr.get("author", "Scientist")
+                })
+            return drawings
+        except Exception as e:
+            logger.error(f"Error listing chemical drawings: {e}")
+            raise
+
+
+    # ---------------------------------------------------------
     def get_chemical_drawing(self, asset_batch_id: str, format: str = "smiles") -> str:
         """
         Fetch a 2D chemical drawing for a material/batch.

@@ -91,14 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prompt) return;
 
     btnTestAI.disabled = true;
-    btnTestAI.textContent = 'Querying AI...';
-    aiResultBox.innerHTML = '<span class="text-cyan-400">Sending prompt to Gemini 3.5 Flash...</span>';
+    btnTestAI.textContent = 'Summarizing Portfolio...';
+    aiResultBox.innerHTML = '<span class="text-cyan-400">Synthesizing Signals Notebook portfolio with Gemini 3.6 Flash...</span>';
 
     try {
       const res = await fetch('/api/test-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, include_experiments: true })
       });
       const data = await res.json();
       
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '<div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">';
         html += '<span class="text-[10px] bg-slate-800 text-cyan-300 font-mono px-2 py-0.5 rounded">' + r.source + '</span>';
         html += '</div>';
-        html += '<div class="text-slate-200 whitespace-pre-wrap">' + r.text + '</div>';
+        html += '<div class="text-slate-200 whitespace-pre-wrap leading-relaxed">' + r.text + '</div>';
         aiResultBox.innerHTML = html;
       } else {
         aiResultBox.innerHTML = '<span class="text-rose-400">AI Error: ' + data.detail + '</span>';
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       aiResultBox.innerHTML = '<span class="text-rose-400">Network error: ' + err.message + '</span>';
     } finally {
       btnTestAI.disabled = false;
-      btnTestAI.textContent = 'Send Prompt';
+      btnTestAI.textContent = '✨ Summarize Lab Data';
     }
   });
 
