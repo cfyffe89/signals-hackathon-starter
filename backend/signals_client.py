@@ -1,6 +1,6 @@
 """
-SignalsClient: Standard Revvity Signals Notebook REST API client.
-Enriched with 1-line convenience methods and offline fixtures for the EMEA Hackathon 2026.
+SignalsClient: Revvity Signals Notebook REST API client for the EMEA Hackathon 2026.
+Live calls are verified against a real tenant (scripts/smoke_live.py); offline sample data when no key is set.
 """
 import os
 import json
@@ -316,580 +316,342 @@ MOCK_CHEMICAL_DRAWINGS = [
     }
 ]
 
+class SignalsError(RuntimeError):
+    """Raised with the Signals error detail (status + JSON:API errors[].detail) instead of a bare HTTPError."""
+
+
 class SignalsClient:
     """
-    Standard Revvity Signals Notebook REST API client.
-    Includes comprehensive mock fallbacks for offline hackathon development.
-    """
-    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None):
-        self._default_base_url = (base_url or "https://hackathon.signalsnotebook.revvitycloud.com/api/rest/v1.0").rstrip("/")
-        self._default_api_key = api_key or ""
+    Revvity Signals Notebook REST API client (JSON:API).
 
+    Every live call in this class has been exercised against a real tenant (see scripts/smoke_live.py).
+    Configuration comes from the environment (or .env):
+        SIGNALS_BASE_URL     e.g. https://<your-tenant>/api/rest/v1.0
+        SIGNALS_API_KEY      your API key (sent as x-api-key)
+        SIGNALS_NOTEBOOK_EID the notebook (journal:...) your team writes into
+    With no key (or MOCK_MODE=true) every method returns offline sample data.
+    """
+
+    JSONAPI = "application/vnd.api+json"
+
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None,
+                 notebook_eid: Optional[str] = None):
+        self._base_url = base_url
+        self._api_key = api_key
+        self._notebook_eid = notebook_eid
+
+    # ---------------------------------------------------------------- config
     @property
     def base_url(self) -> str:
-        return (os.getenv("SIGNALS_BASE_URL", self._default_base_url) or self._default_base_url).rstrip("/")
+        return (self._base_url or os.getenv("SIGNALS_BASE_URL", "")).rstrip("/")
 
     @property
     def api_key(self) -> str:
-        return os.getenv("SIGNALS_API_KEY", self._default_api_key) or self._default_api_key
+        return self._api_key or os.getenv("SIGNALS_API_KEY", "")
+
+    @property
+    def notebook_eid(self) -> str:
+        return self._notebook_eid or os.getenv("SIGNALS_NOTEBOOK_EID", "")
 
     @property
     def mock_mode(self) -> bool:
         key = self.api_key
-        return (
-            os.getenv("MOCK_MODE", "false").lower() == "true" 
-            or not key 
-            or "your-" in key
-            or "your_" in key
-        )
+        return (os.getenv("MOCK_MODE", "false").lower() == "true" or not key or "your-" in key
+                or "your_" in key or not self.base_url or "<" in self.base_url)
 
-    def _headers(self, content_type: str = "application/vnd.api+json") -> Dict[str, str]:
-        return {
-            "x-api-key": self.api_key,
-            "Content-Type": content_type,
-            "Accept": "application/vnd.api+json"
-        }
+    # ---------------------------------------------------------------- http
+    def _headers(self, content_type: Optional[str] = None, accept: Optional[str] = None) -> Dict[str, str]:
+        # Signals is strict: GET with Accept: application/json -> 406; POST /entities with
+        # Content-Type: application/json -> 415. Use the JSON:API media type.
+        h = {"x-api-key": self.api_key, "Accept": accept or self.JSONAPI}
+        if content_type:
+            h["Content-Type"] = content_type
+        return h
 
-    # ---------------------------------------------------------
-    # 1. Connectivity & Health Check
-    # ---------------------------------------------------------
-    def check_connection(self) -> Dict[str, Any]:
-        """Validates API key and tenant reachability."""
-        if self.mock_mode:
-            return {
-                "status": "mock_connected",
-                "message": "Running in offline Mock Mode (MOCK_MODE=true or API key not set)",
-                "tenant": self.base_url
-            }
-
-        url = f"{self.base_url}/entities"
-        params = {"page[limit]": 1}
-        try:
-            res = requests.get(url, headers=self._headers(), params=params, timeout=10)
-            res.raise_for_status()
-            return {
-                "status": "connected",
-                "statusCode": res.status_code,
-                "tenant": self.base_url,
-                "message": "Successfully authenticated with Signals Notebook tenant!"
-            }
-        except Exception as e:
-            logger.warning(f"Signals connectivity check failed: {e}")
-            return {
-                "status": "error",
-                "tenant": self.base_url,
-                "error": str(e)
-            }
-
-    # ---------------------------------------------------------
-    # 2. Search & Entity Discovery
-    # ---------------------------------------------------------
-    def search_entities(
-        self,
-        query: Dict[str, Any],
-        options: Optional[Dict[str, Any]] = None,
-        limit: int = 20
-    ) -> List[Dict[str, Any]]:
-        """
-        Executes a structured search query against Signals Notebook Search API:
-        POST /entities/search?page[limit]={limit}
-        Payload: { "query": query, "options": options }
-        """
-        if self.mock_mode:
-            entity_type = ""
+    def _request(self, method: str, path: str, *, params=None, json_body=None, data=None,
+                 content_type: Optional[str] = None, accept: Optional[str] = None, timeout: int = 30):
+        url = path if path.startswith("http") else f"{self.base_url}{path}"
+        if json_body is not None:
+            data = json.dumps(json_body)
+            content_type = content_type or self.JSONAPI
+        res = requests.request(method, url, headers=self._headers(content_type, accept),
+                               params=params, data=data, timeout=timeout)
+        if res.status_code >= 400:
+            detail = res.text[:300]
             try:
-                and_clauses = query.get("$and", []) if isinstance(query, dict) else []
-                for clause in and_clauses:
-                    match = clause.get("$match", {})
-                    if match.get("field") == "type":
-                        entity_type = match.get("value", "")
+                errs = res.json().get("errors", [])
+                detail = "; ".join(f"{e.get('title','')} {e.get('detail','')}".strip() for e in errs) or detail
             except Exception:
                 pass
+            raise SignalsError(f"{method} {path} -> {res.status_code}: {detail}")
+        return res
 
-            if entity_type == "chemicalDrawing":
-                return [
-                    {
-                        "type": "entity",
-                        "id": d["id"],
-                        "attributes": {
-                            "eid": d["id"],
-                            "name": d["name"],
-                            "formula": d["formula"],
-                            "smiles": d["smiles"],
-                            "mw": d.get("mw"),
-                            "logp": d.get("logp"),
-                            "tpsa": d.get("tpsa"),
-                            "hbd": d.get("hbd"),
-                            "hba": d.get("hba"),
-                            "rotb": d.get("rotb"),
-                            "modifiedAt": d["modifiedAt"],
-                            "author": d["author"],
-                            "notebook": d["notebook"]
-                        }
-                    }
-                    for d in MOCK_CHEMICAL_DRAWINGS[:limit]
-                ]
-            else:
-                fx_file = FIXTURES_DIR / "experiments_sample.json"
-                if fx_file.exists():
-                    try:
-                        exps = json.loads(fx_file.read_text(encoding="utf-8"))[:limit]
-                        return [
-                            {
-                                "type": "entity",
-                                "id": e.get("eid"),
-                                "attributes": {
-                                    "eid": e.get("eid"),
-                                    "name": e.get("name"),
-                                    "modifiedAt": e.get("modifiedAt")
-                                }
-                            }
-                            for e in exps
-                        ]
-                    except Exception:
-                        pass
-                return [
-                    {
-                        "type": "entity",
-                        "id": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40001",
-                        "attributes": {
-                            "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40001",
-                            "name": "EXP-2026-081: Suzuki-Miyaura Catalyst Screening",
-                            "modifiedAt": "2026-09-23T10:30:00Z"
-                        }
-                    },
-                    {
-                        "type": "entity",
-                        "id": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40002",
-                        "attributes": {
-                            "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40002",
-                            "name": "EXP-2026-094: Formulation Batch 4B Viscosity Stability",
-                            "modifiedAt": "2026-09-23T11:15:00Z"
-                        }
-                    },
-                    {
-                        "type": "entity",
-                        "id": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40003",
-                        "attributes": {
-                            "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40003",
-                            "name": "EXP-2026-102: HTRF Kinase Dose-Response Assay Plate 3",
-                            "modifiedAt": "2026-09-23T11:45:00Z"
-                        }
-                    }
-                ][:limit]
+    def get_digest(self, eid: str) -> str:
+        """Current digest of an entity. Edits and child creation need the PARENT's digest (?digest=)."""
+        return self._request("GET", f"/entities/{eid}").json()["data"]["attributes"]["digest"]
 
-        url = f"{self.base_url}/entities/search"
-        params = {"page[limit]": limit}
-        payload: Dict[str, Any] = {"query": query}
-        if options:
-            payload["options"] = options
+    # ---------------------------------------------------------------- 1. connectivity
+    def check_connection(self) -> Dict[str, Any]:
+        """Validates the API key and that the tenant is reachable."""
+        if self.mock_mode:
+            return {"status": "mock_connected", "tenant": self.base_url or "(not set)",
+                    "message": "Offline mock mode (MOCK_MODE=true or SIGNALS_BASE_URL/SIGNALS_API_KEY not set)"}
         try:
-            res = requests.post(url, headers=self._headers(), params=params, json=payload, timeout=20)
-            res.raise_for_status()
-            return res.json().get("data", [])
+            res = self._request("GET", "/entities", params={"includeTypes": "journal", "page[limit]": 1}, timeout=15)
+            return {"status": "connected", "statusCode": res.status_code, "tenant": self.base_url,
+                    "notebook": self.notebook_eid or "(SIGNALS_NOTEBOOK_EID not set: writes disabled)",
+                    "message": "Authenticated with the Signals tenant."}
         except Exception as e:
-            logger.error(f"Signals Search API error: {e}")
-            raise
+            logger.warning(f"Signals connectivity check failed: {e}")
+            return {"status": "error", "tenant": self.base_url, "error": str(e)}
+
+    # ---------------------------------------------------------------- 2. search & discovery
+    def search_entities(self, query: Dict[str, Any], options: Optional[Dict[str, Any]] = None,
+                        limit: int = 20, source: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        POST /entities/search  body {"query": ..., "options": ...}
+        - page[limit] max 100, page[offset] max 5000 (use keyset paging on createdAt beyond that)
+        - ALWAYS use "mode": "keyword" when matching names/ids, otherwise the value is tokenized
+          (e.g. "QC-2026-001" also matches everything containing "2026").
+        - source: SN (notebook, default) | IVT (inventory containers/locations) | CHEMICALS | CONNECTED.
+          The wrong source silently returns 0 results.
+        """
+        if self.mock_mode:
+            return self._mock_search(query, limit)
+        params: Dict[str, Any] = {"page[limit]": min(limit, 100)}
+        if source:
+            params["source"] = source
+        body: Dict[str, Any] = {"query": query}
+        if options:
+            body["options"] = options
+        return self._request("POST", "/entities/search", params=params, json_body=body,
+                             content_type="application/json").json().get("data", [])
+
+    def list_notebooks(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Notebooks (type 'journal') you can see: GET /entities?includeTypes=journal."""
+        if self.mock_mode:
+            return [{"eid": "journal:00000000-0000-0000-0000-000000000001", "name": "Hackathon Team Notebook (mock)"}]
+        data = self._request("GET", "/entities", params={"includeTypes": "journal", "page[limit]": min(limit, 100)}).json().get("data", [])
+        return [{"eid": d["id"], "name": d.get("attributes", {}).get("name")} for d in data]
 
     def list_experiments(self, limit: int = 15) -> List[Dict[str, Any]]:
-        """
-        Fetch accessible experiment notebooks using the Signals Search API:
-        POST /entities/search?page[limit]={limit}
-        Query: type == 'experiment' and isTemplate == false, sorted by modifiedAt desc
-        """
-        query = {
-            "$and": [
-                {
-                    "$match": {
-                        "field": "type",
-                        "value": "experiment",
-                        "mode": "keyword"
-                    }
-                },
-                {
-                    "$match": {
-                        "field": "isTemplate",
-                        "value": False
-                    }
-                }
-            ]
-        }
-        options = {
-            "sort": {
-                "modifiedAt": "desc"
-            }
-        }
-        items = self.search_entities(query=query, options=options, limit=limit)
-        experiments = []
-        for item in items:
-            attr = item.get("attributes", {})
-            eid = item.get("id") or attr.get("eid")
-            experiments.append({
-                "eid": eid,
-                "name": attr.get("name", "Untitled Experiment"),
-                "modifiedAt": attr.get("modifiedAt", "N/A"),
-                "description": attr.get("description", "")
-            })
-        return experiments
+        """Most recently modified, non-template experiments (Search API, sorted by modifiedAt desc)."""
+        query = {"$and": [{"$match": {"field": "type", "value": "experiment", "mode": "keyword"}},
+                          {"$match": {"field": "isTemplate", "value": False}}]}
+        items = self.search_entities(query, options={"sort": {"modifiedAt": "desc"}}, limit=limit)
+        return [{"eid": it.get("id") or it.get("attributes", {}).get("eid"),
+                 "name": it.get("attributes", {}).get("name", "Untitled Experiment"),
+                 "modifiedAt": it.get("attributes", {}).get("modifiedAt", ""),
+                 "description": it.get("attributes", {}).get("description", "")} for it in items]
 
     def get_entity(self, eid: str) -> Dict[str, Any]:
-        """Fetch metadata, attributes, and relationships for any entity ID."""
+        """GET /entities/{eid}: attributes (name, digest, flags, ...) and relationships (ancestors, owner, ...)."""
         if self.mock_mode:
-            return {
-                "id": eid,
-                "type": eid.split(":")[0] if ":" in eid else "experiment",
-                "attributes": {
-                    "name": f"Mock Entity ({eid})",
-                    "createdAt": "2026-09-23T12:00:00Z",
-                    "modifiedAt": "2026-09-23T14:30:00Z",
-                    "description": "Mock entity data generated for offline hackathon development."
-                }
-            }
-
-        url = f"{self.base_url}/entities/{eid}"
-        res = requests.get(url, headers=self._headers(), timeout=12)
-        res.raise_for_status()
-        return res.json().get("data", {})
-
-    def create_experiment(self, name: str, description: Optional[str] = None) -> Dict[str, Any]:
-        """Create a new top-level experiment notebook."""
-        if self.mock_mode:
-            new_id = f"experiment:{uuid.uuid4()}"
-            logger.info(f"[MOCK] Created experiment {new_id}: {name}")
-            return {
-                "id": new_id,
-                "type": "experiment",
-                "attributes": {
-                    "name": name,
-                    "description": description or "",
-                    "createdAt": "2026-09-23T16:00:00Z"
-                }
-            }
-
-        url = f"{self.base_url}/entities"
-        payload = {
-            "data": {
-                "type": "experiment",
-                "attributes": {
-                    "name": name,
-                    "description": description or ""
-                }
-            }
-        }
-        res = requests.post(url, headers=self._headers(), json=payload, timeout=15)
-        res.raise_for_status()
-        return res.json().get("data", {})
+            return {"id": eid, "type": "entity", "attributes": {
+                "eid": eid, "type": eid.split(":")[0] if ":" in eid else "experiment", "name": f"Mock Entity ({eid})",
+                "createdAt": "2026-09-23T12:00:00Z", "modifiedAt": "2026-09-23T14:30:00Z", "digest": "00000000"}}
+        return self._request("GET", f"/entities/{eid}").json().get("data", {})
 
     def list_child_entities(self, parent_eid: str) -> List[Dict[str, Any]]:
-        """List all child elements (drawings, text notes, images) inside an experiment."""
+        """GET /entities/{eid}/children: the elements inside an experiment (drawings, text, tables, files...)."""
         if self.mock_mode:
-            return [
-                {
-                    "id": f"chemicalDrawing:{uuid.uuid4()}",
-                    "type": "chemicalDrawing",
-                    "attributes": {"name": "Reaction Scheme 1", "modifiedAt": "2026-09-23T10:00:00Z"}
-                },
-                {
-                    "id": f"text:{uuid.uuid4()}",
-                    "type": "text",
-                    "attributes": {"name": "Procedure & Observations", "modifiedAt": "2026-09-23T10:30:00Z"}
-                },
-                {
-                    "id": f"image:{uuid.uuid4()}",
-                    "type": "image",
-                    "attributes": {"name": "TLC Plate Stain", "modifiedAt": "2026-09-23T11:00:00Z"}
-                }
-            ]
+            return [{"id": f"chemicalDrawing:{uuid.uuid4()}", "type": "entity", "attributes": {"type": "chemicalDrawing", "name": "Reaction Scheme 1"}},
+                    {"id": f"text:{uuid.uuid4()}", "type": "entity", "attributes": {"type": "text", "name": "Procedure & Observations"}},
+                    {"id": f"imageResource:{uuid.uuid4()}", "type": "entity", "attributes": {"type": "imageResource", "name": "TLC Plate Stain"}}]
+        return self._request("GET", f"/entities/{parent_eid}/children").json().get("data", [])
 
-        url = f"{self.base_url}/entities/{parent_eid}/children"
-        res = requests.get(url, headers=self._headers(), timeout=12)
-        res.raise_for_status()
-        return res.json().get("data", [])
-
-    def upload_child_attachment(
-        self,
-        parent_eid: str,
-        filename: str,
-        content_bytes: bytes,
-        content_type: str = "application/octet-stream"
-    ) -> Dict[str, Any]:
+    # ---------------------------------------------------------------- 3. create / write
+    def create_experiment(self, name: str, description: Optional[str] = None,
+                          notebook_eid: Optional[str] = None) -> Dict[str, Any]:
         """
-        Uploads an image, HTML note, or file directly as a child entity.
-        Always uses ?force=true to avoid 409 conflict errors.
+        Create an experiment INSIDE a notebook: POST /entities?digest=<notebook digest>
+        with relationships.ancestors = the notebook. (Without ancestors Signals creates an orphan
+        experiment that sits in no notebook, so this method refuses to do that.)
+        Names must be unique per notebook (409 otherwise).
+        """
+        nb = notebook_eid or self.notebook_eid
+        if self.mock_mode:
+            return {"id": f"experiment:{uuid.uuid4()}", "type": "entity",
+                    "attributes": {"type": "experiment", "name": name, "description": description or ""}}
+        if not nb:
+            raise SignalsError("Set SIGNALS_NOTEBOOK_EID (a journal:... eid) so experiments are created inside your notebook.")
+        body = {"data": {"type": "experiment",
+                         "attributes": {"name": name, **({"description": description} if description else {})},
+                         "relationships": {"ancestors": {"data": [{"type": "journal", "id": nb}]}}}}
+        return self._request("POST", "/entities", params={"digest": self.get_digest(nb)}, json_body=body).json().get("data", {})
+
+    def create_sample(self, experiment_eid: str, template_eid: str,
+                      fields: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Create a sample in an experiment from a sample TEMPLATE (sample:... eid of the template).
+        Signals auto-creates the experiment's samples table the first time.
+        `fields` = {field_id: value}, using the template's field IDs (read them from
+        GET /entities/{template_eid} -> attributes.fields). Sent as [{"id", "content": {"value"}}].
         """
         if self.mock_mode:
-            logger.info(f"[MOCK] Uploading {filename} ({len(content_bytes)} bytes) to {parent_eid}")
-            return {
-                "status": "mock_success",
-                "id": f"attachment:{filename}-mock-eid",
-                "filename": filename,
-                "parentEid": parent_eid,
-                "sizeBytes": len(content_bytes),
-                "contentType": content_type
-            }
+            return {"id": f"sample:{uuid.uuid4()}", "type": "entity", "attributes": {"type": "sample", "name": "Sample-001 (mock)"}}
+        field_list = [{"id": str(k), "content": {"value": v}} for k, v in (fields or {}).items()]
+        body = {"data": {"type": "sample", "attributes": {"fields": field_list},
+                         "relationships": {"ancestors": {"data": [{"type": "experiment", "id": experiment_eid}]},
+                                           "template": {"data": {"type": "sample", "id": template_eid}}}}}
+        return self._request("POST", "/entities", params={"digest": self.get_digest(experiment_eid)},
+                             json_body=body).json().get("data", {})
 
-        url = f"{self.base_url}/entities/{parent_eid}/children/{filename}?force=true"
-        headers = {
-            "x-api-key": self.api_key,
-            "Content-Type": content_type
-        }
-        res = requests.post(url, headers=headers, data=content_bytes, timeout=30)
-        res.raise_for_status()
-        return res.json()
+    def upload_child_attachment(self, parent_eid: str, filename: str, content_bytes: bytes,
+                                content_type: str = "application/octet-stream", force: bool = False) -> Dict[str, Any]:
+        """
+        Upload a file as a child element: POST /entities/{eid}/children/{filename}?digest=<parent digest>
+        Send the file's own MIME type (text/html makes an editable Text element; image/png an image, ...).
+        force=True skips the concurrency check instead of sending the digest (also allows duplicate names).
+        """
+        if self.mock_mode:
+            return {"status": "mock_success", "id": f"uploadedResource:{filename}-mock", "filename": filename,
+                    "parentEid": parent_eid, "sizeBytes": len(content_bytes), "contentType": content_type}
+        params = {"force": "true"} if force else {"digest": self.get_digest(parent_eid)}
+        return self._request("POST", f"/entities/{parent_eid}/children/{filename}", params=params,
+                             data=content_bytes, content_type=content_type, timeout=90).json()
 
-    # ---------------------------------------------------------
-    # 3. Chemistry & Chemical Drawings
-    # ---------------------------------------------------------
+    # ---------------------------------------------------------------- 4. chemistry
     def list_chemical_drawings(self, limit: int = 20) -> List[Dict[str, Any]]:
-        """
-        Fetch the most recent chemical drawings across notebooks using the Signals Search API:
-        POST /entities/search?page[limit]={limit}
-        Query: type == 'chemicalDrawing' and isTemplate == false, sorted by modifiedAt desc
-        """
-        query = {
-            "$and": [
-                {
-                    "$match": {
-                        "field": "type",
-                        "value": "chemicalDrawing",
-                        "mode": "keyword"
-                    }
-                },
-                {
-                    "$match": {
-                        "field": "isTemplate",
-                        "value": False
-                    }
-                }
-            ]
-        }
-        options = {
-            "sort": {
-                "modifiedAt": "desc"
-            }
-        }
-        items = self.search_entities(query=query, options=options, limit=limit)
-        drawings = []
-        for item in items:
-            attr = item.get("attributes", {})
-            eid = item.get("id") or attr.get("eid")
-            # Extract SMILES if directly present in attributes or fields
-            smiles = attr.get("smiles") or attr.get("structure")
-            if not smiles and attr.get("fields"):
-                for f_k, f_v in attr.get("fields", {}).items():
-                    if "structure" in f_k.lower() or "smiles" in f_k.lower():
-                        smiles = f_v.get("value")
-            if not smiles and eid and not self.mock_mode:
+        """Most recent chemicalDrawing elements (Search API). SMILES are fetched via export_entity()."""
+        query = {"$and": [{"$match": {"field": "type", "value": "chemicalDrawing", "mode": "keyword"}},
+                          {"$match": {"field": "isTemplate", "value": False}}]}
+        items = self.search_entities(query, options={"sort": {"modifiedAt": "desc"}}, limit=limit)
+        out = []
+        for it in items:
+            a = it.get("attributes", {})
+            eid = it.get("id") or a.get("eid")
+            smiles = a.get("smiles")
+            if not smiles and not self.mock_mode:
                 try:
-                    smiles = self.export_entity(eid, format="smiles")
-                except Exception:
-                    smiles = "CC(=O)Oc1ccccc1C(=O)O"
-            elif not smiles:
-                smiles = "CC(=O)Oc1ccccc1C(=O)O"
+                    smiles = self.export_entity(eid, format="smiles").strip() or None
+                except Exception as e:  # never invent a structure in live mode
+                    logger.info(f"No SMILES for {eid}: {e}")
+                    smiles = None
+            out.append({"id": eid, "name": a.get("name", "Untitled Chemical Drawing"), "smiles": smiles,
+                        "formula": a.get("formula", ""), "mw": a.get("mw"), "logp": a.get("logp"), "tpsa": a.get("tpsa"),
+                        "hbd": a.get("hbd"), "hba": a.get("hba"), "rotb": a.get("rotb"),
+                        "modifiedAt": a.get("modifiedAt", ""), "author": a.get("author", ""), "notebook": a.get("notebook", "")})
+        return out
 
-            drawings.append({
-                "id": eid,
-                "name": attr.get("name", "Untitled Chemical Drawing"),
-                "smiles": smiles,
-                "formula": attr.get("formula", ""),
-                "mw": attr.get("mw"),
-                "logp": attr.get("logp"),
-                "tpsa": attr.get("tpsa"),
-                "hbd": attr.get("hbd"),
-                "hba": attr.get("hba"),
-                "rotb": attr.get("rotb"),
-                "modifiedAt": attr.get("modifiedAt", ""),
-                "author": attr.get("author", "Scientist"),
-                "notebook": attr.get("notebook", "General")
-            })
-        return drawings
+    EXPORT_ACCEPT = {"smiles": "chemical/x-daylight-smiles", "svg": "image/svg+xml", "mol": "chemical/x-mdl-molfile",
+                     "mol-v3000": "chemical/x-mdl-molfile-v3000", "cdxml": "chemical/x-cdxml", "inchi": "chemical/x-inchi"}
 
-
-    # ---------------------------------------------------------
-    # Chemical Structure Retrieval & Export Endpoints
-    # ---------------------------------------------------------
     def export_entity(self, eid: str, format: str = "smiles") -> str:
-        """
-        Fetch/export content of an entity by EID using GET /entities/{eid}/export.
-        
-        This is the official Signals Notebook endpoint for exporting notebook entities
-        such as chemicalDrawing, sample, grid, text, etc.
-        
-        Supported formats for chemical structures:
-          - 'smiles': Daylight SMILES string
-          - 'mol': MDL V2000 molfile
-          - 'mol-v3000': MDL V3000 molfile
-          - 'svg': SVG vector image
-          - 'cdxml': ChemDraw XML
-          - 'inchi': InChI string
-          - 'rxn' / 'rxn-v3000': Reaction files
-        """
+        """GET /entities/{eid}/export?format=smiles|svg|mol|mol-v3000|cdxml|inchi (e.g. a chemicalDrawing)."""
         fmt = format.lower().strip()
         if self.mock_mode:
-            matched = next((d for d in MOCK_CHEMICAL_DRAWINGS if d["id"] == eid or d.get("eid") == eid), None)
-            matched_smiles = matched["smiles"] if matched else "CC(=O)Oc1ccccc1C(=O)O"
-            matched_name = matched["name"] if matched else eid
-            matched_formula = matched.get("formula", "") if matched else ""
-            matched_mw = matched.get("mw", "") if matched else ""
-
-            if fmt == "svg":
-                # Try RDKit MolDraw2DSVG if RDKit is installed
-                try:
-                    from rdkit import Chem
-                    from rdkit.Chem import Draw
-                    mol = Chem.MolFromSmiles(matched_smiles)
-                    if mol:
-                        drawer = Draw.rdMolDraw2D.MolDraw2DSVG(420, 280)
-                        drawer.DrawMolecule(mol)
-                        drawer.FinishDrawing()
-                        return drawer.GetDrawingText()
-                except Exception:
-                    pass
-
-                # Vector SVG depiction card for mock mode
-                return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="100%" height="100%">
-  <defs>
-    <linearGradient id="grad_{eid.replace(':', '_')}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f8fafc"/>
-      <stop offset="100%" stop-color="#f1f5f9"/>
-    </linearGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#grad_{eid.replace(':', '_')})" rx="10" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="18" y="16" width="384" height="42" fill="#f0fdfa" rx="8" stroke="#00707d" stroke-width="1.2"/>
-  <text x="210" y="42" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#00707d" text-anchor="middle">{matched_name[:40]}</text>
-  <circle cx="210" cy="135" r="50" fill="#ffffff" stroke="#00707d" stroke-width="2.5"/>
-  <text x="210" y="146" font-family="sans-serif" font-size="34" font-weight="bold" fill="#00707d" text-anchor="middle">⬡</text>
-  <rect x="30" y="195" width="360" height="30" fill="#ffffff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="210" y="215" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">{matched_smiles[:44]}</text>
-  <text x="210" y="242" font-family="sans-serif" font-size="11" fill="#475569" text-anchor="middle">{matched_formula} | MW: {matched_mw} g/mol | EID: {eid}</text>
-  <text x="210" y="262" font-family="sans-serif" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">✓ Exported via GET /entities/{eid}/export?format=svg</text>
-</svg>"""
-            elif fmt in ("mol", "mol-v3000"):
-                return f"""  Mock Molfile V2000
-  Signals EMEA Hackathon 2026
-  Entity: {eid}
-  Name: {matched_name}
-  SMILES: {matched_smiles}
-  M  END
-"""
-            elif fmt == "cdxml":
-                return f"""<?xml version="1.0" encoding="UTF-8" ?><CDXML><page id="1"><fragment id="2"><text><s font="Arial" size="10">{matched_smiles}</s></text></fragment></page></CDXML>"""
-            else:
-                return matched_smiles
-
-        url = f"{self.base_url}/entities/{eid}/export"
-        params = {"format": fmt}
-        headers = {"x-api-key": self.api_key}
-        if fmt == "svg":
-            headers["Accept"] = "image/svg+xml"
-        elif fmt in ("mol", "mol-v3000"):
-            headers["Accept"] = "chemical/x-mdl-molfile"
-        elif fmt == "smiles":
-            headers["Accept"] = "chemical/x-daylight-smiles, text/plain, */*"
-        elif fmt == "cdxml":
-            headers["Accept"] = "chemical/x-cdxml"
-        elif fmt == "inchi":
-            headers["Accept"] = "chemical/x-inchi"
-        else:
-            headers["Accept"] = "*/*"
-
-        res = requests.get(url, headers=headers, params=params, timeout=15)
-        res.raise_for_status()
-        return res.text
+            return self._mock_export(eid, fmt)
+        return self._request("GET", f"/entities/{eid}/export", params={"format": fmt},
+                             accept=f"{self.EXPORT_ACCEPT.get(fmt, '*/*')}, */*").text
 
     def get_chemical_drawing(self, id_or_eid: str, format: str = "smiles") -> str:
         """
-        Fetch a 2D chemical drawing for an entity or material.
-        
-        Routing:
-        - If id_or_eid represents an entity (e.g., 'chemicalDrawing:...', 'sample:...'):
-          calls GET /entities/{eid}/export?format={format}
-        - If id_or_eid represents an inventory material/batch (e.g., 'material:...', 'asset:...', 'batch:...'):
-          calls GET /materials/{assetBatchId}/drawing?format={format}
+        Structure of a notebook element (chemicalDrawing:..., sample:...) -> GET /entities/{eid}/export
+        or of a registered material (asset/batch id)                   -> GET /materials/{id}/drawing
         """
-        # If it's an entity EID (starts with chemicalDrawing or contains standard entity prefixes)
-        if any(id_or_eid.startswith(prefix) for prefix in ("chemicalDrawing:", "sample:", "entity:", "draw:")):
+        if ":" in id_or_eid and not id_or_eid.startswith(("asset:", "batch:")):
             return self.export_entity(id_or_eid, format=format)
-
-        format = format.lower().strip()
+        fmt = format.lower().strip()
         if self.mock_mode:
-            if format == "svg":
-                svg_file = FIXTURES_DIR / "caffeine.svg"
-                if svg_file.exists():
-                    return svg_file.read_text(encoding="utf-8")
-                return "<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#00707d'/></svg>"
-            elif format == "mol":
-                return f"  Mock Molfile V2000\n  Signals EMEA Hackathon 2026\n  Material: {id_or_eid}\n"
-            else:
-                # Default to SMILES
-                aspirin = (FIXTURES_DIR / "aspirin.smiles")
-                if aspirin.exists():
-                    return aspirin.read_text(encoding="utf-8").strip()
-                return "CC(=O)Oc1ccccc1C(=O)O"
-
-        url = f"{self.base_url}/materials/{id_or_eid}/drawing"
-        params = {"format": format}
-        headers = {"x-api-key": self.api_key}
-        if format == "svg":
-            headers["Accept"] = "image/svg+xml"
-        elif format in ("mol", "mol-v3000"):
-            headers["Accept"] = "chemical/x-mdl-molfile"
-        elif format == "smiles":
-            headers["Accept"] = "chemical/x-daylight-smiles, text/plain, */*"
-        else:
-            headers["Accept"] = "*/*"
-
-        res = requests.get(url, headers=headers, params=params, timeout=15)
-        res.raise_for_status()
-        return res.text
+            return self._mock_export(id_or_eid, fmt)
+        return self._request("GET", f"/materials/{id_or_eid}/drawing", params={"format": fmt},
+                             accept=f"{self.EXPORT_ACCEPT.get(fmt, '*/*')}, */*").text
 
     def get_stoichiometry(self, drawing_eid: str) -> Dict[str, Any]:
-        """
-        Fetch stoichiometry reactants, products, and conditions for a reaction drawing.
-        """
+        """GET /stoichiometry/{eid}: reactants, products, solvents, conditions of an experiment or chemicalDrawing."""
         if self.mock_mode:
-            fx_file = FIXTURES_DIR / "suzuki_stoichiometry.json"
-            if fx_file.exists():
-                try:
-                    return json.loads(fx_file.read_text(encoding="utf-8"))
-                except Exception:
-                    pass
-            return {
-                "data": {
-                    "id": drawing_eid,
-                    "attributes": {
-                        "name": "Mock Reaction",
-                        "reactants": [{"name": "Reactant A", "smiles": "c1ccccc1Br", "formula": "C6H5Br"}],
-                        "products": [{"name": "Product C", "smiles": "c1ccccc1-c1ccccc1", "formula": "C12H10"}]
-                    }
-                }
-            }
+            fx = FIXTURES_DIR / "suzuki_stoichiometry.json"
+            if fx.exists():
+                return json.loads(fx.read_text(encoding="utf-8"))
+            return {"data": {"id": drawing_eid, "attributes": {"reactants": [], "products": []}}}
+        return self._request("GET", f"/stoichiometry/{drawing_eid}").json()
 
-        url = f"{self.base_url}/stoichiometry/{drawing_eid}"
-        res = requests.get(url, headers=self._headers(), timeout=15)
-        res.raise_for_status()
-        return res.json()
+    def chemistry_search(self, smiles: str, exact: bool = False, limit: int = 20,
+                         source: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Structure search via the Search API ($chemsearch). Default = SUBSTRUCTURE; exact=True -> exact match.
+        (There is no /chemistry/search endpoint.)
+        """
+        q: Dict[str, Any] = {"$chemsearch": {"molecule": smiles, "mime": "chemical/x-daylight-smiles"}}
+        if exact:
+            q["$chemsearch"]["options"] = "full=true"
+        return self.search_entities(q, limit=limit, source=source)
 
-    # ---------------------------------------------------------
-    # 4. Materials & Inventory Search
-    # ---------------------------------------------------------
+    # ---------------------------------------------------------------- 5. materials & inventory
     def search_materials(self, query: str = "", limit: int = 10) -> List[Dict[str, Any]]:
-        """Search chemical materials, reagents, and inventory containers."""
+        """
+        Registered materials (type 'asset') via the Search API, optionally full-text filtered.
+        For libraries: GET /materials/libraries; one asset: GET /materials/{lib}/assets/id/{id}.
+        """
         if self.mock_mode:
-            mock_reagents = [
-                {"id": "material:m-001", "name": "Phenylboronic acid", "cas": "98-80-6", "formula": "C6H7BO2", "smiles": "OB(O)c1ccccc1"},
-                {"id": "material:m-002", "name": "4-Bromobenzonitrile", "cas": "623-00-7", "formula": "C7H4BrN", "smiles": "N#Cc1ccc(Br)cc1"},
-                {"id": "material:m-003", "name": "Sodium Hydroxide 1.0M", "cas": "1310-73-2", "formula": "NaOH", "smiles": "[Na+].[OH-]"},
-                {"id": "material:m-004", "name": "Aspirin (Acetylsalicylic Acid)", "cas": "50-78-2", "formula": "C9H8O4", "smiles": "CC(=O)Oc1ccccc1C(=O)O"},
-                {"id": "material:m-005", "name": "Caffeine Pure", "cas": "58-08-2", "formula": "C8H10N4O2", "smiles": "Cn1cnc2c1c(=O)n(c(=O)n2C)C"}
-            ]
-            if query:
-                q_lower = query.lower()
-                return [m for m in mock_reagents if q_lower in m["name"].lower() or q_lower in m["formula"].lower() or q_lower in m["cas"]][:limit]
-            return mock_reagents[:limit]
+            reagents = [
+                {"id": "asset:m-001", "name": "Phenylboronic acid", "cas": "98-80-6", "formula": "C6H7BO2", "smiles": "OB(O)c1ccccc1"},
+                {"id": "asset:m-002", "name": "4-Bromobenzonitrile", "cas": "623-00-7", "formula": "C7H4BrN", "smiles": "N#Cc1ccc(Br)cc1"},
+                {"id": "asset:m-003", "name": "Sodium Hydroxide 1.0M", "cas": "1310-73-2", "formula": "NaOH", "smiles": "[Na+].[OH-]"},
+                {"id": "asset:m-004", "name": "Aspirin (Acetylsalicylic Acid)", "cas": "50-78-2", "formula": "C9H8O4", "smiles": "CC(=O)Oc1ccccc1C(=O)O"},
+                {"id": "asset:m-005", "name": "Caffeine Pure", "cas": "58-08-2", "formula": "C8H10N4O2", "smiles": "Cn1cnc2c1c(=O)n(c(=O)n2C)C"}]
+            ql = query.lower()
+            return [m for m in reagents if not ql or ql in m["name"].lower() or ql in m["formula"].lower() or ql in m["cas"]][:limit]
+        clauses: List[Dict[str, Any]] = [{"$match": {"field": "type", "value": "asset", "mode": "keyword"}}]
+        if query:
+            clauses.append({"$simple": {"query": query, "operator": "and"}})
+        return self.search_entities({"$and": clauses}, limit=limit)
 
-        url = f"{self.base_url}/materials/bulk"
-        params = {"filter[query]": query, "page[limit]": limit}
-        res = requests.get(url, headers=self._headers(), params=params, timeout=12)
-        res.raise_for_status()
-        return res.json().get("data", [])
+    def list_material_libraries(self) -> List[Dict[str, Any]]:
+        """GET /materials/libraries: active material libraries."""
+        if self.mock_mode:
+            return [{"id": "Compounds", "attributes": {"name": "Compounds"}}, {"id": "Reagents", "attributes": {"name": "Reagents"}}]
+        return self._request("GET", "/materials/libraries").json().get("data", [])
+
+    def search_containers(self, query: str = "", limit: int = 20) -> List[Dict[str, Any]]:
+        """Inventory containers live in the IVT index: search with source=IVT (SN returns 0)."""
+        if self.mock_mode:
+            return [{"id": "container:mock-1", "attributes": {"type": "container", "name": "Vial FZ7-001 (mock)"}}]
+        clauses: List[Dict[str, Any]] = [{"$match": {"field": "type", "value": "container", "mode": "keyword"}}]
+        if query:
+            clauses.append({"$simple": {"query": query, "operator": "and"}})
+        return self.search_entities({"$and": clauses}, limit=limit, source="IVT")
+
+    # ---------------------------------------------------------------- mock helpers
+    def _mock_search(self, query: Dict[str, Any], limit: int) -> List[Dict[str, Any]]:
+        entity_type = ""
+        for clause in (query.get("$and", []) if isinstance(query, dict) else []):
+            m = clause.get("$match", {})
+            if m.get("field") == "type":
+                entity_type = m.get("value", "")
+        if entity_type == "chemicalDrawing" or "$chemsearch" in query:
+            return [{"type": "entity", "id": d["id"], "attributes": {**{k: v for k, v in d.items() if k != "id"}, "eid": d["id"], "type": "chemicalDrawing"}}
+                    for d in MOCK_CHEMICAL_DRAWINGS[:limit]]
+        fx = FIXTURES_DIR / "experiments_sample.json"
+        if fx.exists():
+            try:
+                return [{"type": "entity", "id": e.get("eid"), "attributes": {"eid": e.get("eid"), "type": "experiment",
+                         "name": e.get("name"), "modifiedAt": e.get("modifiedAt")}}
+                        for e in json.loads(fx.read_text(encoding="utf-8"))[:limit]]
+            except Exception:
+                pass
+        return []
+
+    def _mock_export(self, eid: str, fmt: str) -> str:
+        d = next((x for x in MOCK_CHEMICAL_DRAWINGS if x["id"] == eid), None)
+        smiles = d["smiles"] if d else "CC(=O)Oc1ccccc1C(=O)O"
+        if fmt == "svg":
+            try:
+                from rdkit import Chem
+                from rdkit.Chem import Draw
+                mol = Chem.MolFromSmiles(smiles)
+                drawer = Draw.rdMolDraw2D.MolDraw2DSVG(420, 280)
+                drawer.DrawMolecule(mol)
+                drawer.FinishDrawing()
+                return drawer.GetDrawingText()
+            except Exception:
+                svg = FIXTURES_DIR / "caffeine.svg"
+                return svg.read_text(encoding="utf-8") if svg.exists() else "<svg xmlns='http://www.w3.org/2000/svg'/>"
+        if fmt in ("mol", "mol-v3000"):
+            try:
+                from rdkit import Chem
+                return Chem.MolToMolBlock(Chem.MolFromSmiles(smiles))
+            except Exception:
+                return f"\n  mock\n\n  0  0  0  0  0  0            999 V2000\nM  END\n"
+        return smiles
