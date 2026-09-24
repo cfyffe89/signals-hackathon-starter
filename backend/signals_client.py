@@ -538,11 +538,14 @@ class SignalsClient:
                      "mol-v3000": "chemical/x-mdl-molfile-v3000", "cdxml": "chemical/x-cdxml", "inchi": "chemical/x-inchi"}
 
     def export_entity(self, eid: str, format: str = "smiles") -> str:
-        """GET /entities/{eid}/export?format=smiles|svg|mol|mol-v3000|cdxml|inchi (e.g. a chemicalDrawing)."""
-        fmt = format.lower().strip()
+        """
+        GET /entities/{eid}/export: a chemicalDrawing with format=smiles|svg|mol|mol-v3000|cdxml|inchi;
+        with format="" a text element comes back as HTML and a table (grid/materialsTable/samplesContainer) as CSV.
+        """
+        fmt = (format or "").lower().strip()
         if self.mock_mode:
             return self._mock_export(eid, fmt)
-        return self._request("GET", f"/entities/{eid}/export", params={"format": fmt},
+        return self._request("GET", f"/entities/{eid}/export", params={"format": fmt} if fmt else None,
                              accept=f"{self.EXPORT_ACCEPT.get(fmt, '*/*')}, */*").text
 
     def get_chemical_drawing(self, id_or_eid: str, format: str = "smiles") -> str:

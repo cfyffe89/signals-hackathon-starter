@@ -1,0 +1,5798 @@
+# SDF Public API — cleaned, hand-maintainable OpenAPI 3.0 spec.
+# Derived from the generated spec (docs/source/swagger.json); edit this file directly.
+# Companion narrative: SDF-API-GUIDE.md. Findings and backlog: SDF-API-KNOWLEDGE.md.
+info:
+  title: Signals Data Factory Public API Documentation
+  version: 25.8.0-dev.0
+  description: |-
+    Signals Data Factory (SDF) Public API. Store and retrieve assay/screening **results** (rows) attached to **entities** (compounds, batches) within **projects**; result rows are typed by a **measurement type** (a result schema). Writes go through a **map** and are asynchronous. Authenticate with the `x-api-key` header on every request.
+
+    Cleaned, hand-maintained edition: duplicate error models collapsed to named schemas, auto-generated `ModelNN` names replaced, MongoDB ObjectId leaks removed, and real examples added from live testing. See the companion SDF-API-GUIDE.md.
+  contact:
+    name: SDF API
+security:
+- x-api-key: []
+openapi: 3.0.0
+servers:
+- url: https://{tenant}/datafactory
+  description: Per-tenant base URL (ends in /datafactory).
+  variables:
+    tenant:
+      default: your-tenant.revvitycloud.com
+      description: Tenant host.
+components:
+  securitySchemes:
+    x-api-key:
+      type: apiKey
+      name: x-api-key
+      in: header
+  schemas:
+    MapsListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/maps
+        last:
+          type: string
+          example: /api/v1/maps?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/maps?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/maps?offset=2&limit=1
+    ResourceMapsListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/maps/6515bb18fb4abddf503dd26e
+    projectIds:
+      type: array
+      example:
+      - 1
+      items:
+        type: number
+    sld:
+      type: object
+    appMetadata:
+      type: object
+      properties:
+        sld:
+          $ref: '#/components/schemas/sld'
+        stl:
+          $ref: '#/components/schemas/sld'
+        customer:
+          $ref: '#/components/schemas/sld'
+        svv:
+          $ref: '#/components/schemas/sld'
+    attributes:
+      type: array
+      items:
+        $ref: '#/components/schemas/AttributeLocator'
+    entities:
+      type: array
+      items:
+        $ref: '#/components/schemas/EntityDefinition'
+    AttributesMapsListData:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 6515bb18fb4abddf503dd26e
+        projectIds:
+          $ref: '#/components/schemas/projectIds'
+        name:
+          type: string
+          example: My Map
+          nullable: true
+        description:
+          type: string
+          example: Map Description
+        version:
+          type: number
+          example: 2
+        type:
+          type: string
+          example: map
+        entities:
+          $ref: '#/components/schemas/entities'
+      required:
+      - id
+      - entities
+    meta:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date
+          example: '2022-11-21T10:54:41.362Z'
+        createdBy:
+          type: string
+          example: John
+        updatedAt:
+          type: string
+          format: date
+          example: '2022-11-22T10:53:55.787Z'
+        updatedBy:
+          type: string
+          example: John
+    ResourceMapsListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: maps
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceMapsListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesMapsListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    MapsListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceMapsListData'
+    MapsListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    MapsListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/MapsListResponseLinks'
+        data:
+          $ref: '#/components/schemas/MapsListResponseData'
+        meta:
+          $ref: '#/components/schemas/MapsListResponseMeta'
+    InternalServerError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 500
+        error:
+          type: string
+          example: Internal Server Error
+        message:
+          type: string
+          example: Internal Server Error
+    NotImplemented:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 501
+        error:
+          type: string
+          example: Not Implemented
+        message:
+          type: string
+          example: Not Implemented
+    BadGateway:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 502
+        error:
+          type: string
+          example: Bad Gateway
+        message:
+          type: string
+          example: Bad Gateway
+    ServiceUnavailable:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 503
+        error:
+          type: string
+          example: Service Unavailable
+        message:
+          type: string
+          example: Service Unavailable
+    GatewayTimeout:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 504
+        error:
+          type: string
+          example: Gateway Timeout
+        message:
+          type: string
+          example: Gateway Timeout
+    ProjectsListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/projects
+        last:
+          type: string
+          example: /api/v1/projects?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/projects?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/projects?offset=2&limit=1
+    ResourceProjectsListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1
+    AttributesProjectsListData:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Project name which must be unique across the organization
+          example: My Project
+        currentRevisionNumber:
+          type: number
+          description: Current Revision Number of the project.
+          example: 0
+        loadStatus:
+          type: string
+          example: LOADED
+        createdAt:
+          type: string
+          format: date
+          example: '2022-11-17T12:00:12Z'
+        lastLoadedAt:
+          type: string
+          format: date
+          example: '2022-11-18T16:00:23Z'
+        usesStreams:
+          type: boolean
+          example: false
+      required:
+      - name
+    MetaProject:
+      type: object
+      properties:
+        isUpToDate:
+          type: boolean
+        createdAt:
+          type: string
+          format: date
+          example: '2022-11-21T10:54:41.362Z'
+        createdBy:
+          type: string
+          example: John
+        updatedAt:
+          type: string
+          format: date
+          example: '2022-11-22T10:53:55.787Z'
+        updatedBy:
+          type: string
+          example: John
+    RelationshipsProjectsListDataLinks:
+      type: object
+      properties:
+        related:
+          type: string
+          example: /api/v1/projects/1/datasets
+    RelationshipProjectsListData:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/RelationshipsProjectsListDataLinks'
+    RelationshipsProjectsListData:
+      type: object
+      properties:
+        datasets:
+          $ref: '#/components/schemas/RelationshipProjectsListData'
+    ResourceProjectsListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: projects
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceProjectsListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesProjectsListData'
+        meta:
+          $ref: '#/components/schemas/MetaProject'
+        relationships:
+          $ref: '#/components/schemas/RelationshipsProjectsListData'
+    ProjectsListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceProjectsListData'
+    ProjectsListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    ProjectsListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/ProjectsListResponseLinks'
+        data:
+          $ref: '#/components/schemas/ProjectsListResponseData'
+        meta:
+          $ref: '#/components/schemas/ProjectsListResponseMeta'
+    BadRequest:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Invalid request query input
+    ResourceDataMapDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v2/maps/3bcd95ef-df8e-48e4-9de3-4339ec1db074
+    targetType:
+      type: string
+      description: Data map target, may indicate an Entity or a Result target
+      example: entity
+      enum:
+      - entity
+      - result
+    mappings:
+      type: array
+      description: Additional data mappings
+      example:
+      - attributeId: 66aa6734673466aa673466aa
+        column: date
+      - attributeId: 66aa6734673466aa673466aa
+        column: subject
+      items:
+        $ref: '#/components/schemas/AttributeColumnMapping'
+    AttributesDataMapData:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the data map
+          example: Compound map
+          minLength: 1
+        description:
+          type: string
+          description: Description of the data map
+          example: null
+          minLength: 1
+        targetType:
+          $ref: '#/components/schemas/targetType'
+        targetId:
+          type: string
+          description: Target ID
+          example: Compound
+          minLength: 1
+        assetId:
+          type: string
+          description: Asset column name, header, or ID
+          example: asset
+          minLength: 1
+        batchId:
+          type: string
+          description: Batch column name, header, or ID
+          example: null
+          minLength: 1
+        entityId:
+          type: string
+          description: Entity identifier column name, header, or ID
+          example: null
+          minLength: 1
+        uniqueResultId:
+          type: string
+          description: Result identifier column name, header, or ID
+          example: null
+          minLength: 1
+        mappings:
+          $ref: '#/components/schemas/mappings'
+      required:
+      - name
+      - targetType
+      - mappings
+    ResourceDataMapData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: dataMap
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceDataMapDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesDataMapData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    NotFound:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+        error:
+          type: string
+          example: Not Found
+        message:
+          type: string
+          example: Map not found
+    ProjectListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v2/projects
+        last:
+          type: string
+          example: /api/v2/projects?offset=30&limit=10
+        prev:
+          type: string
+          example: /api/v2/projects?offset=0&limit=10
+        next:
+          type: string
+          example: /api/v2/projects?offset=10&limit=10
+    ResourceProjectListData2.0Links:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v2/projects
+    AttributesProjectListData2.0:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the project
+          example: Example Project
+          minLength: 1
+        description:
+          type: string
+          description: Description of the project
+          example: A sample project
+          minLength: 1
+        publishable:
+          type: boolean
+          description: Whether the project is publishable
+          example: true
+        readOnly:
+          type: boolean
+          description: Whether the project is read-only
+      required:
+      - name
+    ResourceProjectListData2.0:
+      type: object
+      properties:
+        type:
+          type: string
+          example: projects
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceProjectListData2.0Links'
+        attributes:
+          $ref: '#/components/schemas/AttributesProjectListData2.0'
+        meta:
+          $ref: '#/components/schemas/meta'
+    ProjectListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceProjectListData2.0'
+    ProjectListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    ProjectListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/ProjectListResponseLinks'
+        data:
+          $ref: '#/components/schemas/ProjectListResponseData'
+        meta:
+          $ref: '#/components/schemas/ProjectListResponseMeta'
+    MtypeListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/info-design/measurement-types
+        last:
+          type: string
+          example: /api/v1/info-design/measurement-types?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/info-design/measurement-types?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/info-design/measurement-types?offset=2&limit=1
+    ResourceMtypeListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/info-design/measurement-types
+    tags:
+      type: array
+      example:
+      - 6515bb18fb4abddf503dd26e
+      items:
+        type: string
+        pattern: ^[0-9a-fA-F]{24}$
+    AttributesMtypeListData:
+      type: object
+      properties:
+        id:
+          example: 6515bb18fb4abddf503dd26e
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        name:
+          type: string
+          example: My mtype
+          nullable: true
+          maxLength: 128
+        description:
+          type: string
+          example: mtype
+        linkedEntity:
+          type: string
+        tags:
+          $ref: '#/components/schemas/tags'
+        attributes:
+          $ref: '#/components/schemas/MtypeListItemAttributes'
+        secondaryMapId:
+          example:
+          - 6679aa661c7a89672dda251f
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        isSecondaryMapTarget:
+          type: boolean
+        detailsMtype:
+          example: 663d07d10dbd53de6ed1c246
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+      required:
+      - id
+    ResourceMtypeListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: mtype
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceMtypeListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesMtypeListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    MtypeListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceMtypeListData'
+    MtypeListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    MtypeListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/MtypeListResponseLinks'
+        data:
+          $ref: '#/components/schemas/MtypeListResponseData'
+        meta:
+          $ref: '#/components/schemas/MtypeListResponseMeta'
+    ResourceMapDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/maps/6515bb18fb4abddf503dd26e
+    AttributesMapData:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 6515bb18fb4abddf503dd26e
+        projectIds:
+          $ref: '#/components/schemas/projectIds'
+        name:
+          type: string
+          example: My Map
+          nullable: true
+        description:
+          type: string
+          example: Map Description
+        version:
+          type: number
+          example: 2
+        type:
+          type: string
+          example: map
+        entities:
+          $ref: '#/components/schemas/entities'
+      required:
+      - id
+      - entities
+    ResourceMapData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: map
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceMapDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesMapData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    MapResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceMapData'
+    ResourceProjectDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1
+    loadNewReasons:
+      type: array
+      example:
+      - No datasets found in project's working copy.
+      items:
+        type: string
+    loadAllReasons:
+      type: array
+      example:
+      - No datasets found in project's working copy.
+      items:
+        type: string
+    loadOptions:
+      type: object
+      properties:
+        canLoadNew:
+          type: boolean
+          example: false
+        loadNewReasons:
+          $ref: '#/components/schemas/loadNewReasons'
+        canLoadAll:
+          type: boolean
+          example: false
+        loadAllReasons:
+          $ref: '#/components/schemas/loadAllReasons'
+    AttributesProjectData:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Project name which must be unique across the organization
+          example: My Project
+        currentRevisionNumber:
+          type: number
+          description: Current Revision Number of the project.
+          example: 0
+        loadStatus:
+          type: string
+          example: LOADED
+        createdAt:
+          type: string
+          format: date
+          example: '2022-11-17T12:00:12Z'
+        lastLoadedAt:
+          type: string
+          format: date
+          example: '2022-11-18T16:00:23Z'
+        usesStreams:
+          type: boolean
+          example: false
+        loadOptions:
+          $ref: '#/components/schemas/loadOptions'
+      required:
+      - name
+    RelationshipsProjectDataLinks:
+      type: object
+      properties:
+        related:
+          type: string
+          example: /api/v1/projects/1/datasets
+    RelationshipProjectData:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/RelationshipsProjectDataLinks'
+    RelationshipsProjectData:
+      type: object
+      properties:
+        datasets:
+          $ref: '#/components/schemas/RelationshipProjectData'
+    ResourceProjectData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: project
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceProjectDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesProjectData'
+        meta:
+          $ref: '#/components/schemas/MetaProject'
+        relationships:
+          $ref: '#/components/schemas/RelationshipsProjectData'
+    ProjectResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceProjectData'
+    ResourceProjectData2.0Links:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v2/projects/123
+    AttributesProjectData2.0:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the project
+          example: Example Project
+          minLength: 1
+        description:
+          type: string
+          description: Description of the project
+          example: A sample project
+          minLength: 1
+        publishable:
+          type: boolean
+          description: Whether the project is publishable
+          example: true
+        readOnly:
+          type: boolean
+          description: Whether the project is read-only
+      required:
+      - name
+    ResourceProjectData2.0:
+      type: object
+      properties:
+        type:
+          type: string
+          example: project
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceProjectData2.0Links'
+        attributes:
+          $ref: '#/components/schemas/AttributesProjectData2.0'
+        meta:
+          $ref: '#/components/schemas/meta'
+    ResourceMtypeDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/info-design/measurement-types/6515bb18fb4abddf503dd26e
+    AttributesMtypeData:
+      type: object
+      properties:
+        id:
+          example: 6515bb18fb4abddf503dd26e
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        name:
+          type: string
+          example: My mtype
+          nullable: true
+          maxLength: 128
+        description:
+          type: string
+          example: mtype
+        linkedEntity:
+          type: string
+        tags:
+          $ref: '#/components/schemas/tags'
+        attributes:
+          $ref: '#/components/schemas/MtypeAttributeList'
+        secondaryMapId:
+          example:
+          - 6679aa661c7a89672dda251f
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        isSecondaryMapTarget:
+          type: boolean
+        detailsMtype:
+          example: 663d07d10dbd53de6ed1c246
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+      required:
+      - id
+    ResourceMtypeData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: Mtype
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceMtypeDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesMtypeData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    MtypeResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceMtypeData'
+    DatasetsListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/projects/1/datasets
+        last:
+          type: string
+          example: /api/v1/projects/1/datasets?offset=2&limit=1
+        prev:
+          type: string
+          example: /api/v1/projects/1/datasets?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/projects/1/datasets?offset=2&limit=1
+    ResourceDatasetsListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1/datasets/1
+    status:
+      type: string
+      example: LOADED
+      enum:
+      - NOT_LOADED
+      - ERROR
+      - MODIFIED
+      - LOADING
+      - LOADED
+    Entity:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Sample
+        hasAttributes:
+          type: boolean
+          example: false
+    MapDetails:
+      type: object
+      properties:
+        mapName:
+          type: string
+          example: My Map
+        measurementType:
+          type: string
+          example: My MType
+        entities:
+          $ref: '#/components/schemas/MapEntityList'
+        mapVersion:
+          type: number
+          example: 2
+        mtypeViewRestricted:
+          type: boolean
+          example: false
+        mtypeDownloadRestricted:
+          type: boolean
+          example: true
+    AttributesDatasetsListData:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/status'
+        isStreamDataset:
+          type: boolean
+          example: false
+        name:
+          type: string
+          example: dataset.csv
+        projectId:
+          type: integer
+          example: 1
+          minimum: 1
+        mapId:
+          type: string
+          example: 637cb56217a3140007117fb8
+          nullable: true
+        loadedAt:
+          type: string
+          format: date
+          example: '2022-11-21T11:45:54.831Z'
+        totalRowCount:
+          type: integer
+          example: 3
+        mapDetails:
+          $ref: '#/components/schemas/MapDetails'
+    RelationshipsDatasetsListDataLinks:
+      type: object
+      properties:
+        related:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources
+    RelationshipDatasetsListData:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/RelationshipsDatasetsListDataLinks'
+    RelationshipsDatasetsListData:
+      type: object
+      properties:
+        datasources:
+          $ref: '#/components/schemas/RelationshipDatasetsListData'
+    ResourceDatasetsListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: datasets
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceDatasetsListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesDatasetsListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+        relationships:
+          $ref: '#/components/schemas/RelationshipsDatasetsListData'
+    DatasetsListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceDatasetsListData'
+    DatasetsListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    DatasetsListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/DatasetsListResponseLinks'
+        data:
+          $ref: '#/components/schemas/DatasetsListResponseData'
+        meta:
+          $ref: '#/components/schemas/DatasetsListResponseMeta'
+    AttributeListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/int/info-design/entities/Compound/attributes
+        last:
+          type: string
+          example: /api/v1/int/info-design/entities/Compound/attributes?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/int/info-design/entities/Compound/attributes?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/int/info-design/entities/Compound/attributes?offset=2&limit=1
+    ResourceAttributeListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/int/info-design/entities/Compound/attributes/1234568790abcdef12345678
+    type:
+      type: string
+      enum:
+      - string
+      - string[]
+      - boolean
+      - boolean[]
+      - number
+      - number[]
+    attributeProperties:
+      type: array
+      items:
+        $ref: '#/components/schemas/AttributeProperty'
+    dataType:
+      type: string
+      description: attribute type
+      enum:
+      - Text
+      - Keyword
+      - Number
+      - Integer
+      - Date
+      - URL
+      - Image
+      - Chemical Structure
+      - Bio Sequence
+      - Internal Reference
+      - Ontology
+    AttributesAttributeListData:
+      type: object
+      properties:
+        attributeProperties:
+          $ref: '#/components/schemas/attributeProperties'
+        entity:
+          type: string
+          description: The type of entity for this attribute.
+        name:
+          type: string
+          pattern: ( )$
+        dataType:
+          $ref: '#/components/schemas/dataType'
+        attributeTemplateId:
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        appMetadata:
+          type: string
+        canBeDeleted:
+          type: boolean
+          default: true
+      required:
+      - name
+    ResourceAttributeListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: attribute
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceAttributeListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesAttributeListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    AttributeListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceAttributeListData'
+    AttributeListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    AttributeListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/AttributeListResponseLinks'
+        data:
+          $ref: '#/components/schemas/AttributeListResponseData'
+        meta:
+          $ref: '#/components/schemas/AttributeListResponseMeta'
+    ResourceMtypeAttributeListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/info-design/mtypes/abcdef123456789098765432/attributes/1234568790abcdef12345678
+    AttributesMtypeAttributeListData:
+      type: object
+      properties:
+        attributeProperties:
+          $ref: '#/components/schemas/attributeProperties'
+        entity:
+          type: string
+          description: The type of entity for this attribute.
+        name:
+          type: string
+          pattern: ( )$
+        dataType:
+          $ref: '#/components/schemas/dataType'
+        attributeTemplateId:
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        appMetadata:
+          type: string
+        canBeDeleted:
+          type: boolean
+          default: true
+      required:
+      - name
+    ResourceMtypeAttributeListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: attribute
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceMtypeAttributeListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesMtypeAttributeListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    ResourceDatasetDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1/datasets/1
+    AttributesDatasetData:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/status'
+        isStreamDataset:
+          type: boolean
+          example: false
+        name:
+          type: string
+          example: dataset.csv
+        projectId:
+          type: integer
+          example: 1
+          minimum: 1
+        mapId:
+          type: string
+          example: 637cb56217a3140007117fb8
+          nullable: true
+        loadedAt:
+          type: string
+          format: date
+          example: '2022-11-21T11:45:54.831Z'
+        totalRowCount:
+          type: integer
+          example: 3
+        mapDetails:
+          $ref: '#/components/schemas/MapDetails'
+    RelationshipsDatasetDataLinks:
+      type: object
+      properties:
+        related:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources
+    RelationshipDatasetData:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/RelationshipsDatasetDataLinks'
+    RelationshipsDatasetData:
+      type: object
+      properties:
+        datasources:
+          $ref: '#/components/schemas/RelationshipDatasetData'
+    ResourceDatasetData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: dataset
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceDatasetDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesDatasetData'
+        meta:
+          $ref: '#/components/schemas/meta'
+        relationships:
+          $ref: '#/components/schemas/RelationshipsDatasetData'
+    DatasetResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceDatasetData'
+    Forbidden:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 403
+        error:
+          type: string
+          example: Forbidden
+        message:
+          type: string
+          example: User does not have the required permission to perform this action
+    DatasetNotFound:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+        error:
+          type: string
+          example: Not Found
+        message:
+          type: string
+          example: Dataset not found
+    PublicationStatusInformation:
+      type: object
+      properties:
+        publicationId:
+          type: string
+        projectId:
+          type: string
+          minLength: 1
+        targetType:
+          $ref: '#/components/schemas/TargetType'
+        targetId:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/PublicationStatus'
+        reportUrl:
+          type: string
+      required:
+      - publicationId
+      - projectId
+      - targetType
+      - targetId
+      - status
+      example:
+        publicationId: b7fd24db-f875-487c-ab66-aa14618ca356
+        projectId: e087599a-ef53-4da7-bfc8-c97544c3a018
+        targetType: RESULT
+        targetId: 68b1b8036675f6817860970d
+        status: COMPLETED
+        reportUrl: https://<bucket>.s3.amazonaws.com/sdf/2.0/reports/<publicationId>/final_report.json?<presigned>
+    ResultsByProjectAndEntityIdListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: ''
+        last:
+          type: string
+          example: ''
+        prev:
+          type: string
+          example: ''
+        next:
+          type: string
+          example: ''
+    ResourceResultsByProjectAndEntityIdDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: ''
+    _source:
+      type: object
+    AttributesResultsByProjectAndEntityIdData:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID of the document
+        _source:
+          $ref: '#/components/schemas/_source'
+      required:
+      - _id
+    ResourceResultsByProjectAndEntityIdData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: resultsByProjectAndEntityId
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceResultsByProjectAndEntityIdDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesResultsByProjectAndEntityIdData'
+        meta:
+          $ref: '#/components/schemas/ResultRowMeta'
+    ResultsByProjectAndEntityIdListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceResultsByProjectAndEntityIdData'
+    ResultsByProjectAndEntityIdListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    ResultsByProjectAndEntityIdListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/ResultsByProjectAndEntityIdListResponseLinks'
+        data:
+          $ref: '#/components/schemas/ResultsByProjectAndEntityIdListResponseData'
+        meta:
+          $ref: '#/components/schemas/ResultsByProjectAndEntityIdListResponseMeta'
+    DatasourcesListResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources
+        last:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources?offset=2&limit=1
+        prev:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources?offset=2&limit=1
+    ResourceDatasourcesListDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources/1
+    dataSourceType:
+      type: string
+      example: delimited
+      enum:
+      - delimited
+      - sql
+      - sas7bdat
+      - xlsx
+    AttributesDatasourcesListData:
+      type: object
+      properties:
+        documentSize:
+          type: number
+          example: '300'
+        rowCount:
+          type: number
+          example: '12'
+        name:
+          type: string
+          example: My Datasource
+        dataSourceType:
+          $ref: '#/components/schemas/dataSourceType'
+        dataSourceInfo:
+          required:
+          - DatasourceInfo
+          anyOf:
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: string
+            nullable: true
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+        materializationStatus:
+          type: string
+          example: Not Materialized
+        isMetadataDatasource:
+          type: boolean
+          example: false
+      required:
+      - documentSize
+      - name
+      - materializationStatus
+      - isMetadataDatasource
+    ResourceDatasourcesListData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: datasource
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceDatasourcesListDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesDatasourcesListData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    DatasourcesListResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceDatasourcesListData'
+    DatasourcesListResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    DatasourcesListResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/DatasourcesListResponseLinks'
+        data:
+          $ref: '#/components/schemas/DatasourcesListResponseData'
+        meta:
+          $ref: '#/components/schemas/DatasourcesListResponseMeta'
+    ResourceDatasourceDataLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/projects/1/datasets/1/datasources/1
+    AttributesDatasourceData:
+      type: object
+      properties:
+        documentSize:
+          type: number
+          example: '300'
+        rowCount:
+          type: number
+          example: '12'
+        name:
+          type: string
+          example: My Datasource
+        dataSourceType:
+          $ref: '#/components/schemas/dataSourceType'
+        dataSourceInfo:
+          required:
+          - DatasourceInfo
+          anyOf:
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: string
+            nullable: true
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+        materializationStatus:
+          type: string
+          example: Not Materialized
+        isMetadataDatasource:
+          type: boolean
+          example: false
+      required:
+      - documentSize
+      - name
+      - materializationStatus
+      - isMetadataDatasource
+    ResourceDatasourceData:
+      type: object
+      properties:
+        type:
+          type: string
+          example: datasource
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceDatasourceDataLinks'
+        attributes:
+          $ref: '#/components/schemas/AttributesDatasourceData'
+        meta:
+          $ref: '#/components/schemas/meta'
+    DatasourceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceDatasourceData'
+    AttributeDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Attribute Name
+        valueLocator:
+          example: Locator
+          anyOf:
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+    AttributeCreation:
+      type: array
+      items:
+        $ref: '#/components/schemas/AttributeDetails'
+    EntityCreation:
+      type: object
+      properties:
+        entityType:
+          type: string
+          example: Entity
+        ID:
+          example: Entity ID
+          anyOf:
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+        measurementType:
+          type: string
+          example: mtype
+        attributes:
+          $ref: '#/components/schemas/AttributeCreation'
+        dePivot:
+          example:
+            function:
+              type: columnSets
+              sets: []
+          anyOf:
+          - $ref: '#/components/schemas/DePivotCreation'
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+      required:
+      - entityType
+    EntitiesCreation:
+      type: array
+      x-constraint:
+        unique: entityType
+      items:
+        $ref: '#/components/schemas/EntityCreation'
+    MapCreation:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Map name
+          example: My Map
+          maxLength: 64
+        description:
+          type: string
+          example: Map Description
+        entities:
+          $ref: '#/components/schemas/EntitiesCreation'
+      required:
+      - name
+      - entities
+    groupsWithReadAccess:
+      type: array
+      description: List of group uuids from SSO. Users in one or more of these groups will have read access
+        to this project.
+      example:
+      - '110'
+      - '111'
+      items:
+        type: string
+    groupsWithWriteAccess:
+      type: array
+      description: List of group uuids from SSO. Users in one or more of these groups will have read/write
+        access to this project.
+      example:
+      - '110'
+      - '111'
+      items:
+        type: string
+    ProjectCreation:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Project name which must be unique across the organization
+          example: MyProject
+          maxLength: 64
+        groupsWithReadAccess:
+          $ref: '#/components/schemas/groupsWithReadAccess'
+        groupsWithWriteAccess:
+          $ref: '#/components/schemas/groupsWithWriteAccess'
+      required:
+      - name
+    Conflict:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 409
+        error:
+          type: string
+          example: Conflict
+        message:
+          type: string
+          example: There is an existing project with the name 'project'
+    postMapIds:
+      type: array
+      example:
+      - 1
+      - 2
+      - 14
+      items:
+        type: number
+    postMapsSearch:
+      type: object
+      properties:
+        projectIds:
+          $ref: '#/components/schemas/postMapIds'
+    data:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/DatasetTypeLiteral'
+        attributes:
+          $ref: '#/components/schemas/DatasetAttributes'
+    ProjectDatasetCreation:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/data'
+    AttributeFilters:
+      type: object
+      description: 'Measurement types attributes to filter results. For example: { "Assay Date": "2025-01-01"
+        }'
+    TagFilters:
+      type: array
+      description: Only return results for measurement types with these tags.
+      items:
+        type: string
+    options:
+      type: object
+      description: 'Additional options for filtering results, this must be used to specify format for
+        specific data types. For example: { "Assay Date": { "format": "yyyy-MM-dd" } }.'
+    filters:
+      type: object
+      properties:
+        entity:
+          type: string
+          description: Entity name to filter results.
+        attributes:
+          $ref: '#/components/schemas/AttributeFilters'
+        tags:
+          $ref: '#/components/schemas/TagFilters'
+        options:
+          $ref: '#/components/schemas/options'
+    fields:
+      type: array
+      description: Only include these measurement types fields in the response.
+      items:
+        type: string
+    ProjectResultsSearchBody:
+      type: object
+      description: Filters for the results
+      nullable: true
+      properties:
+        filters:
+          $ref: '#/components/schemas/filters'
+        fields:
+          $ref: '#/components/schemas/fields'
+    warnings:
+      type: array
+      items:
+        type: string
+    postSearchMType:
+      type: object
+      properties:
+        projectId:
+          anyOf:
+          - type: number
+            example: 3
+          - type: string
+            example: 7c49ca25-43dd-4d76-b4c4-e08685193bd6
+            x-format:
+              guid: true
+    SearchDataByMtypeAndProjectResponseLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/data/search
+        last:
+          type: string
+          example: /api/v1/data/search?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/data/search?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/data/search?offset=2&limit=1
+    ResourceSearchDataByMtypeAndProjectLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /api/v1/data/search/
+    ResourceSearchDataByMtypeAndProject:
+      type: object
+      properties:
+        type:
+          type: string
+          example: search
+        id:
+          type: string
+          example: '1'
+        links:
+          $ref: '#/components/schemas/ResourceSearchDataByMtypeAndProjectLinks'
+        attributes:
+          type: object
+          example:
+            Compound ID: '1'
+            timeStamp: '2026-03-06T16:31:17.532Z'
+          properties:
+            string:
+              type: string
+        meta:
+          $ref: '#/components/schemas/meta'
+    SearchDataByMtypeAndProjectResponseData:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceSearchDataByMtypeAndProject'
+    SearchDataByMtypeAndProjectResponseMeta:
+      type: object
+      properties:
+        count:
+          type: number
+          example: 10
+        search-id:
+          type: string
+          example: 3bc81c44-2f23-47ce-b05f-7fc468c01c74
+        last-doc-id:
+          type: string
+          example: '1234567890'
+    SearchDataByMtypeAndProjectResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponseLinks'
+        data:
+          $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponseData'
+        meta:
+          $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponseMeta'
+      example:
+        links:
+          next: /api/v1/projects/<projectId>/results?page-size=2&search-id=<sid>&last-doc-id=<lastId>
+        meta:
+          count: 334148574
+          search-id: adb0cfe6-c341-4c31-adc0-e12492ca76b7
+          last-doc-id: 10000015-C-r565459-m2-v1
+        data:
+        - type: results
+          id: <projectId>||10000015||10000015-C-r565459-m1-v0
+          attributes:
+            Compound ID: '10000015'
+            Row ID: 10000015-C-r565459
+            Method: ChemCharts
+            Project ID: 0_Pubchem Bioassay
+            Type ID: Cheminformatic Properties
+            timeStamp: '2025-08-31T23:57:57.011Z'
+          meta: {}
+    Accepted:
+      type: string
+      enum:
+      - accepted
+    ProjectDatasetDatasourceSettingsUpdate:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DatasourceSettingsData'
+    ProjectDatasetEditName:
+      type: object
+      properties:
+        name:
+          type: string
+          example: dataset.csv
+      required:
+      - name
+    NotAuthorized:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 403
+        error:
+          type: string
+          example: Not authorized
+        message:
+          type: string
+          example: Not authorized
+    postEntityRowSearch:
+      type: object
+      properties:
+        mapId:
+          type: string
+          description: Identifier of existing map
+        statusWebhook:
+          type: string
+          x-format:
+            uri: true
+        options:
+          $ref: '#/components/schemas/EntityRowMappingOptions'
+        data:
+          type: object
+          example: ''
+          properties:
+            string:
+              type: string
+      required:
+      - mapId
+      - data
+    SingleRowUpdateResponse:
+      type: object
+      properties:
+        publicationId:
+          type: string
+          example: b4883ed7-3ab0-49cd-8da3-38e05cbe9994
+    UnprocessableEntity:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 422
+        error:
+          type: string
+          example: Unprocessable Entity
+        message:
+          type: string
+          example: There is at least one entity in the map that does not exist
+    AttributeLocator:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: ^(?!\${2,})(.*)$
+        valueLocator:
+          anyOf:
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+          - type: string
+        appMetadata:
+          $ref: '#/components/schemas/appMetadata'
+      required:
+      - name
+      - valueLocator
+    EntityDefinition:
+      type: object
+      properties:
+        entityType:
+          type: string
+          example: Entity
+        measurementType:
+          type: string
+          example: mtype
+        ID:
+          type: string
+          example: Entity ID
+        attributes:
+          $ref: '#/components/schemas/attributes'
+        dePivot:
+          example:
+            type: columnSets
+            sets: []
+          anyOf:
+          - $ref: '#/components/schemas/DePivot'
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+      required:
+      - entityType
+    AttributeColumnMapping:
+      type: object
+      properties:
+        attributeId:
+          type: string
+          description: Attribute external ID
+          minLength: 1
+        column:
+          type: string
+          description: Column name, header, or ID
+          minLength: 1
+      required:
+      - attributeId
+      - column
+    DataMapResponseV2:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceDataMapData'
+    MtypeListItemAttributes:
+      type: array
+      example:
+      - 6679a8131e074307e5a47672
+      items:
+        type: string
+        pattern: ^[0-9a-fA-F]{24}$
+    ProjectResponseV2Body:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceProjectData2.0'
+    MtypeAttributeList:
+      type: array
+      example:
+      - 6679a8131e074307e5a47672
+      items:
+        type: string
+        pattern: ^[0-9a-fA-F]{24}$
+    MapEntityList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Entity'
+    AttributeProperty:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/type'
+        value:
+          type: string
+      required:
+      - name
+      - type
+      - value
+    PaginationLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          example: /api/v1/info-design/mtypes/abcdef123456789098765432/attributes
+        last:
+          type: string
+          example: /api/v1/info-design/mtypes/abcdef123456789098765432/attributes?offset=13&limit=1
+        prev:
+          type: string
+          example: /api/v1/info-design/mtypes/abcdef123456789098765432/attributes?offset=0&limit=1
+        next:
+          type: string
+          example: /api/v1/info-design/mtypes/abcdef123456789098765432/attributes?offset=2&limit=1
+    AttributeListItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/ResourceMtypeAttributeListData'
+    MtypeAttributesResponse:
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        data:
+          $ref: '#/components/schemas/AttributeListItems'
+        meta:
+          $ref: '#/components/schemas/AttributeListResponseMeta'
+    TargetType:
+      type: string
+      enum:
+      - ENTITY
+      - RESULT
+    PublicationStatus:
+      type: string
+      enum:
+      - PENDING
+      - COMPLETED
+      - WARNING
+      - ERROR
+    ResultRowMeta:
+      type: object
+    AdditionalMappings:
+      type: array
+      description: Additional data mappings
+      example:
+      - attributeId: 66aa6734673466aa673466aa
+        column: date
+      - attributeId: 66aa6734673466aa673466aa
+        column: subject
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/AttributeColumnMapping'
+    MapCreationV2:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the data map
+          example: Batch map
+          minLength: 1
+        description:
+          type: string
+          description: Description of the data map
+          minLength: 1
+        targetType:
+          $ref: '#/components/schemas/targetType'
+        targetId:
+          type: string
+          description: Target ID
+          example: Compound
+          minLength: 1
+        assetId:
+          type: string
+          description: Asset column name, header, or ID
+          example: asset
+          minLength: 1
+        batchId:
+          type: string
+          description: Batch column name, header, or ID
+          example: ''
+          minLength: 1
+        entityId:
+          type: string
+          description: Entity identifier column name, header, or ID
+          example: ''
+          minLength: 1
+        uniqueResultId:
+          type: string
+          description: Result identifier column name, header, or ID
+          example: ''
+          minLength: 1
+        mappings:
+          $ref: '#/components/schemas/AdditionalMappings'
+      required:
+      - targetType
+      - mappings
+    MtypeTagList:
+      type: array
+      example:
+      - 6515bb18fb4abddf503dd26e
+      items:
+        type: string
+        pattern: ^[0-9a-fA-F]{24}$
+    MeasurementTypeCreation:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        linkedEntity:
+          type: string
+        tags:
+          $ref: '#/components/schemas/MtypeTagList'
+        readOnly:
+          type: boolean
+          description: '[DEPRECATED] This value is ignored and has no effect if provided.'
+          example: false
+        detailsMtype:
+          example: 6650c4ff7611ac0ef6843eb9
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+      required:
+      - name
+    DatasetTypeLiteral:
+      type: string
+      enum:
+      - datasets
+    DatasetAttributes:
+      type: object
+      properties:
+        name:
+          type: string
+          example: My Dataset
+      required:
+      - name
+    FileMappingOptions:
+      type: object
+      description: Mapping options, such as formats
+      example:
+        Batch Date:
+          format: yyyy-MM-dd
+    FileUploadForm:
+      type: object
+      properties:
+        mapId:
+          type: string
+          description: Identifier of existing map to use for processing the file
+        columns:
+          type: string
+          description: JSON encoded array of the columns in the file
+          example: '["column1", "column2"]'
+        options:
+          $ref: '#/components/schemas/FileMappingOptions'
+        filename:
+          type: string
+          example: file.csv
+        delimiter:
+          type: string
+          example: ','
+        escapecharacter:
+          type: string
+          example: '"'
+        quotecharacter:
+          type: string
+          example: '"'
+        multiline:
+          type: boolean
+        statuswebhook:
+          type: string
+          x-format:
+            uri: true
+        publicationName:
+          type: string
+          example: example publication
+      required:
+      - mapId
+      - columns
+    FilePublicationInfo:
+      type: object
+      properties:
+        publicationId:
+          type: string
+        publicationName:
+          type: string
+          example: Example Publication Name
+    FileUploadResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FilePublicationInfo'
+        warnings:
+          $ref: '#/components/schemas/warnings'
+      required:
+      - data
+    DatasourceDefinitionTypeLiteral:
+      type: string
+      enum:
+      - datasource-definition
+    DatasourceSettings:
+      type: object
+      properties:
+        dataSourceType:
+          $ref: '#/components/schemas/dataSourceType'
+        dataSourceInfo:
+          required:
+          - DatasourceInfo
+          anyOf:
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+          - type: string
+            nullable: true
+          - type: object
+            description: Free-form object (was an internal codegen definition).
+    DatasourceSettingsData:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/DatasourceDefinitionTypeLiteral'
+        attributes:
+          $ref: '#/components/schemas/DatasourceSettings'
+    MtypePatchTagList:
+      type: array
+      example:
+      - 6515bb18fb4abddf503dd26e
+      items:
+        type: string
+        pattern: ^[0-9a-fA-F]{24}$
+    MeasurementTypeUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        tags:
+          $ref: '#/components/schemas/MtypePatchTagList'
+        detailsMtype:
+          example: 663d07d10dbd53de6ed1c246
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+    EntityRowMappingOptions:
+      type: object
+      description: Mapping options, such as formats
+      example:
+        Batch Date:
+          format: yyyy-MM-dd
+    DePivot:
+      type: object
+      description: 'De-pivot instructions: how column sets collapse into rows. Structure is app-specific;
+        commonly {"type":"columnSets","sets":[...]}.'
+      example:
+        type: columnSets
+        sets: []
+    DePivotCreation:
+      type: object
+      description: De-pivot instructions supplied when creating an entity/measurement type.
+      example:
+        function:
+          type: columnSets
+          sets: []
+    Unauthorized401:
+      type: string
+      description: Returned as plain HTML (not JSON) by the gateway when the x-api-key header is missing
+        or invalid.
+      example: <html><head><title>401 Authorization Required</title></head>...</html>
+tags:
+- name: search
+  description: 'Query indexed project data: all results in a project, results scoped to one measurement
+    type, results scoped to one entity record, or a cross-project search by measurement type. Uses cursor
+    pagination (search-id / last-doc-id, links.next) rather than offset pagination.'
+- name: projects
+  description: Create, list, and manage projects (v1) and their datasets/datasources, including loading
+    working copies into numbered revisions.
+- name: v2
+  description: Second-generation project, map, and results endpoints. Not all v1 functionality has a v2
+    equivalent yet, and vice versa.
+- name: data map
+  description: 'v2 data maps: named field-mapping definitions used when loading or interpreting project
+    data.'
+- name: maps
+  description: 'v1 data maps: named field-mapping definitions used when loading or interpreting project
+    data.'
+- name: information design
+  description: Measurement types and entity/attribute definitions that describe the shape of data indexed
+    for search.
+paths:
+  /api/v1/maps:
+    get:
+      summary: Retrieve all maps user can view
+      operationId: getApiV1Maps
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - maps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapsListResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+    post:
+      summary: Creates a map
+      operationId: postApiV1Maps
+      tags:
+      - maps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapCreation'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects:
+    get:
+      summary: Retrieve a list of projects according to user credentials. Results are sorted by name in
+        ascending order.
+      operationId: getApiV1Projects
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      - name: includeMigrated
+        in: query
+        schema:
+          type: boolean
+          description: Whether to include projects that have been migrated to v2. When false (default),
+            projects with migration status MIGRATED will be excluded from results.
+          example: false
+          default: false
+        description: Whether to include projects that have been migrated to v2. When false (default),
+          projects with migration status MIGRATED will be excluded from results.
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectsListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    post:
+      summary: Creates a project
+      operationId: postApiV1Projects
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreation'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/maps:
+    get:
+      summary: Gets a list of data maps
+      operationId: getApiV2Maps
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - data map
+      - v2
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMapResponseV2'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    post:
+      summary: Creates a new data map
+      operationId: postApiV2Maps
+      tags:
+      - data map
+      - v2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapCreationV2'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMapResponseV2'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects:
+    get:
+      summary: Gets a list of projects
+      operationId: getApiV2Projects
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - projects
+      - v2
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/info-design/measurement-types:
+    get:
+      summary: Get a list of measurement types
+      operationId: getApiV1InfodesignMeasurementtypes
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      - name: exclude-empty
+        in: query
+        schema:
+          type: boolean
+          description: Filters Measurement Types with or without attributes when false. By default, includes
+            all measurement types.
+          default: false
+        description: Filters Measurement Types with or without attributes when false. By default, includes
+          all measurement types.
+      tags:
+      - information design
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtypeListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    post:
+      summary: Creates a measurement type.
+      operationId: postApiV1InfodesignMeasurementtypes
+      tags:
+      - information design
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeasurementTypeCreation'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtypeResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/maps/{mapId}:
+    get:
+      summary: Retrieve a specific map by its map id
+      operationId: getApiV1MapsMapid
+      parameters:
+      - name: mapId
+        in: path
+        schema:
+          type: string
+          description: ID of the map
+          minLength: 24
+        description: ID of the map
+        required: true
+      tags:
+      - maps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    delete:
+      summary: Delete a map
+      operationId: deleteApiV1MapsMapid
+      parameters:
+      - name: mapId
+        in: path
+        schema:
+          type: string
+          description: ID of the map
+          minLength: 24
+        description: ID of the map
+        required: true
+      tags:
+      - maps
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}:
+    get:
+      summary: Retrieve a specific project by its project id
+      operationId: getApiV1ProjectsProjectid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project
+          minimum: 1
+        description: ID of the project
+        required: true
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    delete:
+      summary: Deletes a project
+      operationId: deleteApiV1ProjectsProjectid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project
+          minimum: 1
+        description: ID of the project
+        required: true
+      tags:
+      - projects
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/maps/{mapId}:
+    get:
+      summary: Gets a data map
+      operationId: getApiV2MapsMapid
+      parameters:
+      - name: mapId
+        in: path
+        schema:
+          type: string
+          description: ID of the map to retrieve
+        description: ID of the map to retrieve
+        required: true
+      tags:
+      - data map
+      - v2
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMapResponseV2'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    delete:
+      summary: Deletes a data map
+      operationId: deleteApiV2MapsMapid
+      parameters:
+      - name: mapId
+        in: path
+        schema:
+          type: string
+          description: ID of the Data Map to delete
+        description: ID of the Data Map to delete
+        required: true
+      tags:
+      - data map
+      - v2
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    put:
+      summary: Creates a new or replaces an existing map
+      operationId: putApiV2MapsMapid
+      parameters:
+      - name: mapId
+        in: path
+        schema:
+          type: string
+          description: ID of the Data Map to create or replace
+        description: ID of the Data Map to create or replace
+        required: true
+      tags:
+      - data map
+      - v2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapCreationV2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMapResponseV2'
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMapResponseV2'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotAuthorized'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/info-design/measurement-types/{mtypeId}:
+    get:
+      summary: Get a measurement type
+      operationId: getApiV1InfodesignMeasurementtypesMtypeid
+      parameters:
+      - name: mtypeId
+        in: path
+        schema:
+          type: string
+          description: ID of the measurement type
+          minLength: 24
+        description: ID of the measurement type
+        required: true
+      tags:
+      - information design
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtypeResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    patch:
+      summary: Modifies a measurement type. This operation may need to trigger reindexing.
+      operationId: patchApiV1InfodesignMeasurementtypesMtypeid
+      parameters:
+      - name: mtypeId
+        in: path
+        schema:
+          type: string
+          description: ID of the measurement type
+          minLength: 24
+        description: ID of the measurement type
+        required: true
+      tags:
+      - information design
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeasurementTypeUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtypeResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/datasets:
+    get:
+      summary: Retrieve a list of datasets for a project. Results are sorted by name in ascending order.
+      operationId: getApiV1ProjectsProjectidDatasets
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the datasets belongs to
+          minimum: 1
+        description: ID of the project the datasets belongs to
+        required: true
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetsListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    post:
+      summary: Creates a project dataset
+      operationId: postApiV1ProjectsProjectidDatasets
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset will belong to
+          minimum: 1
+        description: ID of the project the dataset will belong to
+        required: true
+      - name: mapId
+        in: query
+        schema:
+          type: string
+          description: ID of the map the dataset will be linked to
+        description: ID of the map the dataset will be linked to
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDatasetCreation'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/info-design/entities/{entityName}/attributes:
+    get:
+      summary: Get a attributes for an entity
+      operationId: getApiV1InfodesignEntitiesEntitynameAttributes
+      parameters:
+      - name: entityName
+        in: path
+        schema:
+          type: string
+          description: Entity to get attributes of
+          maxLength: 50
+        description: Entity to get attributes of
+        required: true
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - information design
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/info-design/measurement-types/{mtypeId}/attributes:
+    get:
+      summary: Get a attributes for a measurement type
+      operationId: getApiV1InfodesignMeasurementtypesMtypeidAttributes
+      parameters:
+      - name: mtypeId
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        required: true
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - information design
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MtypeAttributesResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/datasets/{datasetId}:
+    get:
+      summary: Retrieve a single project dataset
+      operationId: getApiV1ProjectsProjectidDatasetsDatasetid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset belongs to
+          minimum: 1
+        description: ID of the project the dataset belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset
+          minimum: 1
+        description: ID of the dataset
+        required: true
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetNotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    delete:
+      summary: Delete a single dataset in a project
+      operationId: deleteApiV1ProjectsProjectidDatasetsDatasetid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset belongs to
+          minimum: 1
+        description: ID of the project the dataset belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset
+          minimum: 1
+        description: ID of the dataset
+        required: true
+      tags:
+      - projects
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    patch:
+      summary: Rename a project dataset
+      operationId: patchApiV1ProjectsProjectidDatasetsDatasetid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset belongs to
+          minimum: 1
+        description: ID of the project the dataset belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset
+          minimum: 1
+        description: ID of the dataset
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDatasetEditName'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetNotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects/publication/status/{publicationId}:
+    get:
+      summary: Retrieves the status of a project publication request.
+      operationId: getApiV2ProjectsPublicationStatusPublicationid
+      parameters:
+      - name: publicationId
+        in: path
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      - v2
+      responses:
+        '200':
+          description: Project publication status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationStatusInformation'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/{entityName}/{entityId}/results:
+    get:
+      summary: Retrieves all results for a specific project by its project id and for a specific entity
+        id.
+      operationId: getApiV1ProjectsProjectidEntitynameEntityidResults
+      description: |-
+        Retrieves all results for a specific project by its project id and for a specific entity id.
+
+        The first request to this API gets a 'search-id', this 'search-id' is used in following requests so the consequent results are from that point in time, to avoid issues if data is indexed after the first request.
+
+        When getting following pages, the users must provide this 'search-id' as a query parameter along with the last document's id (as last-doc-id) so API knows what's the next document to return.
+
+        The next url which includes the applicable search-id and last-doc-id is included in the responses links.next field. Users only have to follow that link to get the next page of results.
+
+        **Paging:** follow `links.next` (or build it from `meta.search-id` + `meta.last-doc-id`) until a page returns no rows. Resend the same request body and any `publication-*-date` params on every page: filters are not remembered between pages, and `links.next` omits the date params. Compare the rows you collect with `meta.count`, because some page sizes have been observed to skip rows.
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project to get
+          example: 7c49ca25-43dd-4d76-b4c4-e08685193bd6
+        description: ID of the project to get
+        required: true
+      - name: entityName
+        in: path
+        schema:
+          type: string
+          description: Name of the entity
+          example: Compound
+        description: Name of the entity
+        required: true
+      - name: entityId
+        in: path
+        schema:
+          type: string
+          description: ID of the entity
+          example: '12345'
+        description: ID of the entity
+        required: true
+      - name: page-size
+        in: query
+        schema:
+          type: number
+          description: Number of results to return
+          example: 100
+          default: 10000
+          minimum: 1
+          maximum: 10000
+        description: Number of results to return
+      - name: search-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the
+            next page. It does not store the query: resend the same request body and date params on every
+            page, or later pages come back unfiltered.'
+          example: '12345'
+        description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the next
+          page. It does not store the query: resend the same request body and date params on every page,
+          or later pages come back unfiltered.'
+      - name: last-doc-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+          example: '67890'
+        description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+      - name: publication-from-date
+        in: query
+        schema:
+          type: string
+          description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant
+            (inclusive). ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+            offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+            400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with
+            legacy projects". **Not included in `links.next`, so send it again on every page.**'
+          x-format:
+            isoDate: true
+          example: '2026-03-26'
+        description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant (inclusive).
+          ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+          offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+          400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with legacy
+          projects". **Not included in `links.next`, so send it again on every page.**'
+      - name: publication-to-date
+        in: query
+        schema:
+          type: string
+          description: Only rows whose `timeStamp` (publication time) is **on or before** this instant
+            (inclusive). A date-only value means midnight UTC, so it excludes rows published later that
+            day; use `2026-03-26T23:59:59.999Z` to include the whole day. Combine with `publication-from-date`
+            for a range (both ends inclusive; a reversed range returns 0 rows). Same format, precision,
+            and 2.0-only rules as `publication-from-date`. **Not included in `links.next`, so send it
+            again on every page.**
+          x-format:
+            isoDate: true
+          example: '2026-03-26T23:59:59.999Z'
+        description: Only rows whose `timeStamp` (publication time) is **on or before** this instant (inclusive).
+          A date-only value means midnight UTC, so it excludes rows published later that day; use `2026-03-26T23:59:59.999Z`
+          to include the whole day. Combine with `publication-from-date` for a range (both ends inclusive;
+          a reversed range returns 0 rows). Same format, precision, and 2.0-only rules as `publication-from-date`.
+          **Not included in `links.next`, so send it again on every page.**
+      tags:
+      - search
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultsByProjectAndEntityIdListResponse'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/datasets/{datasetId}/datasources:
+    get:
+      summary: Retrieve a list of datasources for a project's dataset. Results are sorted by name in ascending
+        order.
+      operationId: getApiV1ProjectsProjectidDatasetsDatasetidDatasources
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the datasets belongs to
+          minimum: 1
+        description: ID of the project the datasets belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset the datasources belongs to
+          minimum: 1
+        description: ID of the dataset the datasources belongs to
+        required: true
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasourcesListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    post:
+      summary: Creates a datasource for a given project dataset. Must be a multipart/form-data encoded
+        body. If filename ends with gz, file will automatically be decompressed.
+      operationId: postApiV1ProjectsProjectidDatasetsDatasetidDatasources
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset will belong to
+          minimum: 1
+        description: ID of the project the dataset will belong to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset the datasource will belong to
+          minimum: 1
+        description: ID of the dataset the datasource will belong to
+        required: true
+      - name: mapId
+        in: query
+        schema:
+          description: If you want to automatically associate this file with a map, provide the ID in
+            this parameter
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        description: If you want to automatically associate this file with a map, provide the ID in this
+          parameter
+      - name: isMetadata
+        in: query
+        schema:
+          type: boolean
+          description: Set this to true if you want this file to be marked as a metadata file in its dataset
+            (will be ignored when loaded, but used as part of transformation pipelines)
+        description: Set this to true if you want this file to be marked as a metadata file in its dataset
+          (will be ignored when loaded, but used as part of transformation pipelines)
+      tags:
+      - projects
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasourceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conflict'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/datasets/{datasetId}/datasources/{datasourceId}:
+    get:
+      summary: Retrieve a single datasource for a project's dataset
+      operationId: getApiV1ProjectsProjectidDatasetsDatasetidDatasourcesDatasourceid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset belongs to
+          minimum: 1
+        description: ID of the project the dataset belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset the datasource belongs to
+          minimum: 1
+        description: ID of the dataset the datasource belongs to
+        required: true
+      - name: datasourceId
+        in: path
+        schema:
+          type: integer
+          description: ID of the datasource
+          minimum: 1
+        description: ID of the datasource
+        required: true
+      tags:
+      - projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasourceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    delete:
+      summary: Delete a single datasource in a dataset
+      operationId: deleteApiV1ProjectsProjectidDatasetsDatasetidDatasourcesDatasourceid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the dataset belongs to
+          minimum: 1
+        description: ID of the project the dataset belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset the datasource belongs to
+          minimum: 1
+        description: ID of the dataset the datasource belongs to
+        required: true
+      - name: datasourceId
+        in: path
+        schema:
+          type: integer
+          description: ID of the datasource
+          minimum: 1
+        description: ID of the datasource
+        required: true
+      tags:
+      - projects
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/maps/search:
+    post:
+      summary: Retrieve a list of maps by project Ids
+      operationId: postApiV1MapsSearch
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+            1000)'
+          default: 1000
+          minimum: 1
+          maximum: 1000
+        description: 'Maximum number of items returned by the endpoint (Default: 1000, Minimum: 1, Maximum:
+          1000)'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          description: Skips the "offset" first rows before beginning to return the results.
+          minimum: 0
+        description: Skips the "offset" first rows before beginning to return the results.
+      tags:
+      - maps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postMapsSearch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapsListResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/results:
+    post:
+      summary: Gets all results in a specific project across all measurement types.
+      operationId: postApiV1ProjectsProjectidResults
+      description: |-
+        The first request to this API gets a 'search-id', this 'search-id' is used in following requests so the consequent results are from that point in time, to avoid issues if data is indexed after the first request.
+
+        When getting following pages, the users must provide this 'search-id' as a query parameter along with the last document's id (as last-doc-id) so API knows what's the next document to return.
+
+        The next url which includes the applicable search-id and last-doc-id is included in the responses links.next field. Users only have to follow that link to get the next page of results.
+
+        **Paging:** follow `links.next` (or build it from `meta.search-id` + `meta.last-doc-id`) until a page returns no rows. Resend the same request body and any `publication-*-date` params on every page: filters are not remembered between pages, and `links.next` omits the date params. Compare the rows you collect with `meta.count`, because some page sizes have been observed to skip rows.
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project to get
+          example: 7c49ca25-43dd-4d76-b4c4-e08685193bd6
+        description: ID of the project to get
+        required: true
+      - name: page-size
+        in: query
+        schema:
+          type: number
+          description: Number of results to return in a single page.
+          example: 100
+          default: 10000
+          minimum: 1
+          maximum: 10000
+        description: Number of results to return in a single page.
+      - name: search-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the
+            next page. It does not store the query: resend the same request body and date params on every
+            page, or later pages come back unfiltered.'
+          example: '12345'
+        description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the next
+          page. It does not store the query: resend the same request body and date params on every page,
+          or later pages come back unfiltered.'
+      - name: last-doc-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+          example: '67890'
+        description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+      - name: publication-from-date
+        in: query
+        schema:
+          type: string
+          description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant
+            (inclusive). ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+            offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+            400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with
+            legacy projects". **Not included in `links.next`, so send it again on every page.**'
+          x-format:
+            isoDate: true
+          example: '2026-03-26'
+        description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant (inclusive).
+          ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+          offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+          400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with legacy
+          projects". **Not included in `links.next`, so send it again on every page.**'
+      - name: publication-to-date
+        in: query
+        schema:
+          type: string
+          description: Only rows whose `timeStamp` (publication time) is **on or before** this instant
+            (inclusive). A date-only value means midnight UTC, so it excludes rows published later that
+            day; use `2026-03-26T23:59:59.999Z` to include the whole day. Combine with `publication-from-date`
+            for a range (both ends inclusive; a reversed range returns 0 rows). Same format, precision,
+            and 2.0-only rules as `publication-from-date`. **Not included in `links.next`, so send it
+            again on every page.**
+          x-format:
+            isoDate: true
+          example: '2026-03-26T23:59:59.999Z'
+        description: Only rows whose `timeStamp` (publication time) is **on or before** this instant (inclusive).
+          A date-only value means midnight UTC, so it excludes rows published later that day; use `2026-03-26T23:59:59.999Z`
+          to include the whole day. Combine with `publication-from-date` for a range (both ends inclusive;
+          a reversed range returns 0 rows). Same format, precision, and 2.0-only rules as `publication-from-date`.
+          **Not included in `links.next`, so send it again on every page.**
+      tags:
+      - search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectResultsSearchBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponse'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects/{projectId}/files:
+    post:
+      summary: Uploads a data file (cannot use swagger, create a multipart form with these fields and
+        add the file as "file" at the end)
+      operationId: postApiV2ProjectsProjectidFiles
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      tags:
+      - projects
+      - v2
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileUploadForm'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/data/search/measurements/{mtypeId}:
+    post:
+      summary: Retrieve data for measurement type id, and optionally by project Id
+      operationId: postApiV1DataSearchMeasurementsMtypeid
+      parameters:
+      - name: mtypeId
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        required: true
+        description: ID of the mtype
+      - name: limit
+        in: query
+        schema:
+          type: number
+          description: Number of results to return in a single page.
+          default: 10000
+          minimum: 1
+          maximum: 10000
+        description: Number of results to return in a single page.
+      - name: search-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the
+            next page. It does not store the query: resend the same request body and date params on every
+            page, or later pages come back unfiltered.'
+        description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the next
+          page. It does not store the query: resend the same request body and date params on every page,
+          or later pages come back unfiltered.'
+      - name: last-doc-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+        description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+      - name: publication-from-date
+        in: query
+        schema:
+          type: string
+          description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant
+            (inclusive). ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+            offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+            400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with
+            legacy projects". **Not included in `links.next`, so send it again on every page.**'
+          x-format:
+            isoDate: true
+          example: '2026-03-26'
+        description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant (inclusive).
+          ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+          offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+          400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with legacy
+          projects". **Not included in `links.next`, so send it again on every page.**'
+      - name: publication-to-date
+        in: query
+        schema:
+          type: string
+          description: Only rows whose `timeStamp` (publication time) is **on or before** this instant
+            (inclusive). A date-only value means midnight UTC, so it excludes rows published later that
+            day; use `2026-03-26T23:59:59.999Z` to include the whole day. Combine with `publication-from-date`
+            for a range (both ends inclusive; a reversed range returns 0 rows). Same format, precision,
+            and 2.0-only rules as `publication-from-date`. **Not included in `links.next`, so send it
+            again on every page.**
+          x-format:
+            isoDate: true
+          example: '2026-03-26T23:59:59.999Z'
+        description: Only rows whose `timeStamp` (publication time) is **on or before** this instant (inclusive).
+          A date-only value means midnight UTC, so it excludes rows published later that day; use `2026-03-26T23:59:59.999Z`
+          to include the whole day. Combine with `publication-from-date` for a range (both ends inclusive;
+          a reversed range returns 0 rows). Same format, precision, and 2.0-only rules as `publication-from-date`.
+          **Not included in `links.next`, so send it again on every page.**
+      tags:
+      - search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postSearchMType'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+      description: '**Paging:** follow `links.next` (or build it from `meta.search-id` + `meta.last-doc-id`)
+        until a page returns no rows. Resend the same request body and any `publication-*-date` params
+        on every page: filters are not remembered between pages, and `links.next` omits the date params.
+        Compare the rows you collect with `meta.count`, because some page sizes have been observed to
+        skip rows.'
+  /api/v1/projects/{projectId}/results/{mtypeId}:
+    post:
+      summary: Gets all results in a specific project for a specific measurement type.
+      operationId: postApiV1ProjectsProjectidResultsMtypeid
+      description: |-
+        The first request to this API gets a 'search-id', this 'search-id' is used in following requests so the consequent results are from that point in time, to avoid issues if data is indexed after the first request.
+
+        When getting following pages, the users must provide this 'search-id' as a query parameter along with the last document's id (as last-doc-id) so API knows what's the next document to return.
+
+        The next url which includes the applicable search-id and last-doc-id is included in the responses links.next field. Users only have to follow that link to get the next page of results.
+
+        **Paging:** follow `links.next` (or build it from `meta.search-id` + `meta.last-doc-id`) until a page returns no rows. Resend the same request body and any `publication-*-date` params on every page: filters are not remembered between pages, and `links.next` omits the date params. Compare the rows you collect with `meta.count`, because some page sizes have been observed to skip rows.
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project to get
+          example: 7c49ca25-43dd-4d76-b4c4-e08685193bd6
+        description: ID of the project to get
+        required: true
+      - name: mtypeId
+        in: path
+        schema:
+          description: ID of the mtype
+          example: '12345'
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        description: ID of the mtype
+        required: true
+      - name: page-size
+        in: query
+        schema:
+          type: number
+          description: Number of results to return in a single page.
+          example: 100
+          default: 10000
+          minimum: 1
+          maximum: 10000
+        description: Number of results to return in a single page.
+      - name: search-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the
+            next page. It does not store the query: resend the same request body and date params on every
+            page, or later pages come back unfiltered.'
+          example: '12345'
+        description: '`meta.search-id` from the first page. Send it with `last-doc-id` to fetch the next
+          page. It does not store the query: resend the same request body and date params on every page,
+          or later pages come back unfiltered.'
+      - name: last-doc-id
+        in: query
+        schema:
+          type: string
+          description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+          example: '67890'
+        description: '`meta.last-doc-id` from the previous page (also embedded in `links.next`).'
+      - name: publication-from-date
+        in: query
+        schema:
+          type: string
+          description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant
+            (inclusive). ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+            offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+            400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with
+            legacy projects". **Not included in `links.next`, so send it again on every page.**'
+          x-format:
+            isoDate: true
+          example: '2026-03-26'
+        description: 'Only rows whose `timeStamp` (publication time) is **on or after** this instant (inclusive).
+          ISO 8601 only: a date (`2026-03-26`, meaning midnight UTC) or a date-time (`2026-03-26T10:47:58.406Z`;
+          offsets such as `+01:00` are applied). Compared at millisecond precision; other formats return
+          400. 2.0 projects only: legacy projects return 400 "Search criteria is not compatible with legacy
+          projects". **Not included in `links.next`, so send it again on every page.**'
+      - name: publication-to-date
+        in: query
+        schema:
+          type: string
+          description: Only rows whose `timeStamp` (publication time) is **on or before** this instant
+            (inclusive). A date-only value means midnight UTC, so it excludes rows published later that
+            day; use `2026-03-26T23:59:59.999Z` to include the whole day. Combine with `publication-from-date`
+            for a range (both ends inclusive; a reversed range returns 0 rows). Same format, precision,
+            and 2.0-only rules as `publication-from-date`. **Not included in `links.next`, so send it
+            again on every page.**
+          x-format:
+            isoDate: true
+          example: '2026-03-26T23:59:59.999Z'
+        description: Only rows whose `timeStamp` (publication time) is **on or before** this instant (inclusive).
+          A date-only value means midnight UTC, so it excludes rows published later that day; use `2026-03-26T23:59:59.999Z`
+          to include the whole day. Combine with `publication-from-date` for a range (both ends inclusive;
+          a reversed range returns 0 rows). Same format, precision, and 2.0-only rules as `publication-from-date`.
+          **Not included in `links.next`, so send it again on every page.**
+      tags:
+      - search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectResultsSearchBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDataByMtypeAndProjectResponse'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/actions/load:
+    post:
+      summary: Create a job that will take project's working copy and load it, creating a numbered revision.
+      operationId: postApiV1ProjectsProjectidActionsLoad
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project to load
+          minimum: 1
+        description: ID of the project to load
+        required: true
+      - name: mode
+        in: query
+        schema:
+          type: string
+          description: Set the mode the project will be loaded with. The system will determine automatically
+            which load operation to perform unless the mode is explicitly specifying to Load All
+          enum:
+          - all
+        description: Set the mode the project will be loaded with. The system will determine automatically
+          which load operation to perform unless the mode is explicitly specifying to Load All
+      tags:
+      - projects
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v1/projects/{projectId}/datasets/{datasetId}/datasources/{datasourceId}/actions/update-settings:
+    post:
+      summary: Updates settings for a datasource
+      operationId: postApiV1ProjectsProjectidDatasetsDatasetidDatasourcesDatasourceidActionsUpdatesettings
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: integer
+          description: ID of the project the datasource belongs to
+          minimum: 1
+        description: ID of the project the datasource belongs to
+        required: true
+      - name: datasetId
+        in: path
+        schema:
+          type: integer
+          description: ID of the dataset the datasource belongs to
+          minimum: 1
+        description: ID of the dataset the datasource belongs to
+        required: true
+      - name: datasourceId
+        in: path
+        schema:
+          type: integer
+          description: ID of the datasource
+          minimum: 1
+        description: ID of the datasource
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDatasetDatasourceSettingsUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasourceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects/{projectId}:
+    get:
+      summary: Gets a project
+      operationId: getApiV2ProjectsProjectid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project to retrieve
+        description: ID of the project to retrieve
+        required: true
+      tags:
+      - projects
+      - v2
+      responses:
+        '200':
+          description: Project found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponseV2Body'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects/{projectId}/results/{mtypeId}/rows/{rowId}:
+    delete:
+      summary: Deletes a result row
+      operationId: deleteApiV2ProjectsProjectidResultsMtypeidRowsRowid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      - name: mtypeId
+        in: path
+        schema:
+          description: ID of the measurement type
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        description: ID of the measurement type
+        required: true
+      - name: rowId
+        in: path
+        schema:
+          type: string
+          description: ID of the row
+        description: ID of the row
+        required: true
+      - name: statusWebhook
+        in: query
+        schema:
+          type: string
+          description: Callback URL
+        description: Callback URL
+      tags:
+      - projects
+      - v2
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    put:
+      summary: Updates single row of data by project and result
+      operationId: putApiV2ProjectsProjectidResultsMtypeidRowsRowid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      - name: mtypeId
+        in: path
+        schema:
+          description: ID of the measurement type
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        description: ID of the measurement type
+        required: true
+      - name: rowId
+        in: path
+        schema:
+          type: string
+          description: The ID of the row
+        description: The ID of the row
+        required: true
+      tags:
+      - projects
+      - v2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postEntityRowSearch'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleRowUpdateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+  /api/v2/projects/{projectId}/results/{mtypeId}/rows:
+    post:
+      summary: 'DEPRECATED: POST results endpoint is no longer supported. Use PUT to update results.'
+      operationId: postApiV2ProjectsProjectidResultsMtypeidRows
+      tags:
+      - projects
+      - v2
+      responses:
+        default:
+          description: Successful
+          content:
+            application/json:
+              schema:
+                type: string
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      - name: mtypeId
+        in: path
+        schema:
+          description: ID of the measurement type
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+        description: ID of the measurement type
+        required: true
+      deprecated: true
+  /api/v2/projects/{projectId}/entities/{entityName}/rows/{rowId}:
+    delete:
+      summary: Deletes an entity row
+      operationId: deleteApiV2ProjectsProjectidEntitiesEntitynameRowsRowid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      - name: entityName
+        in: path
+        schema:
+          type: string
+          description: Name of the entity
+        description: Name of the entity
+        required: true
+      - name: rowId
+        in: path
+        schema:
+          type: string
+          description: ID of the row
+        description: ID of the row
+        required: true
+      - name: statusWebhook
+        in: query
+        schema:
+          type: string
+          description: Callback URL
+        description: Callback URL
+      tags:
+      - projects
+      - v2
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'
+    put:
+      summary: Updates single row of data by project and entity
+      operationId: putApiV2ProjectsProjectidEntitiesEntitynameRowsRowid
+      parameters:
+      - name: projectId
+        in: path
+        schema:
+          type: string
+          description: ID of the project
+        description: ID of the project
+        required: true
+      - name: entityName
+        in: path
+        schema:
+          type: string
+          description: Name of the entity
+        description: Name of the entity
+        required: true
+      - name: rowId
+        in: path
+        schema:
+          type: string
+          description: The ID of the row
+        description: The ID of the row
+        required: true
+      tags:
+      - projects
+      - v2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postEntityRowSearch'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleRowUpdateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotImplemented'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailable'
+        '504':
+          description: GatewayTimeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayTimeout'

@@ -1,106 +1,57 @@
-# ⚡ Revvity Signals EMEA Hackathon 2026 — Universal Starter Hub
+# Revvity Signals EMEA Hackathon 2026: starter
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cfyffe89/signals-hackathon-starter)
 
-Welcome to the official developer starter template for the **Frankfurt Signals EMEA Hackathon 2026**. This repository gives every participant an immediate, pre-configured cloud development environment with zero local setup.
+A ready-to-hack Codespace with **two working apps** on the Signals REST API, **AI grounded in your Signals data**, and a **Signals knowledge pack** that your AI copilot and your apps both use.
 
----
+## 1. Start (2 minutes)
+1. Click **Open in GitHub Codespaces**. Dependencies install and both apps start automatically.
+2. Add your team credentials, either as **one Codespaces secret named `HACKATHON`** (paste the lines from your table sheet) or by copying `.env.example` to `.env` and filling it in:
+   ```
+   SIGNALS_BASE_URL=https://<your-tenant>/api/rest/v1.0
+   SIGNALS_API_KEY=...
+   SIGNALS_NOTEBOOK_EID=journal:...       # your team notebook: experiments are created here
+   GEMINI_API_KEY=...                     # or AI_GATEWAY_URL + AI_GATEWAY_KEY
+   ```
+3. Restart the apps: `./scripts/start.sh`, then check everything: `python scripts/check_setup.py`.
 
-## 🚀 60-Second Quickstart
+No keys yet? Everything runs in **mock mode** with sample data, so you can start building straight away.
 
-1. **Launch a Codespace:** Click the green **Open in GitHub Codespaces** button above (or open `https://codespaces.new/cfyffe89/signals-hackathon-starter`).
-2. **Auto-Bootstrap:** Codespaces will automatically:
-   * Boot Python 3.11 inside a Linux devcontainer.
-   * Pre-install all scientific, chemistry, web, and AI dependencies.
-   * Pre-configure the **Continue.dev** in-editor AI Copilot.
-   * Forward Port 8000 (Public) and launch the interactive Developer Dashboard.
-3. **Configure Your Team Credentials:**
-   * Open `.env` and fill in your team credentials:
-     ```env
-     SIGNALS_BASE_URL=https://hackathon.signalsnotebook.revvitycloud.com/api/rest/v1.0
-     SIGNALS_API_KEY=your-signals-api-key
-     GEMINI_API_KEY=your-gemini-api-key
-     # Or central hackathon gateway:
-     AI_GATEWAY_URL=https://signals-ai.revvity-hackathon.com/v1
-     AI_GATEWAY_KEY=your-team-gateway-key
-     AI_MODEL=gemini-3.6-flash
-     ```
-   * *Offline / Testing mode:* If keys are not yet configured, the environment automatically runs in **Mock Simulation Mode** so your team is never blocked.
+| App | Port | What it shows |
+|---|---|---|
+| **Streamlit** `app_streamlit.py` | 8501 | Experiments (read one, see exactly what the AI reads, ask about it) · Chemistry (drawings, reaction breakdown with RDKit, substructure search) · Materials · **Ask the Signals expert** (API/integration Q&A) |
+| **FastAPI** `backend/app.py` | 8000 | JSON API (`/docs`), a small web page, `/api/ask` (grounded AI), and a working **External Action** at `/action` |
 
----
-
-## 🤖 In-Editor AI Coding Copilot (Continue.dev + Gemini Flash)
-
-This Codespace is pre-configured with the **Continue.dev** VS Code extension connected to **Gemini 3.5 Flash** (via direct key or the Hackathon AI Gateway).
-
-| Shortcut | Feature | Usage |
-| :--- | :--- | :--- |
-| **Ctrl+L** (or Cmd+L) | **AI Chat Sidebar** | Ask questions about Signals API endpoints, RDKit functions, or debug stack traces. |
-| **Ctrl+I** (or Cmd+I) | **Inline Code Generator** | Highlight any block of code and press Ctrl+I to refactor, write tests, or generate functions. |
-| **/signals** | **Custom Signals Prompt** | In the chat, type `/signals <what you want to build>` to generate code referencing the 21 OpenAPI specs. |
-
----
-
-## 📦 What's Pre-Installed?
-
-Your environment comes with all packages pre-installed for every hackathon track:
-
-* **Web & APIs:** `fastapi`, `uvicorn[standard]`, `requests`, `httpx`, `pydantic`, `jinja2`, `python-dotenv`
-* **Rapid UI & Dashboards:** `streamlit`
-* **Chemistry & Cheminformatics:** `rdkit-pypi`
-* **Bioinformatics:** `biopython`
-* **Data Science & Analytics:** `pandas`, `numpy`, `openpyxl` (Excel), `scipy`, `matplotlib`
-* **AI & Multimodal:** `openai`, `google-genai`, `pillow`
-* **Testing:** `pytest`, `black`
-
----
-
-## 📚 Signals API Documentation & Cheat Sheets
-
-* **21 Modular OpenAPI Specifications:** Located in [docs/signals-api/](docs/signals-api/) covering entities, materials, inventory, chemistry, plates, stoichiometry, parallelExperiments, and more.
-* **[SIGNALS_DEVELOPER_CHEAT_SHEET.md](docs/SIGNALS_DEVELOPER_CHEAT_SHEET.md):** High-density guide containing the top 10 practical copy-pasteable REST recipes and common gotchas.
-
-### 🌟 The Golden Rule for Child Uploads:
-When uploading images, rich text HTML notes, or attachments to an experiment, **always append `?force=true`**:
-```http
-POST /entities/{experiment_eid}/children/{filename}?force=true
+## 2. How it fits together
 ```
-This avoids 409 conflict and digest mismatch errors during rapid uploads!
-
----
-
-## 🛠️ Project Track Blueprints
-
-### Track 1: Fast Web / Mobile PWA
-```bash
-# The server starts automatically! View live logs:
-tail -f /tmp/uvicorn.log
-
-# Or restart the server anytime interactively:
-./restart-server.sh
+backend/signals_client.py   Signals REST client. Every method is live-verified (scripts/smoke_live.py)
+backend/context.py          Signals records -> prompt text (text as HTML->text, tables as CSV, drawings as SMILES)
+backend/knowledge.py        retrieval over docs/signals (guides, gotchas, endpoint index)
+backend/ai_client.py        Gemini or OpenAI-compatible gateway; ai.ask(question, records=, knowledge=)
+backend/app.py              FastAPI routes           app_streamlit.py   Streamlit UI
+docs/signals/               the knowledge pack (see docs/signals/README.md)
+AGENTS.md                   rules for AI assistants (mirrored in .github/copilot-instructions.md)
 ```
-
-### Track 2: Streamlit Data & Analytics Dashboard
-```bash
-# Launch interactive Streamlit dashboard on port 8501
-streamlit run your_dashboard.py --server.port 8501 --server.address 0.0.0.0
-```
-
-### Track 3: Chemistry & RDKit Automation
+Typical AI feature (3 lines):
 ```python
-from rdkit import Chem
-from rdkit.Chem import Descriptors
-from backend.signals_client import SignalsClient
-
-sc = SignalsClient()
-# Connect to Signals, fetch chemical structures, and compute properties
+ctx = experiment_context(sc, eid)                       # what's in the experiment
+kb  = knowledge_block("how do I add a sample?")         # verified API knowledge
+ai.ask("Suggest the next experiment and how to create it via the API", records=ctx["text"], knowledge=kb)
 ```
 
----
+## 3. Signals API essentials
+- Use `SignalsClient` first. The task → method → HTTP map is in **`docs/signals/CHEAT_SHEET.md`**.
+- Before any raw call, read **`docs/signals/GOTCHAS.md`** (media types, `includeTypes` not `filter[type]`, keyword search, creating with ancestors + digest, `source=IVT`, `$chemsearch`...).
+- Does an endpoint exist? `python docs/signals/scripts/lookup_endpoint.py --system core --grep <word>`. If it isn't there, it doesn't exist.
+- Concepts and tutorials: `docs/signals/references/guide/core/` (REST, search, External Actions, notifications, Data Sources, workflows). The Data Factory API guide is in `…/guide/data-factory/`.
 
-## 🧪 Testing Your Environment
+## 4. AI copilot in the editor
+Continue (Ctrl+L chat, Ctrl+I inline edit) is configured from your `.env` (`python scripts/setup_continue.py`). Slash prompts:
+`/signals` (write API code) · `/signals-endpoint` (find the exact endpoint) · `/signals-action` (External Action page) · `/signals-drawing` (chemistry + RDKit) · `/signals-ai` (add a grounded AI feature). GitHub Copilot and other agents read `AGENTS.md`.
 
-Run the automated verification suite anytime:
-```bash
-python test_starter_environment.py
-```
+## 5. Integrations from a Codespace
+- **External Actions** open your page in the user's browser. Register `https://<codespace>-8000.app.github.dev/action` (GET, parameter `__eid`, open in a dialog).
+- **External Data Sources / webhooks** are called by Signals' servers, so set port 8000 to **Public** (it is by default here).
+
+## 6. Rules
+Write only into your team notebook. Never commit `.env` or keys. Record a 60-second screencast of your working prototype before judging.

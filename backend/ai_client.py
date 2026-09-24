@@ -1,162 +1,91 @@
+"""AI client for the starter: Google Gemini (native REST) or any OpenAI-compatible gateway (e.g. LiteLLM).
+
+Env:  GEMINI_API_KEY  (Gemini)          or  AI_GATEWAY_URL + AI_GATEWAY_KEY  (OpenAI-compatible)
+      AI_MODEL        (default gemini-3.5-flash)
+No key -> mock mode: returns an honest placeholder that shows the context it would have sent.
+"""
 import os
-import json
 import logging
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import Dict, Any, Optional
+
+from .config import is_placeholder
 
 logger = logging.getLogger("ai_client")
 
+SIGNALS_EXPERT = (
+    "You are a Revvity Signals expert helping a scientist or integration developer.\n"
+    "Answer ONLY from the SIGNALS RECORDS and KNOWLEDGE provided. If they don't contain the answer, say so and "
+    "suggest what to look up. Never invent endpoints, parameters, record contents or numbers.\n"
+    "When you use a record or a knowledge section, cite it in [brackets] (record name or knowledge source).\n"
+    "For API answers: name the exact method + path, show a minimal request, and mention any gotcha from the knowledge.\n"
+    "Be concise and practical."
+)
+
+
 class AIClient:
-    """
-    Unified AI Client supporting:
-    1. Google Gemini Native REST (gemini-3.5-flash)
-    2. Hackathon LiteLLM / OpenAI Gateways
-    3. Intelligent Mock Fallback
-    """
-    def __init__(self):
-        self._default_gateway_url = "https://signals-ai.revvity-hackathon.com/v1"
-
-    @property
-    def gateway_url(self) -> str:
-        return os.getenv("AI_GATEWAY_URL", self._default_gateway_url)
-
-    @property
-    def api_key(self) -> str:
-        return os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_GATEWAY_KEY", "")
+    def __init__(self, model: Optional[str] = None):
+        self._model = model
 
     @property
     def model(self) -> str:
-        return os.getenv("AI_MODEL", "gemini-3.6-flash")
+        return self._model or os.getenv("AI_MODEL", "gemini-3.5-flash")
+
+    @property
+    def gemini_key(self) -> str:
+        k = os.getenv("GEMINI_API_KEY", "")
+        return "" if is_placeholder(k) else k
+
+    @property
+    def gateway(self) -> tuple:
+        url, key = os.getenv("AI_GATEWAY_URL", ""), os.getenv("AI_GATEWAY_KEY", "")
+        return (url, key) if url and not is_placeholder(key) else ("", "")
 
     @property
     def mock_mode(self) -> bool:
-        key = self.api_key
-        return (
-            os.getenv("MOCK_MODE", "false").lower() == "true"
-            or not key
-            or "your-" in key
-            or "your_" in key
-            or ("sk-team" in key and "revvity-hackathon.com" in self.gateway_url)
-        )
-
-    @property
-    def is_gemini_key(self) -> bool:
-        key = self.api_key
-        return (
-            key.startswith("AQ.")
-            or key.startswith("AIza")
-            or "generativelanguage.googleapis.com" in self.gateway_url
-        )
+        return os.getenv("MOCK_MODE", "false").lower() == "true" or not (self.gemini_key or self.gateway[0])
 
     def check_status(self) -> Dict[str, Any]:
-        """Returns the active AI configuration and model provider."""
-        return {
-            "mockMode": self.mock_mode,
-            "provider": "Google Gemini Native" if self.is_gemini_key else "OpenAI/LiteLLM Gateway",
-            "model": self.model,
-            "keyConfigured": bool(self.api_key and not self.mock_mode)
-        }
+        provider = "mock" if self.mock_mode else ("gemini" if self.gemini_key else "gateway")
+        return {"mockMode": self.mock_mode, "provider": provider, "model": self.model}
 
-    def generate_text(
-        self,
-        prompt: str,
-        system_instruction: str = "You are an expert scientific lab copilot.",
-        max_tokens: int = 4096
-    ) -> Dict[str, Any]:
-        """Generates a text completion with generous output budget to prevent truncation."""
+    def generate_text(self, prompt: str, system_instruction: str = SIGNALS_EXPERT,
+                      max_tokens: int = 2048) -> Dict[str, Any]:
         if self.mock_mode:
-            prompt_lower = prompt.lower()
-            if any(k in prompt_lower for k in ["drawing", "smiles", "chemical", "medicinal", "lipinski", "pharmacophore", "molecule"]):
-                return {
-                    "source": "mock_simulator (medicinal chemistry)",
-                    "text": (
-                        "### [AI Analysis] Medicinal Chemistry Assessment (Simulated Flash Model)\n\n"
-                        "**1. Chemical Classification & Pharmacophore Architecture**\n"
-                        "- **Scaffold Core**: Functionalized aromatic/heterocyclic framework containing defined polar recognition elements.\n"
-                        "- **Key Motifs**: Hydrogen-bond donor/acceptor pairs positioned for complementary active site engagement.\n"
-                        "- **Class Affinity**: Structural topology resembles biologically validated small-molecule therapeutic chemical space.\n\n"
-                        "**2. Drug-Likeness & Lipinski Rule of 5 Evaluation**\n"
-                        "- **Molecular Weight**: Favorable (< 500 Da), supporting oral formulation.\n"
-                        "- **Calculated LogP**: Balanced lipophilicity (optimal range 1.0 - 3.5), suggesting clean partition kinetics.\n"
-                        "- **Polar Surface Area (TPSA)**: Within ideal window (40 - 110 A^2), predicting favorable cell permeability without rapid P-gp efflux.\n"
-                        "- **Rule of 5 Compliance**: 0 violations (Rule of 5 and Veber guidelines satisfied).\n\n"
-                        "**3. ADMET & Liability Assessment**\n"
-                        "- **Metabolic Clearance**: Benzylic and ester handles subject to Phase I/II metabolism; monitor microsomal stability.\n"
-                        "- **Toxicity Alerts**: Structure is clear of reactive electrophiles, quinone precursors, or promiscuous PAINS alerts.\n"
-                        "- **Solubility**: Estimated aqueous solubility is adequate for primary in vitro biochemical and phenotypic assays.\n\n"
-                        "**4. Discovery & Lead Optimization Recommendations**\n"
-                        "- *SAR Expansion*: Introduce fluorine or small lipophilic substituents at ortho/para aryl positions to tune metabolic half-life.\n"
-                        "- *Bioisosterism*: Screen oxadiazole or heterocyclic bioisosteres if carboxylate/ester hydrolytic stability is an issue.\n"
-                        "- *Selectivity*: Rigidify linkers to lock in bound bioactive conformation and increase target selectivity."
-                    )
-                }
-            elif any(k in prompt_lower for k in ["summarize", "experiment", "portfolio", "signals notebook", "lab"]):
-                return {
-                    "source": "mock_simulator (lab portfolio)",
-                    "text": (
-                        "### [AI Summary] Signals Notebook Experiment Portfolio Summary (Simulated Flash Model)\n\n"
-                        "**Executive Summary**\n"
-                        "The accessible experiment portfolio reflects an active multidisciplinary drug discovery and formulation pipeline spanning catalyst optimization, phenotypic cytotoxicity screening, and high-throughput reaction screening.\n\n"
-                        "**Active Research Tracks Identified:**\n"
-                        "1. **Suzuki-Miyaura Cross-Coupling Screening (EXP-2026-081)**\n"
-                        "   - *Objective*: Optimize catalyst/ligand combinations for biaryl coupling of functionalized 4-bromobenzonitriles.\n"
-                        "   - *Status*: High activity; multiple chemical drawings and stoichiometry sheets linked.\n"
-                        "2. **Cell Viability & IC50 Profiling (EXP-2026-102)**\n"
-                        "   - *Objective*: Evaluate compound library efficacy across cancer cell lines using automated microplate readouts.\n"
-                        "   - *Status*: Data collection complete; pending cross-referencing with compound registry.\n"
-                        "3. **Controlled-Release Polymer Formulation (EXP-2026-115)**\n"
-                        "   - *Objective*: Screen biodegradable excipients for sustained small-molecule dissolution kinetics.\n"
-                        "   - *Status*: Formulation batches characterized; stability testing underway.\n\n"
-                        "**Recommended Next Priorities:**\n"
-                        "- **Automate Chemical Drawing Extraction**: Directly sync verified reaction products into the centralized inventory register.\n"
-                        "- **Integrate In Silico ADMET**: Run pre-synthesis property calculations on proposed targets prior to wet-lab catalyst trials."
-                    )
-                }
-            return {
-                "source": "mock_simulator",
-                "text": f"[MOCK AI RESPONSE] Synthesized scientific analysis for prompt: '{prompt[:60]}...'. All parameters verified compliant with standard lab protocol."
-            }
-
-        # 1. Native Gemini
-        if self.is_gemini_key:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-            payload = {
-                "system_instruction": {"parts": [{"text": system_instruction}]},
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.2,
-                    "maxOutputTokens": max_tokens
-                }
-            }
-            try:
-                res = requests.post(url, json=payload, timeout=45)
-                if res.status_code == 200:
-                    text_out = res.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    return {"source": f"{self.model} (native)", "text": text_out}
-                else:
-                    logger.warning(f"Native Gemini returned {res.status_code}: {res.text[:150]}")
-            except Exception as e:
-                logger.warning(f"Native Gemini failed: {e}")
-
-        # 2. OpenAI / LiteLLM Gateway
+            return {"source": "mock", "text": (
+                "**AI is not configured** (set `GEMINI_API_KEY`, or `AI_GATEWAY_URL` + `AI_GATEWAY_KEY`, in `.env`).\n\n"
+                f"This is the prompt that would be sent ({len(prompt):,} characters):\n\n```\n{prompt[:1500]}\n```")}
         try:
-            from openai import OpenAI
-            client = OpenAI(base_url=self.gateway_url, api_key=self.api_key, timeout=45.0)
-            res = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2,
-                max_tokens=max_tokens
-            )
-            choice = res.choices[0]
-            text_out = choice.message.content or ""
-            return {"source": f"{self.model} (gateway)", "text": text_out}
+            if self.gemini_key:
+                r = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
+                    headers={"x-goog-api-key": self.gemini_key},
+                    json={"system_instruction": {"parts": [{"text": system_instruction}]},
+                          "contents": [{"parts": [{"text": prompt}]}],
+                          "generationConfig": {"temperature": 0.2, "maxOutputTokens": max_tokens}},
+                    timeout=90)
+                r.raise_for_status()
+                parts = r.json()["candidates"][0]["content"]["parts"]
+                return {"source": f"{self.model} (gemini)", "text": "".join(p.get("text", "") for p in parts).strip()}
+            url, key = self.gateway
+            r = requests.post(f"{url.rstrip('/')}/chat/completions", headers={"Authorization": f"Bearer {key}"},
+                              json={"model": self.model, "temperature": 0.2, "max_tokens": max_tokens,
+                                    "messages": [{"role": "system", "content": system_instruction},
+                                                 {"role": "user", "content": prompt}]}, timeout=90)
+            r.raise_for_status()
+            return {"source": f"{self.model} (gateway)", "text": r.json()["choices"][0]["message"]["content"].strip()}
         except Exception as e:
-            logger.error(f"Gateway failed: {e}. Falling back to mock simulation.")
-            return {
-                "source": "fallback_mock",
-                "text": f"[FALLBACK SIMULATOR] AI analysis generated for: '{prompt[:60]}...'. Note: upstream gateway returned: {str(e)[:80]}."
-            }
+            logger.warning(f"AI call failed: {e}")
+            return {"source": "error", "text": f"AI call failed: {str(e)[:300]}"}
+
+    def ask(self, question: str, records: str = "", knowledge: str = "",
+            extra_instruction: str = "") -> Dict[str, Any]:
+        """Grounded answer: question + Signals records (context.py) + knowledge chunks (knowledge.py)."""
+        prompt = ""
+        if records:
+            prompt += f"SIGNALS RECORDS (live data the user can access):\n{records}\n\n"
+        if knowledge:
+            prompt += f"KNOWLEDGE (verified Signals API / integration docs):\n{knowledge}\n\n"
+        prompt += f"QUESTION: {question}"
+        return self.generate_text(prompt, SIGNALS_EXPERT + ("\n" + extra_instruction if extra_instruction else ""))

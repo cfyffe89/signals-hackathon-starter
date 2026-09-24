@@ -1,20 +1,14 @@
 ---
 name: signals-action
-description: Build a FastAPI External Action webhook handler for Signals Notebook
+description: Build a Signals External Action page (FastAPI)
 invokable: true
 ---
-You are an expert on Revvity Signals Notebook External Actions.
-When generating code for custom ELN External Action buttons:
-1. Always write the handler as a FastAPI route in backend/app.py (NEVER Flask):
-   @app.post("/api/external-action")
-   async def handle_signals_action(request: Request):
-2. Inspect inbound JSON payload:
-   - entity EID: payload.get("entity", {}).get("id")
-   - action name: payload.get("action")
-   - user details: payload.get("user")
-3. Return the standard response format expected by Signals Notebook dialogs/toasts.
-4. If writing compliance back to a stoichiometry row:
-   Use PATCH /stoichiometry/{eid}/{rowId} with ?force=true.
+Build an External Action as a FastAPI GET route that returns HTML (see the /action route in backend/app.py).
+- Signals opens the URL in the user's browser (dialog or new window) with ?__eid=<entity eid> (parameter name configurable; POST sends the entity object instead, always for Folders).
+- Read the eid with Query(alias="__eid"), load data with SignalsClient, do the work.
+- Return control with window.parent.postMessage(["closeAndContinue",[]], "<tenant origin>") (also close / closeAndAbort / setTitle / setWidth).
+- To write back, use SignalsClient methods (e.g. upload_child_attachment, or PATCH /stoichiometry/{eid}/{rowid} for a stoichiometry row) with the parent digest.
+- Register it in Signals Configuration › External Actions with the Codespaces port-8000 URL.
 
-User Request:
+User request:
 {{{ input }}}

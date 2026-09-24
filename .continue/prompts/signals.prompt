@@ -1,28 +1,13 @@
 ---
 name: signals
-description: Generate exact Signals Notebook REST API code (FastAPI & Streamlit)
+description: Write Signals API code for this repo (FastAPI/Streamlit), grounded in docs/signals
 invokable: true
 ---
-You are an expert pair-programmer for the Revvity Signals EMEA Hackathon 2026.
+Follow AGENTS.md. Before writing code:
+1. Use an existing method in backend/signals_client.py if one fits (see docs/signals/CHEAT_SHEET.md).
+2. Otherwise confirm the endpoint exists: python docs/signals/scripts/lookup_endpoint.py --system core --grep <word>, then read its parameters with the lookup script.
+3. Check docs/signals/GOTCHAS.md for traps on that endpoint (media types, keyword mode, ancestors + digest, source=IVT, ...).
+Write FastAPI routes in backend/app.py or Streamlit UI in app_streamlit.py. Add new API calls as methods on SignalsClient.
 
-STRICT GROUNDING DIRECTIVE — NEVER GUESS ENDPOINTS:
-- Revvity Signals Notebook uses a proprietary JSON:API 1.0 REST API.
-- NEVER guess or invent endpoints (e.g. do NOT invent /api/experiments, /drawings, /reactions).
-- ONLY use exact endpoints documented in docs/API_CATALOG.md and docs/signals-api/*.yaml.
-- Check backend/signals_client.py FIRST — verified helper methods already exist:
-  * get_chemical_drawing(asset_batch_id, format='smiles'|'svg'|'mol')
-  * get_stoichiometry(drawing_eid)
-  * create_experiment(name, description)
-  * search_materials(query, limit)
-  * upload_child_attachment(parent_eid, filename, content_bytes, content_type)
-- If writing a custom API call:
-  * Verify the exact path and HTTP method in docs/API_CATALOG.md.
-  * Headers: {"x-api-key": API_KEY, "Content-Type": "application/vnd.api+json", "Accept": "application/vnd.api+json"}
-  * Wrap in {"data": {"type": "...", "attributes": {...}}}
-  * Child element uploads MUST append ?force=true to URL.
-
-ARCHITECTURE:
-- NEVER generate Flask code. Standardize on FastAPI and Streamlit.
-
-User Request:
+User request:
 {{{ input }}}

@@ -1,4 +1,3 @@
-<!-- Generated from AGENTS.md (keep them identical). -->
 # Instructions for AI coding assistants (Copilot, Continue, Gemini, Claude, Codex…)
 
 You are pair-programming on the **Revvity Signals EMEA Hackathon 2026 starter**. Teams build prototypes on the Signals REST API in ~5 hours, so correct API usage beats cleverness.

@@ -1,15 +1,12 @@
 ---
 name: signals-drawing
-description: Fetch and render chemical drawings (SMILES, Mol, SVG) with RDKit and Signals API
+description: Chemical structures: fetch from Signals, compute with RDKit, show in Streamlit
 invokable: true
 ---
-You are a cheminformatics specialist for Revvity Signals Notebook and RDKit.
-When generating code for chemical drawings:
-1. Use SignalsClient.get_chemical_drawing(asset_batch_id, format) or call GET /materials/{assetBatchId}/drawing?format=smiles|svg|mol.
-2. If format is 'smiles': parse with rdkit.Chem.MolFromSmiles(smiles) and render 2D image via rdkit.Chem.Draw.MolToImage(mol).
-3. If format is 'svg': render directly in Streamlit via st.markdown(svg_text, unsafe_allow_html=True) or in HTML.
-4. Calculate molecular descriptors using rdkit.Chem.Descriptors (MolWt, MolLogP, TPSA) and Lipinski (NumHDonors, NumHAcceptors, NumRotatableBonds).
-5. Always provide graceful fallbacks if SMILES parsing fails.
+- Notebook drawings: SignalsClient.list_chemical_drawings() / export_entity(eid, "smiles"|"svg"|"mol"); registered materials: get_chemical_drawing(asset_id, fmt) (GET /materials/{id}/drawing).
+- Structure search: SignalsClient.chemistry_search(smiles, exact=False) ($chemsearch; substructure by default).
+- Reaction tables: get_stoichiometry(eid).
+- RDKit: Chem.MolFromSmiles (handle None), descriptors as in backend/context.py structure_context(). In Streamlit show SVG with st.image(svg.encode()).
 
-User Request:
+User request:
 {{{ input }}}

@@ -1,0 +1,979 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+
+paths:
+  /history/proxy/*:
+    get:
+      tags:
+        - History
+      summary: 'History Proxy'
+      description: |
+        Proxy to content for History
+      operationId: 'fetchHistoryViaProxy'
+      responses:
+        '200':
+          description: 'OK'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /history/search:
+    post:
+      tags:
+        - History
+      summary: 'Search history'
+      description: |
+        Search history
+
+        users: ["100", "101", "102"...]
+        specify userIds as array to search related history
+
+        actions: ["Created", "Edited", "Trashed"...]
+        specify actions as array to search related history, "Trashed" means "Trashed/Deleted", "Moved" means "Moved/Transferred".
+
+        Available action values: 'Changed Status', 'Created', 'Edited', 'Shared', 'Exported', 'Imported', 'Moved', 'Purged', 'Restored', 'Reverted',
+                   'Trashed', 'Access', 'View Entity', 'Disposed', 'Final Disposed', 'Integration', 'Recorded Reason for Change',
+                   'Update Definition', 'Container Export', 'Inventory Template Archive Actions', 'Container Status',
+                   'Container Delete', 'Container Current User', 'Activated', 'Published', 'Container Responsible Person',
+                   'Container Update Amount', 'Container Bulk Update Field'
+                   and so on.
+
+        types: ["Text", "Experiment", "Chemical Drawing"...]
+        specify event types as array to search related history
+
+        Available type values: 'Text', 'Chemical Drawing', 'Word', 'Excel', 'PowerPoint', 'Materials Table', 'Sample', 'Table',
+                   'Image', 'PDF', 'Spotfire File', 'Parallel Enumerator', 'External Parallel Enumerator', 'Subexperiment Summary',
+                   'Experiment', 'Experiment Template', 'Parallel Experiment', 'Parallel Experiment Template', 'Subexperiment',
+                   'Subexperiment Template', 'Notebook', 'Request', 'Task', 'Materials', 'Admin Defined Object',
+                   'Admin Defined Object Template', 'User Group', 'SNConfig: Materials definition', 'SNConfig: Roles',
+                   'SNConfig: System Groups', 'SNConfig: Security Policy', 'SNConfig: Table Template',
+                   'SNConfig: Admin Defined Object definition', 'SNConfig: Parallel Experiment definition',
+                   'System Template: Text', 'System Template: Chemical Drawing', 'System Template: Word', 'System Template: Excel',
+                   'System Template: PowerPoint', 'System Template: Materials Table', 'System Template: Table', 'System Template: Image',
+                   'System Template: PDF', 'System Template: Spotfire File', 'System Template: Parallel Enumerator',
+                   'System Template: External Parallel Enumerator', 'System Template: Subexperiment Summary',
+                   'SNConfig: System Experiment Template', 'SNConfig: System Parallel Experiment Template',
+                   'SNConfig: System Subexperiment Template', 'SNConfig: System Request Template', 'SNConfig: System Sample Template',
+                   'SNConfig: System Notebook Template', 'SNConfig: System Task Template', 'SNConfig: System Admin Defined Object Template',
+                   'SNConfig: System Template', 'SNConfig: Attribute' ,'SNConfig: Group Associations', 'User',
+                   'SNConfig: Sample/Task properties', 'SNConfig: External Action', 'SNConfig: External List Source',
+                   'SNConfig: External Data Source', 'SNConfig: External Chemical Source', 'SNConfig: Proxy Authentication',
+                   'System Settings', 'System Settings: Digital Signature', 'System Settings: Autotext Settings',
+                   'System Settings: Authentication Settings', 'System Settings: API Key Settings',
+                   'System Settings: External Notifications',
+                   'System Settings: Salts and Solvates', 'System Settings: Chemistry settings', 'System Settings: Uploads',
+                   'System Settings: Timeout', 'System Settings: Deletion', 'System Settings: Notebook Requirement',
+                   'System Settings: Global Numbering', 'Location', 'Location Template', 'Container', 'Container Template', 'Plate',
+                   'SNConfig: Worksheet Template', 'SNConfig: Plate Template',
+                   and so on.
+
+        offset: specify search offset
+
+        limit: specify search limit
+
+        from: search history after a specified time
+
+        to: search history before a specified time
+
+        **Note:**
+        - If "from" or "to" is missing, the default time range is one month. If neither is set, the time frame is one month from the present.
+        - If you experience timeout issues, you might consider using a shorter time frame.
+        - If you know the entity (eid) of the item you want to retrieve history for we recommend use of the GET /entities/{eid}/history endpoint instead
+
+      operationId: 'searchHistories'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/HistorySearchRequest'
+            examples:
+              Search:
+                $ref: '#/components/examples/historySearchRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtHistoryListResponse'
+              examples:
+                Search:
+                  $ref: '#/components/examples/historySearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /history/revisions/{revisionId}/entities/{eid}:
+    get:
+      tags:
+        - History
+      summary: 'Fetch entity by entity ID and revision ID in history'
+      description: |
+        Fetch history information of an entity in JSON:API format.
+
+        Accepted entity types: chemicalDrawing, excel, experiment, grid, imageResource, journal,
+        materialsTable, pdf, presentation, sample, samplesContainer, text,
+        uploadedResource, viewonly, etc.
+      operationId: 'fetchEntityByIdAndRevisionId'
+      parameters:
+        - name: 'revisionId'
+          in: path
+          description: |
+            Unique history record identifier.
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+            description: ''
+            format: ''
+            maxLength: 99
+            deprecated: false
+        - $ref: '#/components/parameters/idParam'
+        - $ref: '#/components/parameters/includeParam'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/EntityApiResponse'
+              examples:
+                Revision:
+                  $ref: '#/components/examples/entityRevisionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+  /audit/search:
+    post:
+      tags:
+        - History
+      summary: 'Search audit events'
+      description: |
+        Search audit events.
+
+        Supported attribute names:
+        - time, request time
+        - method, one of get, patch, put, post, head, delete
+        - apikey
+        - username
+        - remote, remote address
+        - path, the requested path, for example /api/rest/v1.0/entities
+        - query, the query parameters in path
+        - requestPayloadSize
+        - responsePayloadSize
+        - timeDuration
+        - errorMessage
+
+        Supported operations:
+        - equals
+        - greatThan
+        - lessThan
+        - startWith
+        - endWith
+        - contains
+
+      operationId: 'searchAuditLogs'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/AuditSearchRequest'
+            examples:
+              Search:
+                $ref: '#/components/examples/auditSearchRequest'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiResponse'
+              examples:
+                Search:
+                  $ref: '#/components/examples/auditSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters:
+    idParam:
+      name: 'eid'
+      in: path
+      description: |
+        Unique entity identifier. Format: EID.
+
+        Example value: "experiment:fc87f321-6b74-4046-bde0-0e1cf18bd8ce".
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 1000
+        deprecated: false
+    includeParam:
+      name: 'include'
+      in: query
+      description: |
+        The related resources to be shown in "included" field.
+
+        Example value: "children, owner".
+      required: false
+      allowEmptyValue: true
+      schema:
+        type: string
+        description: ''
+        format: ''
+        maxLength: 200
+        deprecated: false
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+
+    ExtEntity:
+      type: object
+      title: 'ExtEntity'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtEntityAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            name:
+              type: string
+            synonyms:
+              type: array
+              items:
+                type: string
+            description:
+              type: string
+            type:
+              type: string
+            createdAt:
+              type: string
+            editedAt:
+              type: string
+            digest:
+              type: string
+            fields:
+              title: 'fields'
+              type: object
+              additionalProperties:
+                type: object
+            state:
+              type: string
+            flags:
+              type: object
+            signedAt:
+              type: string
+            acceptedAt:
+              type: string
+            rejectedAt:
+              type: string
+            fragments:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            data:
+              type: object
+              additionalProperties: true
+          additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtEntityRelationships'
+          properties:
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            editedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            ancestors:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            children:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            systemTemplate:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            template:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            pdf:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            signedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            acceptedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            rejectedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            source:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            drawing:
+              $ref: '#/components/schemas/JsonApiRelationship'
+          additionalProperties: true
+    EntityApiResponse:
+      type: object
+      title: 'EntityApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtEntity'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    ExtHistory:
+        title: 'ExtHistory'
+        type: object
+        properties:
+          links:
+            $ref: '#/components/schemas/JsonApiLinks'
+          type:
+            type: string
+          id:
+            type: string
+          attributes:
+            type: object
+            title: 'ExtHistoryAttributes'
+            properties:
+              id:
+                type: string
+              action:
+                type: string
+              comment:
+                type: string
+              createdAt:
+                type: string
+              modifiedAt:
+                type: string
+              eventId:
+                type: string
+              data:
+                type: object
+                additionalProperties: true
+              host:
+                type: string
+              tenant:
+                type: string
+            additionalProperties: true
+          relationships:
+            type: object
+            title: 'ExtHistoryRelationships'
+            properties:
+              createdBy:
+                $ref: '#/components/schemas/JsonApiRelationship'
+              ancestors:
+                $ref: '#/components/schemas/JsonApiRelationship'
+              entities:
+                $ref: '#/components/schemas/JsonApiRelationship'
+    HistoryApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+          type: integer
+        hasMore:
+          type: boolean
+    ExtHistoryListResponse:
+      title: 'ExtHistoryListResponse'
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/HistoryApiMeta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtHistory'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+
+    HistorySearchRequest:
+      title: 'SearchRequest'
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: string
+        actions:
+          type: array
+          items:
+            type: string
+        types:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        offset:
+          type: integer
+        limit:
+          type: integer
+    AuditSearchRequest:
+      title: 'SearchRequest'
+      type: object
+      properties:
+        data:
+          type: object
+          required: [attributes]
+          properties:
+            attributes:
+              type: object
+              properties:
+                query:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      operation:
+                        type: string
+                      value:
+                        oneOf:
+                          - type: string
+                          - type: number
+                orderBy:
+                  type: string
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+
+
+
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  examples:
+    historySearchRequest:
+      value:
+        users:
+          - '100'
+        actions:
+          - 'Edited'
+        types:
+          - 'Experiment'
+        name: 'exp-0001'
+        from: '2020-07-01T00:00:00.000Z'
+        to: '2020-08-01T00:00:00.000Z'
+        offset: 0
+        limit: 100
+    historySearchResponse:
+      value:
+        meta:
+          offset: 0
+          limit: 2
+          count: 2
+          hasMore: true
+        data:
+          - id: '5f17d64428bb4c48c4422b74'
+            type: 'history'
+            attributes:
+              id: '5f17d64428bb4c48c4422b74'
+              action: 'edit'
+              comment: null
+              data: null
+              createdAt: '2019-12-02T04:58:45.069Z'
+              modifiedAt: '2019-12-02T04:58:45.069Z'
+            relationships:
+              createdBy:
+                links:
+                  self: 'https://snb.example.com/api/rest/v1.0/users/100'
+                data:
+                  type: 'user'
+                  id: '100'
+              ancestors:
+                data:
+                  - type: 'entity'
+                    id: 'experiment:b015d50f-4af4-4183-9906-f72fe4551f28'
+              entities:
+                data:
+                  - type: 'revision'
+                    id: '5f17d64428bb4c48c4422b74'
+                    meta:
+                      links:
+                        self: 'https://snb.example.com/api/rest/v1.0/history/revisions/5f17d64428bb4c48c4422b74/entities/text:b015d50f-4af4-4183-9906-f72fe4551f28'
+          - type: 'history'
+            id: '5efee827713c090007a21b47'
+            attributes:
+              action: 'edit'
+              eid: 'text:b015d50f-4af4-4183-9906-f72fe4551f28'
+              data: null
+              modifiedAt: '2019-12-02T04:58:45.069Z'
+            relationships:
+              entities:
+                data:
+                  - type: 'entity'
+                    id: '5efee827713c090007a21b47'
+                    meta:
+                      links:
+                        self: 'https://snb.example.com/api/rest/v1.0/history/revisions/5efee827713c090007a21b47/entities/text:b015d50f-4af4-4183-9906-f72fe4551f28'
+    entityRevisionResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/history/revisions/607e7af2d7a085fa782e1395/entities/batch:5fe2fd98c9e77c0007637d66
+        data:
+          type: revision
+          id: 607e7af2d7a085fa782e1395
+          links:
+            self: https://snb.example.com/api/rest/v1.0/history/revisions/607e7af2d7a085fa782e1395/entities/batch:5fe2fd98c9e77c0007637d66
+          attributes:
+            id: 607e7af2d7a085fa782e1395
+            eid: batch:5fe2fd98c9e77c0007637d66
+            name: 64428-0001
+            description: ''
+            createdAt: '2020-12-23T08:19:36.297Z'
+            editedAt: '2021-04-20T06:55:45.796Z'
+            type: batch
+            digest: '40813542'
+            fields:
+              Amount:
+                value: 1099 g
+              Batch Chemical Name:
+                value: benzene--cyclopenta-1,3-diene (1/1)
+              Batch Molecular Formula:
+                value: C<sub>11</sub>H<sub>12</sub>
+              Description:
+                value: ''
+              Exact Mass:
+                value: '144.0939'
+            data:
+              reference: '0001'
+              library: Compounds
+              assetTypeId: 5e786a467d560d0006949dd4
+              assetId: 5fe2fd98c9e77c0007637d65
+              drawing: https://snb.example.com/api/rest/v1.0/history/proxy/assets/5e786a467d560d0006949dd4/assets/5fe2fd98c9e77c0007637d65/attachments/5e786a467d560d0006949d79/5fe2fd98c9e77c0007637d63/64428-0001.cdxml
+              digest: '59097270'
+              assetReference: '64428'
+              batchId: 5fe2fd98c9e77c0007637d66
+              fields:
+                Purity (%):
+                  canEdit: true
+                  raw: 100
+                  id: 5e786a467d560d0006949ddc
+                  type: PERCENTAGE
+                  value: 100 %
+                  isMandatory: true
+                  isHidden: false
+                Amount:
+                  canEdit: true
+                  raw: 1099
+                  id: 5e786a467d560d0006949dda
+                  type: MASS
+                  value: 1099 g
+                  isMandatory: true
+                  isHidden: false
+          relationships:
+            createdBy:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+            editedBy:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+            ancestors:
+              data:
+                - type: entity
+                  id: assetType:5e786a467d560d0006949dd4
+                - type: entity
+                  id: asset:5fe2fd98c9e77c0007637d65
+            owner:
+              links:
+                self: https://snb.example.com/api/rest/v1.0/users/100
+              data:
+                type: user
+                id: '100'
+    auditSearchRequest:
+      value:
+        data:
+          attributes:
+            query:
+              - name: 'method'
+                operation: 'equals'
+                value: 'get'
+              - name: 'statusCode'
+                operation: 'greatThan'
+                value: 399
+            orderBy: 'time DESC'
+            offset: 0
+            limit: 20
+
+    auditSearchResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/audit/search
+        data:
+          - type: auditEvent
+            id: Request-2020-08-06T09:49:29.300Z
+            attributes:
+              method: GET
+              tenantName: frank10
+              remote: 127.0.0.1
+              path: "/api/rest/v1.0/entities/abc%3A345"
+              query: ''
+              time: '2020-08-06T09:49:29.3Z'
+              requestPayloadSize: 0
+              timeDuration: 2148
+              responsePayloadSize: 165
+              statusCode: 500
+              context: {}
+          - type: auditEvent
+            id: Request-2020-08-06T09:53:31.298Z
+            attributes:
+              method: GET
+              tenantName: frank10
+              remote: 127.0.0.1
+              path: "/api/rest/v1.0/entities/dfg%3A334/children"
+              query: page[offset]=0&page[limit]=20
+              time: '2020-08-06T09:53:31.298Z'
+              requestPayloadSize: 0
+              timeDuration: 2159
+              responsePayloadSize: 165
+              statusCode: 500
+              context: {}

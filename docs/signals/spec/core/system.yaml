@@ -1,0 +1,750 @@
+openapi: 3.0.1
+info:
+  title: 'Signals Notebook APIs Document'
+  version: v1.0
+servers:
+  - url: '/api/rest/v1.0'
+    description: 'Signals Notebook'
+security:
+  - api_key: []
+paths:
+  /version:
+    get:
+      tags:
+        - System
+      summary: 'Retrieve the current Signals release version'
+      description: |
+        Retrieve the current Signals release version. 
+
+      operationId: 'getCurrentSignalsReleaseVersion'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtReleaseVersion'
+              examples:
+                SignalsReleaseVersion:
+                  $ref: '#/components/examples/getSignalsReleaseVersionExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '415':
+          description: 'Unsupported media type'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '445':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /parserDefinitions/{eid}:
+    get:
+      tags:
+        - ParserDefinitions
+      summary: 'Retrieve parser definition by eid'
+      description: |
+        Retrieve parser-definition content for the given parser definition entity.
+
+      operationId: 'getParserDefinitionContent'
+      parameters:
+        - name: eid
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 2000
+          description: |
+            Parser definition entity eid.
+            Format: EID.
+            Accepted entity types: parserdefinition.
+            Example value, "parserdefinition:be087590-a4b5-476d-b5da-46d76e6f297a".
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ExtParserDefinition'
+              examples:
+                parserDefinition:
+                  $ref: '#/components/examples/fetchingParserDefinitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '415':
+          description: 'Unsupported media type'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /securityPolicy/export:
+    get:
+      tags:
+        - System
+      summary: 'Retrieve tenant security policies'
+      description: |
+        Export the security policies for the current tenant as a plain text file.
+
+        Note: This API is available only to administrators.
+
+      operationId: 'getCurrentTenantSecurityPolicy'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            text/plain:
+              schema:
+                description: 'Return the security policies associated with the current tenant'
+                type: string
+                format: binary
+              example: |
+                # Anything following a '#' is a comment.
+                # This template is meant to help you understand the syntax of Access Rules.
+                # The following are example rules you can use to guide you in creating your own
+                # A Rule has a name, followed by an If clause with 1 or more conditions followed
+                # by a then clause with a Grant statement.
+
+                # Example rule giving read access to all experiments, based on a user’s group membership.
+
+                RULE "World Read"
+                IF
+                  user group in "All users"
+                THEN
+                  grant "entity.read"
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '415':
+          description: 'Unsupported media type'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+      deprecated: false
+
+  /auth/tokens:
+    delete:
+      tags:
+        - System
+      summary: Revoke bearer tokens
+      description: When all is true, revoke all short‑term bearer‑token authorizations within the specified domain. When all is false, revoke short‑term bearer‑token authorizations associated with the specified email. The domain must belong to the administrator's tenant.
+      operationId: revokeBearerTokens
+      parameters:
+        - name: all
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: When true, revoke all bearer tokens in the domain. When false, email is required.
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+            format: email
+            example: user@example.com
+          description: User email address. Required when all is false. When all is true, this parameter is ignored even if provided.
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+            example: tenant.example.com
+          description: Optional tenant domain. When omitted, the current request domain is used.
+      responses:
+        '204':
+          description: Bearer tokens revoked successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: 'x-api-key'
+  parameters: {}
+
+  schemas:
+    JsonApiResponse:
+      title: 'JsonApiResponse'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiData'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiData'
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonApiData'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiRelationship:
+      title: 'JsonApiRelationship'
+      type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/JsonApiDataIdentifier'
+            - type: array
+              items:
+                $ref: '#/components/schemas/JsonApiDataIdentifier'
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiData:
+      title: 'JsonApiData'
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+    JsonApiDataIdentifier:
+      title: 'JsonApiDataIdentifier'
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        type:
+          type: string
+        id:
+          type: string
+    JsonApiLinks:
+      title: 'JsonApiLinks'
+      type: object
+      properties:
+        self:
+          type: string
+    JsonApiMeta:
+      title: 'JsonApiMeta'
+      type: object
+      additionalProperties: true
+    JsonApiIncluded:
+      title: 'JsonApiIncluded'
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonApiData'
+    JsonApiPagingLinks:
+      title: 'JsonApiPagingLinks'
+      type: object
+      properties:
+        self:
+          type: string
+        prev:
+          type: string
+        first:
+          type: string
+        next:
+          type: string
+    EntityApiResponse:
+      type: object
+      title: 'EntityApiResponse'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        meta:
+          $ref: '#/components/schemas/JsonApiMeta'
+        data:
+          $ref: '#/components/schemas/ExtEntity'
+        included:
+          $ref: '#/components/schemas/JsonApiIncluded'
+    ExtEntity:
+      type: object
+      title: 'ExtEntity'
+      properties:
+        links:
+          $ref: '#/components/schemas/JsonApiLinks'
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+          title: 'ExtEntityAttributes'
+          properties:
+            id:
+              type: string
+            eid:
+              type: string
+            name:
+              type: string
+            synonyms:
+              type: array
+              items:
+                type: string
+            description:
+              type: string
+            type:
+              type: string
+            createdAt:
+              type: string
+            editedAt:
+              type: string
+            digest:
+              type: string
+            fields:
+              title: 'fields'
+              type: object
+              additionalProperties:
+                type: object
+            state:
+              type: string
+            flags:
+              type: object
+            signedAt:
+              type: string
+            acceptedAt:
+              type: string
+            rejectedAt:
+              type: string
+            fragments:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            data:
+              type: object
+              additionalProperties: true
+          additionalProperties: true
+        relationships:
+          type: object
+          title: 'ExtEntityRelationships'
+          properties:
+            createdBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            editedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            owner:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            ancestors:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            children:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            systemTemplate:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            template:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            pdf:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            signedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            acceptedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            rejectedBy:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            source:
+              $ref: '#/components/schemas/JsonApiRelationship'
+            drawing:
+              $ref: '#/components/schemas/JsonApiRelationship'
+          additionalProperties: true
+
+    ExtReleaseVersion:
+      title: 'ReleaseVersion'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, id, attributes ]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              required: [ release ]
+              properties:
+                release:
+                  type: string
+
+    ExtParserDefinition:
+      title: 'ParserDefinition'
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          type: object
+          required: [ type, id, attributes ]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            attributes:
+              type: object
+              properties:
+                id:
+                  type: string
+                fileFooterCount:
+                  type: integer
+                fileHeaderCount:
+                  type: integer
+                fileNameDelimiter:
+                  type: string
+                secondaryDelimiter:
+                  type: string
+                startingKeyword:
+                  type: string
+                valueDelimiter:
+                  type: string
+                worksheetsName:
+                  type: string
+                worksheetsPicker:
+                  type: string
+                dataBlockFooterLinesCount:
+                  type: integer
+                dataBlockHeaderColumnsCount:
+                  type: integer
+                dataBlockHeaderLinesCount:
+                  type: integer
+                plateDataBlocksCount:
+                  type: integer
+                plateFooterLinesCount:
+                  type: integer
+                plateHeaderLinesCount:
+                  type: integer
+                wellOption:
+                  type: integer
+                columnHeaderRowsCount:
+                  type: integer
+                defaultPlateFormat:
+                  type: object
+                  properties:
+                    rowCount:
+                      type: integer
+                    columnCount:
+                      type: integer
+                columns:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+                      mappingOption:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                          value:
+                            type: string
+
+    ErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              code:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+
+  responses:
+    BadRequest:                                 #400
+      description: 'The request parameters are in bad format.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:                               #401
+      description: 'User is unauthorized.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:                                  #403
+      description: 'Access forbidden.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:                                   #404
+      description: 'The requested resource was not found.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MethodNotAllowed:                           #405
+      description: 'Method is not allowed.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotAcceptable:                              #406
+      description: 'Your request is not acceptable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RequestTimeout:                             #408
+      description: 'Request timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:                                   #409
+      description: 'The request could not be completed due to a conflict with the current state of the target resource. Please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:                                      #410
+      description: 'The resource your requested has been removed permanently.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LengthRequired:                            #411
+      description: 'Please define Content-Length in header.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PreconditionFailed:                        #412
+      description: 'Precondition check failed for the server to process the request'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:                           #413
+      description: 'Request body is too large. The maximum size is 100MB.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    URITooLong:                                #414
+      description: 'URI is too long, put the parameters into body instead.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedMediaType:                      #415
+      description: 'Unsupported media type.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedExportPdfMediaType:             #415-export
+      description: 'Unsupported media type, we only support PDF for exporting now.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    EnhanceYourCalm:                           #420
+      description: 'Your request is received, please wait patient.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:                       #422
+      description:  'The entity your provided is unprocessable.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DigestMismatch:                           #429
+      description: 'Digest is mismatch.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:                           #429
+      description: 'You have sent too many requests, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:                       #500
+      description: 'The server encountered an internal error or misconfiguration and was unable to complete your request.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotImplemented:                           #501
+      description: 'Method not implemented.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:                               #502
+      description: 'Bad gateway.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:                       #503
+      description: 'Server is currently unable to handle your request due to a temporary overload   or scheduled maintenance, please retry it later.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GatewayTimeout:                           #504
+      description: 'Gateway timeout.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  examples:
+    getSignalsReleaseVersionExample:
+      value:
+        links:
+          self: "https://snb.example.com/api/rest/v1.0/version"
+        data:
+          type: releaseVersion
+          id: afca7609-b727-3ae5-8e6d-966e4f38887d
+          attributes:
+            release: 26.1.0
+    fetchingParserDefinitionResponse:
+      value:
+        links:
+          self: https://snb.example.com/api/rest/v1.0/parserDefinitions/parserdefinition:be087590-a4b5-476d-b5da-46d76e6f297a
+        data:
+          type: parserDefinition
+          id: parserdefinition:be087590-a4b5-476d-b5da-46d76e6f297a
+          attributes:
+            id: parserdefinition:be087590-a4b5-476d-b5da-46d76e6f297a
+            fileFooterCount: 109
+            fileHeaderCount: 0
+            fileNameDelimiter: ''
+            secondaryDelimiter: ''
+            startingKeyword: ''
+            valueDelimiter: ","
+            worksheetsName: ''
+            worksheetsPicker: "<ALL>"
+            dataBlockFooterLinesCount: 0
+            dataBlockHeaderColumnsCount: 1
+            dataBlockHeaderLinesCount: 2
+            plateDataBlocksCount: 1
+            plateFooterLinesCount: 1
+            plateHeaderLinesCount: 5
+            wellOption: 0
+            defaultPlateFormat:
+              rowCount: 16
+              columnCount: 24
+            columns:
+              - name: Well ID
+                type: text
+                mappingOption:
+                  key: FMAP_WellID
+                  value: ''
+              - name: Row
+                type: integer
+                mappingOption:
+                  key: FMAP_RowPosition
+                  value: ''
+              - name: Column
+                type: integer
+                mappingOption:
+                  key: FMAP_ColPosition
+                  value: ''
+              - name: Row Letter
+                type: text
+                mappingOption:
+                  key: FMAP_RowLetter
+                  value: ''
+              - name: Results
+                type: integer
+                mappingOption:
+                  key: FMAP_PBlockData
+                  value: ''
