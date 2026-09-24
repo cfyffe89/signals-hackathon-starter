@@ -17,6 +17,7 @@ sc = SignalsClient()   # reads SIGNALS_BASE_URL, SIGNALS_API_KEY (no default not
 | Experiments in a notebook | `sc.list_notebook_experiments(nb)` | `GET /entities/{nb}/children` (type experiment) |
 | Create an experiment (in your notebook) | `sc.create_experiment(name, nb, desc)` | `POST /entities?digest=<notebook digest>` + `ancestors` |
 | Add a sample | `sc.create_sample(exp_eid, template_eid, {field_id: value})` | `POST /entities?digest=<exp digest>` + `ancestors` + `template` |
+| Add to a text note | `sc.append_to_text_element(text_eid, "<p>..</p>")` | export + `PUT /entities/{eid}/attachment?digest=` |
 | Attach a file / HTML note | `sc.upload_child_attachment(eid, "note.html", b"<p>..</p>", "text/html")` | `POST /entities/{eid}/children/{filename}?digest=` |
 | Recent chemical drawings | `sc.list_chemical_drawings(20)` | search `type=chemicalDrawing` + export |
 | Structure as SMILES/SVG/mol | `sc.export_entity(eid, "smiles")` | `GET /entities/{eid}/export?format=` |

@@ -65,7 +65,10 @@ if WRITE:
     if created.get("exp"):
         eid = created["exp"]["id"]
         step("  ...is inside the notebook", lambda: [a["id"] for a in sc.get_entity(eid)["relationships"]["ancestors"]["data"]] and "ok")
-        step("upload_child_attachment html", lambda: sc.upload_child_attachment(eid, "note.html", b"<p>smoke</p>", "text/html")["data"]["id"][:30])
+        note = []
+        step("upload_child_attachment html", lambda: note.append(sc.upload_child_attachment(eid, "note.html", b"<p>smoke</p>", "text/html")["data"]["id"]) or note[0][:30])
+        if note:
+            step("append_to_text_element", lambda: sc.append_to_text_element(note[0], "<p>more</p>") and sc.export_entity(note[0], "")[-12:])
         if tpl:
             step("create_sample (template)", lambda: sc.create_sample(eid, tpl)["id"][:30])
         pcs = []

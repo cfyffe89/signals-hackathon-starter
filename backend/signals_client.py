@@ -526,6 +526,18 @@ class SignalsClient:
         return self._request("POST", f"/entities/{parent_eid}/children/{filename}", params=params,
                              data=content_bytes, content_type=content_type, timeout=90).json()
 
+    def update_text_element(self, text_eid: str, html: str) -> Dict[str, Any]:
+        """Replace a text element's content: PUT /entities/{eid}/attachment?digest=... (same eid and name)."""
+        if self.mock_mode:
+            return {"id": text_eid, "status": "mock_updated"}
+        return self._request("PUT", f"/entities/{text_eid}/attachment", params={"digest": self.get_digest(text_eid)},
+                             data=html.encode("utf-8"), content_type="text/html").json().get("data", {})
+
+    def append_to_text_element(self, text_eid: str, html: str) -> Dict[str, Any]:
+        """Add a note to an existing text element: export its HTML, append, replace (there is no append endpoint)."""
+        current = "" if self.mock_mode else self.export_entity(text_eid, format="")
+        return self.update_text_element(text_eid, current + html)
+
     # ---------------------------------------------------------------- 4. chemistry
     def list_chemical_drawings(self, limit: int = 20) -> List[Dict[str, Any]]:
         """Most recent chemicalDrawing elements (Search API). SMILES are fetched via export_entity()."""

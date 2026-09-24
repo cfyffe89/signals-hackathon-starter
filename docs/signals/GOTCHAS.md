@@ -18,7 +18,8 @@
 - **Uploads:** `POST /entities/{eid}/children/{filename}?digest=<parent digest>` with the file's own MIME type (`text/html` → an editable text element). `?force=true` instead of a digest also works (it skips the concurrency check and allows duplicate names). Neither → 400.
 - **Delete is soft:** `DELETE /entities/{eid}?digest=` or `?force=true` → 204, the entity gets `flags.isTrashed: true`, and it's still readable. Wrong digest → 428. Deleting it again → 403.
 - **Tasks:** `POST /entities?digest=<experiment digest>`, type `task`, `ancestors` = the experiment (the task container is found for you), `relationships.template` = a task template, `attributes.fields` = `[{"id":"<field id>","content":{...}}]`. Field ids: `GET /tasks/{template eid}/properties` (e.g. `Required By` = `{"value":"2026-10-21T09:00:00.000Z"}`). `Experiment Link` is system-managed (400 "not editable"); to point at another entity use `Reference ID` = `{"values":[{"eid":"experiment:..."}]}`.
-- **Text elements:** the upload filename becomes the element name. `Procedure` (no extension) reads better than `Procedure.html`.
+- **Text elements:** the upload filename becomes the element name. `Procedure` (no extension) reads better than `Procedure.html`. **Update the content** with `PUT /entities/{textEid}/attachment?digest=<text digest>` (new HTML, `Content-Type: text/html`); to append, export the HTML first and PUT old + new. Other uploads by MIME type: `image/png` → image element, `application/pdf` → PDF element.
+- **Tables (ADT):** rows are created/updated/deleted with `PATCH /adt/{eid}?digest=` (`{"type":"adtRow","id":…,"attributes":{"action":"create"|"update"|"delete",…}}`). Columns come from the table template: `PATCH /adt/{eid}/_column` can only hide/unhide.
 - Sample `Amount` accepts only the units the template's field allows (on one tenant, mass only: `"150 g"` works, `"100 item"` / `"1 mL"` → 400 "Wrong input value").
 
 ## Listing & search (`POST /entities/search`)
