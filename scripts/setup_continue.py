@@ -44,10 +44,12 @@ models:
 {chr(10).join(models)}
 context:
   - provider: code
-  - provider: codebase
+  - provider: currentFile
+  - provider: file
   - provider: diff
   - provider: terminal
-  - provider: file
+  - provider: problems
+  - provider: repo-map
 """
 path = Path.home() / ".continue" / "config.yaml"
 path.parent.mkdir(parents=True, exist_ok=True)
