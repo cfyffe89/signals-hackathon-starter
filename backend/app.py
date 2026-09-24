@@ -378,7 +378,7 @@ def test_ai(req: AIPromptRequest):
                 context_str = "\n".join(exp_lines)
                 prompt_to_send = (
                     f"{req.prompt}\n\n"
-                    f"### Ground-Truth Signals Notebook API Experiment Data (GET /entities):\n"
+                    f"### Ground-Truth Signals Notebook API Experiment Data (POST /entities/search):\n"
                     f"{context_str}\n\n"
                     f"Please synthesize these active lab experiments into an executive overview highlighting project focus areas and actionable next steps."
                 )

@@ -58,11 +58,32 @@ def test_bundle():
     exp_name = exps[0]["name"] if exps else "None"
     print(f'  [OK] Retrieved {len(exps)} experiment(s). First: {exp_name}')
     
-    # Test new helpers
+    # Test Search API (POST /entities/search) with user-specified structured queries
+    exp_search_q = {
+        "$and": [
+            {"$match": {"field": "type", "value": "experiment", "mode": "keyword"}},
+            {"$match": {"field": "isTemplate", "value": False}}
+        ]
+    }
+    exp_search_res = sc.search_entities(query=exp_search_q, options={"sort": {"modifiedAt": "desc"}}, limit=5)
+    assert len(exp_search_res) > 0, "search_entities experiment query failed"
+    print(f'  [OK] search_entities(experiment) retrieved {len(exp_search_res)} entities via Search API')
+
+    chem_search_q = {
+        "$and": [
+            {"$match": {"field": "type", "value": "chemicalDrawing", "mode": "keyword"}},
+            {"$match": {"field": "isTemplate", "value": False}}
+        ]
+    }
+    chem_search_res = sc.search_entities(query=chem_search_q, options={"sort": {"modifiedAt": "desc"}}, limit=5)
+    assert len(chem_search_res) > 0, "search_entities chemicalDrawing query failed"
+    print(f'  [OK] search_entities(chemicalDrawing) retrieved {len(chem_search_res)} entities via Search API')
+
+    # Test list_chemical_drawings using Search API
     drawings_20 = sc.list_chemical_drawings(limit=20)
     assert len(drawings_20) == 20, f"Expected 20 chemical drawings, got {len(drawings_20)}"
     assert all("smiles" in d and "id" in d for d in drawings_20), "drawings missing required fields"
-    print(f'  [OK] list_chemical_drawings(20) retrieved {len(drawings_20)} drawings. First: {drawings_20[0]["name"]}')
+    print(f'  [OK] list_chemical_drawings(20) retrieved {len(drawings_20)} drawings via Search API. First: {drawings_20[0]["name"]}')
 
     drawing = sc.get_chemical_drawing("mat-test-1", format="smiles")
     assert drawing and "C" in drawing, "get_chemical_drawing failed"

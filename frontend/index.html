@@ -81,7 +81,7 @@
           </button>
         </div>
         <p class="text-xs text-slate-400 leading-relaxed">
-          Queries <code class="text-cyan-300 font-mono">GET /entities?filter[type]=experiment</code> against your configured Signals Notebook tenant.
+          Queries <code class="text-cyan-300 font-mono">POST /entities/search</code> (Search API) for active experiments against your configured Signals Notebook tenant.
         </p>
 
         <!-- OUTPUT BOX -->
@@ -102,7 +102,7 @@
           </button>
         </div>
         <p class="text-xs text-slate-400 leading-relaxed">
-          Ingests live experiment records from <code class="text-cyan-300 font-mono">GET /entities</code> and synthesizes project themes and research priorities with Gemini 3.6 Flash.
+          Ingests live experiment records from <code class="text-cyan-300 font-mono">POST /entities/search</code> and synthesizes project themes and research priorities with Gemini 3.6 Flash.
         </p>
         <div class="space-y-1.5">
           <input type="text" id="promptInput" value="Summarize the active Signals Notebook experiments and highlight key research priorities." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-brand-500">

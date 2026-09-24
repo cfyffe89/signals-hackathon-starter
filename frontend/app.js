@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnTestSignals.addEventListener('click', async () => {
     btnTestSignals.disabled = true;
     btnTestSignals.textContent = 'Querying Signals...';
-    signalsResultBox.innerHTML = '<span class="text-cyan-400">Sending GET /entities?filter[type]=experiment to Signals Notebook...</span>';
+    signalsResultBox.innerHTML = '<span class="text-cyan-400">Sending POST /entities/search query to Signals Notebook Search API...</span>';
 
     try {
       const res = await fetch('/api/test-signals');

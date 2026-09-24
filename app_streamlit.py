@@ -121,6 +121,7 @@ tab_overview, tab_molecule, tab_sandbox, tab_ai = st.tabs([
 # =========================================================================
 with tab_overview:
     st.subheader("Tenant Status & Experiments")
+    st.caption("Live integration: queries the Signals Search API (POST /entities/search) for non-template experiment entities.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -135,7 +136,34 @@ with tab_overview:
     with col3:
         st.metric(label="Target Host", value="Signals Notebook v1.0")
         
-    st.markdown("#### Experiment Notebooks")
+    st.markdown("#### Experiment Notebooks (Search API: `POST /entities/search`)")
+
+    with st.expander("🔍 Inspect Search API Query JSON (POST /entities/search)"):
+        st.code("""{
+  "query": {
+    "$and": [
+      {
+        "$match": {
+          "field": "type",
+          "value": "experiment",
+          "mode": "keyword"
+        }
+      },
+      {
+        "$match": {
+          "field": "isTemplate",
+          "value": false
+        }
+      }
+    ]
+  },
+  "options": {
+    "sort": {
+      "modifiedAt": "desc"
+    }
+  }
+}""", language="json")
+
     if exps:
         exp_table = []
         for e in exps:
@@ -167,10 +195,10 @@ with tab_overview:
 # =========================================================================
 with tab_molecule:
     st.subheader("Chemical Structure & Property Explorer")
-    st.caption("Live integration: queries the Signals Search/Entities API for the last 20 chemical drawings, fetches SMILES, calculates RDKit descriptors, and performs medicinal chemistry analysis with Gemini 3.6 Flash.")
+    st.caption("Live integration: queries the Signals Search API (POST /entities/search) for the last 20 chemical drawings, fetches SMILES, calculates RDKit descriptors, and performs medicinal chemistry analysis with Gemini 3.6 Flash.")
 
     # 1. Fetch the last 20 chemical drawings from Signals Notebook
-    with st.spinner("Fetching latest chemical drawings from Signals Notebook..."):
+    with st.spinner("Fetching latest chemical drawings from Signals Notebook via Search API..."):
         try:
             drawings = signals_client.list_chemical_drawings(limit=20)
         except Exception as e:
@@ -184,8 +212,34 @@ with tab_molecule:
     current_modified = "Recent"
     current_notebook = "EXP-2026-081"
 
+    with st.expander("🔍 Inspect Search API Query JSON (POST /entities/search)"):
+        st.code("""{
+  "query": {
+    "$and": [
+      {
+        "$match": {
+          "field": "type",
+          "value": "chemicalDrawing",
+          "mode": "keyword"
+        }
+      },
+      {
+        "$match": {
+          "field": "isTemplate",
+          "value": false
+        }
+      }
+    ]
+  },
+  "options": {
+    "sort": {
+      "modifiedAt": "desc"
+    }
+  }
+}""", language="json")
+
     if drawings:
-        st.markdown(f"**Discovered {len(drawings)} Chemical Drawings in Tenant** (`GET /entities?filter[type]=chemicalDrawing&sort=-modifiedAt`):")
+        st.markdown(f"**Discovered {len(drawings)} Chemical Drawings via Search API** (`POST /entities/search`):")
         drawing_options = [
             f"{i+1}. {d.get('name', 'Untitled')} [{d.get('id', 'N/A')}] — {d.get('formula', '')} ({d.get('notebook', 'Lab')})"
             for i, d in enumerate(drawings)
@@ -370,9 +424,10 @@ with tab_sandbox:
     st.caption("Interactive test harness to test Signals API operations with instant curl and JSON:API inspection.")
 
     endpoint_presets = [
+        "POST /entities/search (Search API - Experiments)",
+        "POST /entities/search (Search API - Chemical Drawings)",
         "GET /materials/{assetBatchId}/drawing (Chemical Drawing)",
         "GET /stoichiometry/{eid} (Reaction Reactants & Products)",
-        "GET /entities (List Accessible Notebooks)",
         "GET /materials/bulk (Search Inventory & Reagents)",
         "GET /entities/{eid}/children (List Child Elements)",
         "POST /entities (Create Experiment)"
@@ -382,7 +437,13 @@ with tab_sandbox:
 
     c_param1, c_param2 = st.columns(2)
     with c_param1:
-        if "drawing" in selected_op:
+        if "Search API - Experiments" in selected_op:
+            limit_p = st.number_input("page[limit]", min_value=1, max_value=50, value=20)
+            st.info("Executes Search API query for non-template experiment entities sorted by modifiedAt desc.")
+        elif "Search API - Chemical Drawings" in selected_op:
+            limit_p = st.number_input("page[limit]", min_value=1, max_value=50, value=20)
+            st.info("Executes Search API query for non-template chemicalDrawing entities sorted by modifiedAt desc.")
+        elif "drawing" in selected_op:
             target_id = st.text_input("assetBatchId / Material ID", value="material:aspirin-batch-001")
             format_p = st.selectbox("format query param", ["smiles", "svg", "mol", "cdxml", "inchi"])
         elif "stoichiometry" in selected_op:
@@ -401,7 +462,33 @@ with tab_sandbox:
     with c_param2:
         st.markdown("#### Generated cURL Command")
         base = signals_client.base_url
-        if "drawing" in selected_op:
+        if "Search API - Experiments" in selected_op:
+            curl_cmd = f"""curl -X POST '{base}/entities/search?page[limit]={limit_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY' \\
+  -H 'Content-Type: application/vnd.api+json' \\
+  -d '{{
+  "query": {{
+    "$and": [
+      {{ "$match": {{ "field": "type", "value": "experiment", "mode": "keyword" }} }},
+      {{ "$match": {{ "field": "isTemplate", "value": false }} }}
+    ]
+  }},
+  "options": {{ "sort": {{ "modifiedAt": "desc" }} }}
+}}'"""
+        elif "Search API - Chemical Drawings" in selected_op:
+            curl_cmd = f"""curl -X POST '{base}/entities/search?page[limit]={limit_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY' \\
+  -H 'Content-Type: application/vnd.api+json' \\
+  -d '{{
+  "query": {{
+    "$and": [
+      {{ "$match": {{ "field": "type", "value": "chemicalDrawing", "mode": "keyword" }} }},
+      {{ "$match": {{ "field": "isTemplate", "value": false }} }}
+    ]
+  }},
+  "options": {{ "sort": {{ "modifiedAt": "desc" }} }}
+}}'"""
+        elif "drawing" in selected_op:
             curl_cmd = f"""curl -X GET '{base}/materials/{target_id}/drawing?format={format_p}' \\
   -H 'x-api-key: $SIGNALS_API_KEY'"""
         elif "stoichiometry" in selected_op:
@@ -428,7 +515,11 @@ with tab_sandbox:
     if st.button("🚀 Execute API Request", type="primary"):
         with st.spinner("Executing request..."):
             try:
-                if "drawing" in selected_op:
+                if "Search API - Experiments" in selected_op:
+                    res_payload = signals_client.list_experiments(limit=limit_p)
+                elif "Search API - Chemical Drawings" in selected_op:
+                    res_payload = signals_client.list_chemical_drawings(limit=limit_p)
+                elif "drawing" in selected_op:
                     res_payload = signals_client.get_chemical_drawing(target_id, format=format_p)
                 elif "stoichiometry" in selected_op:
                     res_payload = signals_client.get_stoichiometry(target_id)
