@@ -8,6 +8,23 @@
 
 ---
 
+
+### Verified Signals Endpoint Mapping Table (Never Guess Endpoints)
+| Desired Operation | INCORRECT Guess (DO NOT USE) | EXACT Signals Endpoint (USE THIS) | Spec Source |
+| :--- | :--- | :--- | :--- |
+| **List Experiments** | `GET /api/experiments` | `GET /entities?filter[type]=experiment` | `entities.yaml` |
+| **Get Experiment Details** | `GET /api/experiments/{id}` | `GET /entities/{id}` | `entities.yaml` |
+| **Create Experiment** | `POST /api/experiments` | `POST /entities` (`type: experiment`) | `entities.yaml` |
+| **Chemical Drawing** | `GET /api/drawings/{id}` | `GET /materials/{assetBatchId}/drawing?format=smiles` | `materials.yaml` |
+| **Reaction Stoichiometry**| `GET /api/reactions/{id}` | `GET /stoichiometry/{eid}` | `stoichiometry.yaml` |
+| **Search Reagents / Lots**| `GET /api/inventory/search` | `GET /materials/bulk?filter[query]={query}` | `materials.yaml` |
+| **List Child Entities** | `GET /api/experiments/{id}/items` | `GET /entities/{parentEid}/children` | `entities.yaml` |
+| **Upload Child Attachment**| `POST /api/upload` | `POST /entities/{parentEid}/children/{filename}?force=true` | `entities.yaml` |
+| **Well Plates & Wells** | `GET /api/plates/{id}` | `GET /plates/{id}/wells` | `plates.yaml` |
+| **Chemical Search** | `POST /api/chemistry` | `POST /chemistry/search` | `chemistry.yaml` |
+
+---
+
 ## 1. Authentication & Core Protocol
 
 ### Base URL Pattern:
@@ -261,4 +278,5 @@ All 21 OpenAPI specifications are located in docs/signals-api/:
 * plates.yaml — 96/384-well plates, layouts, well coordinates, and assay data
 * parallelExperiments.yaml — Multi-variable DOE experimentation grids
 * cro.yaml — Contract research organization workflows and submissions
-* dt.yaml — Assay data management tables and curve fitting
+* dt.yaml — Assay data management tables and curve fitting
+
