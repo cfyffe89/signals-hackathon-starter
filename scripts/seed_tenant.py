@@ -142,9 +142,12 @@ class Seeder:
         self.lib["structure"] = next((x["id"] for x in f if x.get("dataType") == "CHEMICAL_DRAWING"), None)
         self.lib["cas"] = next((x["id"] for x in f if re.search(r"\bCAS\b", x.get("name", ""), re.I)), None)
         defaults = self.d["tenant"].get("material_field_defaults", {})
-        self.lib["defaults"] = [{"id": x["id"], "value": defaults[x["name"]]} for x in f + self.lib["batch_fields"]
-                                if defaults.get(x["name"]) is not None]
-        mapped = {self.lib["name_field"], self.lib["structure"], self.lib["cas"]} | {x["id"] for x in self.lib["defaults"]}
+        # asset fields go in attributes.fields; batch fields in relationships.batch (Signals rejects them on the asset)
+        self.lib["defaults"] = [{"id": x["id"], "value": defaults[x["name"]]} for x in f if defaults.get(x["name"]) is not None]
+        self.lib["batch_defaults"] = [{"id": x["id"], "value": defaults[x["name"]]} for x in self.lib["batch_fields"]
+                                      if defaults.get(x["name"]) is not None]
+        mapped = ({self.lib["name_field"], self.lib["structure"], self.lib["cas"]}
+                  | {x["id"] for x in self.lib["defaults"] + self.lib["batch_defaults"]})
         unmapped = [x["name"] for x in f + self.lib["batch_fields"] if x.get("mandatory") and x["id"] not in mapped]
         self.log("OK", f"materials library '{a['name']}'",
                  f"name={bool(self.lib['name_field'])} structure={bool(self.lib['structure'])} cas={bool(self.lib['cas'])}")
@@ -379,7 +382,8 @@ class Seeder:
                 fields.append({"id": self.lib["cas"], "value": m["cas"]})
             try:
                 res = self.req("POST", f"/materials/{self.lib['name']}/assets",
-                               json_body={"data": {"type": "asset", "attributes": {"fields": fields}}}).json()["data"]
+                               json_body={"data": {"type": "asset", "attributes": {"fields": fields}, **({"relationships": {"batch": {"data": {
+                                   "type": "batch", "attributes": {"fields": self.lib["batch_defaults"]}}}}} if self.lib["batch_defaults"] else {})}}).json()["data"]
                 self.out["materials"][m["name"]] = res["id"]
                 self.log("CREATED", f"material '{m['name']}'", res["id"])
             except SignalsError as e:

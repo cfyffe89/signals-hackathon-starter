@@ -17,7 +17,9 @@
     "experiment_template": null,
     "materials_library": "Reagents (SNB)",
     "material_field_defaults": {
-      "_note": "Values for MANDATORY library fields the seed doesn't map (name, structure, CAS are mapped). Key = field display name; value is sent as-is, so use the format for that field type (see POST /materials/{lib}/assets). null = not set."
+      "_note": "Values for MANDATORY library fields the seed doesn't map (name, structure, CAS are mapped). Key = field display name; value is sent as-is. Asset fields go on the asset, batch fields on its first batch. MASS / PERCENTAGE need BOTH rawValue and displayValue; displayValue is what Signals stores (verified 26.8.0). Placeholder values for the synthetic seed materials. null = not set.",
+      "Amount": {"rawValue": "10", "displayValue": "10 g"},
+      "Purity (%)": {"rawValue": "99", "displayValue": "99 %"}
     },
     "location_types": {
       "site": "Site",
