@@ -1,0 +1,56 @@
+{
+  "data": {
+    "id": "chemicalDrawing:e323ff17-15c4-4706-9bf3-7f2e12a00099",
+    "type": "stoichiometry",
+    "attributes": {
+      "name": "Suzuki-Miyaura Cross Coupling Rxn 4",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e",
+      "reactants": [
+        {
+          "row_id": "row_r1",
+          "name": "4-Bromobenzonitrile",
+          "formula": "C7H4BrN",
+          "smiles": "N#Cc1ccc(Br)cc1",
+          "molecular_weight": 182.02,
+          "moles": 0.005,
+          "equivalents": 1.0,
+          "compliance": "Compliant"
+        },
+        {
+          "row_id": "row_r2",
+          "name": "Phenylboronic acid",
+          "formula": "C6H7BO2",
+          "smiles": "OB(O)c1ccccc1",
+          "molecular_weight": 121.93,
+          "moles": 0.006,
+          "equivalents": 1.2,
+          "compliance": "Compliant"
+        }
+      ],
+      "products": [
+        {
+          "row_id": "row_p1",
+          "name": "4-Cyanobiphenyl",
+          "formula": "C13H9N",
+          "smiles": "N#Cc1ccc(-c2ccccc2)cc1",
+          "molecular_weight": 179.22,
+          "theoretical_yield_g": 0.896,
+          "actual_yield_g": 0.785,
+          "yield_pct": 87.6
+        }
+      ],
+      "catalysts": [
+        {
+          "name": "Pd(dppf)Cl2-CH2Cl2",
+          "loading_mol_pct": 2.5
+        }
+      ],
+      "solvents": [
+        {
+          "name": "1,4-Dioxane : H2O (4:1)",
+          "volume_ml": 25.0
+        }
+      ]
+    }
+  }
+}

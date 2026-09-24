@@ -1,0 +1,38 @@
+[
+  {
+    "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40001",
+    "name": "EXP-2026-081: Suzuki-Miyaura Catalyst Screening",
+    "description": "Screening of Pd precatalysts in aqueous dioxane for sterically hindered biaryls",
+    "createdAt": "2026-09-20T08:14:00Z",
+    "modifiedAt": "2026-09-23T10:30:00Z",
+    "status": "In Progress",
+    "author": "Dr. Sarah Chen"
+  },
+  {
+    "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40002",
+    "name": "EXP-2026-094: Formulation Batch 4B Viscosity Stability",
+    "description": "Accelerated stability testing of lipid nanoparticle formulation 4B at 40C / 75% RH",
+    "createdAt": "2026-09-21T09:30:00Z",
+    "modifiedAt": "2026-09-23T11:15:00Z",
+    "status": "Completed",
+    "author": "Marcus Weber"
+  },
+  {
+    "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40003",
+    "name": "EXP-2026-102: HTRF Kinase Dose-Response Assay Plate 3",
+    "description": "10-point titration of lead inhibitors against CDK9 kinase in 384-well format",
+    "createdAt": "2026-09-22T14:20:00Z",
+    "modifiedAt": "2026-09-23T11:45:00Z",
+    "status": "In Progress",
+    "author": "Dr. Sarah Chen"
+  },
+  {
+    "eid": "experiment:e323ff17-15c4-4706-9bf3-7f2e12a40004",
+    "name": "EXP-2026-115: Fragment-Based Lead Optimization Batch 2",
+    "description": "Surface plasmon resonance (SPR) binding affinity measurement for fragment series B",
+    "createdAt": "2026-09-23T13:00:00Z",
+    "modifiedAt": "2026-09-23T14:20:00Z",
+    "status": "Draft",
+    "author": "Elena Rostova"
+  }
+]

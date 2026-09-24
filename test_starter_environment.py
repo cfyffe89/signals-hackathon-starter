@@ -40,8 +40,8 @@ def test_bundle():
         except ImportError:
             print(f'  [INFO] {opt_label} ({opt_pkg}) will be installed inside Linux Codespaces via requirements.txt.')
 
-    # 2. Signals SDK Test
-    print('\n[Step 2] Testing SignalsClient SDK...')
+    # 2. Signals SDK Test & Extended Helpers
+    print('\n[Step 2] Testing SignalsClient SDK & Convenience Helpers...')
     from backend.signals_client import SignalsClient
     sc = SignalsClient()
     conn = sc.check_connection()
@@ -50,6 +50,27 @@ def test_bundle():
     exps = sc.list_experiments(limit=3)
     exp_name = exps[0]["name"] if exps else "None"
     print(f'  [OK] Retrieved {len(exps)} experiment(s). First: {exp_name}')
+    
+    # Test new helpers
+    drawing = sc.get_chemical_drawing("mat-test-1", format="smiles")
+    assert drawing and "C" in drawing, "get_chemical_drawing failed"
+    print(f'  [OK] get_chemical_drawing() retrieved SMILES: {drawing}')
+
+    svg = sc.get_chemical_drawing("mat-test-1", format="svg")
+    assert "<svg" in svg, "get_chemical_drawing svg failed"
+    print(f'  [OK] get_chemical_drawing() retrieved SVG ({len(svg)} bytes)')
+
+    stoich = sc.get_stoichiometry("chem-test-1")
+    assert "data" in stoich, "get_stoichiometry failed"
+    print(f'  [OK] get_stoichiometry() retrieved reaction data')
+
+    mats = sc.search_materials("aspirin")
+    assert len(mats) > 0, "search_materials failed"
+    print(f'  [OK] search_materials() found {len(mats)} material(s)')
+
+    new_exp = sc.create_experiment("Unit Test Experiment")
+    assert new_exp.get("id"), "create_experiment failed"
+    print(f'  [OK] create_experiment() created {new_exp.get("id")}')
 
     # 3. AI Client Test
     print('\n[Step 3] Testing AIClient Module...')
@@ -64,20 +85,38 @@ def test_bundle():
     gen_snippet = gen.get("text", "")[:80]
     print(f'  [OK] AI Response ({gen_source}): {gen_snippet}...')
 
-    # 4. OpenAPI Specs Check
-    print('\n[Step 4] Checking OpenAPI YAML Specifications...')
+    # 4. OpenAPI Specs & Master API Catalog Check
+    print('\n[Step 4] Checking OpenAPI Specs & Master API Catalog...')
     spec_dir = Path(__file__).parent / 'docs' / 'signals-api'
     specs = list(spec_dir.glob('*.yaml'))
     print(f'  [OK] Found {len(specs)} OpenAPI YAML specifications in docs/signals-api/.')
     assert len(specs) == 21, f'Expected 21 specs, found {len(specs)}'
 
-    # 5. Developer Cheat Sheet Check
-    cheat_sheet = Path(__file__).parent / 'docs' / 'SIGNALS_DEVELOPER_CHEAT_SHEET.md'
-    assert cheat_sheet.exists(), 'Missing SIGNALS_DEVELOPER_CHEAT_SHEET.md'
-    print(f'  [OK] SIGNALS_DEVELOPER_CHEAT_SHEET.md verified ({cheat_sheet.stat().st_size} bytes).')
+    catalog_file = Path(__file__).parent / 'docs' / 'API_CATALOG.md'
+    assert catalog_file.exists(), 'Missing docs/API_CATALOG.md'
+    print(f'  [OK] docs/API_CATALOG.md verified ({catalog_file.stat().st_size} bytes).')
+
+    # 5. Modular Markdown Guide Chapters Check
+    print('\n[Step 5] Checking Modular Markdown Guide Chapters...')
+    guide_dir = Path(__file__).parent / 'docs' / 'guide'
+    assert guide_dir.exists(), 'Missing docs/guide/'
+    guide_chapters = list(guide_dir.glob('*.md'))
+    print(f'  [OK] Found {len(guide_chapters)} distilled guide chapters in docs/guide/.')
+    assert len(guide_chapters) >= 6, f'Expected >=6 guide chapters, found {len(guide_chapters)}'
+
+    # 6. Streamlit & Slash Prompts Check
+    print('\n[Step 6] Checking Streamlit App & Slash Prompts...')
+    app_st = Path(__file__).parent / 'app_streamlit.py'
+    assert app_st.exists(), 'Missing app_streamlit.py'
+    print(f'  [OK] app_streamlit.py verified ({app_st.stat().st_size} bytes).')
+
+    prompts_dir = Path(__file__).parent / '.continue' / 'prompts'
+    prompts = list(prompts_dir.glob('*.prompt'))
+    print(f'  [OK] Found {len(prompts)} slash command prompt(s) in .continue/prompts/.')
+    assert len(prompts) >= 3, f'Expected >=3 prompts, found {len(prompts)}'
 
     print('\n' + '=' * 60)
-    print('[SUCCESS] ALL ENVIRONMENT CHECKS PASSED!')
+    print('[SUCCESS] ALL ENVIRONMENT & PRE-DIGESTED ASSET CHECKS PASSED!')
     print('=' * 60)
 
 if __name__ == '__main__':
