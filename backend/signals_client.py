@@ -328,17 +328,16 @@ class SignalsClient:
     Configuration comes from the environment (or .env):
         SIGNALS_BASE_URL     e.g. https://<your-tenant>/api/rest/v1.0
         SIGNALS_API_KEY      your API key (sent as x-api-key)
-        SIGNALS_NOTEBOOK_EID the notebook (journal:...) your team writes into
+    There is no default notebook: pick one with list_notebooks() and pass its eid to the write methods
+    (the Streamlit app has a notebook picker in the sidebar).
     With no key (or MOCK_MODE=true) every method returns offline sample data.
     """
 
     JSONAPI = "application/vnd.api+json"
 
-    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None,
-                 notebook_eid: Optional[str] = None):
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None):
         self._base_url = base_url
         self._api_key = api_key
-        self._notebook_eid = notebook_eid
 
     # ---------------------------------------------------------------- config
     @property
@@ -348,10 +347,6 @@ class SignalsClient:
     @property
     def api_key(self) -> str:
         return self._api_key or os.getenv("SIGNALS_API_KEY", "")
-
-    @property
-    def notebook_eid(self) -> str:
-        return self._notebook_eid or os.getenv("SIGNALS_NOTEBOOK_EID", "")
 
     @property
     def mock_mode(self) -> bool:
@@ -399,7 +394,6 @@ class SignalsClient:
         try:
             res = self._request("GET", "/entities", params={"includeTypes": "journal", "page[limit]": 1}, timeout=15)
             return {"status": "connected", "statusCode": res.status_code, "tenant": self.base_url,
-                    "notebook": self.notebook_eid or "(SIGNALS_NOTEBOOK_EID not set: writes disabled)",
                     "message": "Authenticated with the Signals tenant."}
         except Exception as e:
             logger.warning(f"Signals connectivity check failed: {e}")
@@ -434,6 +428,16 @@ class SignalsClient:
         data = self._request("GET", "/entities", params={"includeTypes": "journal", "page[limit]": min(limit, 100)}).json().get("data", [])
         return [{"eid": d["id"], "name": d.get("attributes", {}).get("name")} for d in data]
 
+    def list_notebook_experiments(self, notebook_eid: str) -> List[Dict[str, Any]]:
+        """Experiments in one notebook: GET /entities/{notebook}/children, experiments only."""
+        if self.mock_mode:
+            return [{"eid": f"experiment:{uuid.uuid4()}", "name": "Mock experiment in notebook",
+                     "modifiedAt": "2026-09-23T14:30:00Z", "description": ""}]
+        data = self._request("GET", f"/entities/{notebook_eid}/children", params={"page[limit]": 100}).json().get("data", [])
+        return [{"eid": d["id"], "name": d["attributes"].get("name", ""), "modifiedAt": d["attributes"].get("modifiedAt") or d["attributes"].get("editedAt", ""),
+                 "description": d["attributes"].get("description", "")}
+                for d in data if d.get("attributes", {}).get("type") == "experiment"]
+
     def list_experiments(self, limit: int = 15) -> List[Dict[str, Any]]:
         """Most recently modified, non-template experiments (Search API, sorted by modifiedAt desc)."""
         query = {"$and": [{"$match": {"field": "type", "value": "experiment", "mode": "keyword"}},
@@ -461,20 +465,19 @@ class SignalsClient:
         return self._request("GET", f"/entities/{parent_eid}/children").json().get("data", [])
 
     # ---------------------------------------------------------------- 3. create / write
-    def create_experiment(self, name: str, description: Optional[str] = None,
-                          notebook_eid: Optional[str] = None) -> Dict[str, Any]:
+    def create_experiment(self, name: str, notebook_eid: str, description: Optional[str] = None) -> Dict[str, Any]:
         """
         Create an experiment INSIDE a notebook: POST /entities?digest=<notebook digest>
         with relationships.ancestors = the notebook. (Without ancestors Signals creates an orphan
         experiment that sits in no notebook, so this method refuses to do that.)
-        Names must be unique per notebook (409 otherwise).
+        Names must be unique per notebook (409 otherwise). notebook_eid: a journal:... eid from list_notebooks().
         """
-        nb = notebook_eid or self.notebook_eid
+        nb = notebook_eid
         if self.mock_mode:
             return {"id": f"experiment:{uuid.uuid4()}", "type": "entity",
                     "attributes": {"type": "experiment", "name": name, "description": description or ""}}
         if not nb:
-            raise SignalsError("Set SIGNALS_NOTEBOOK_EID (a journal:... eid) so experiments are created inside your notebook.")
+            raise SignalsError("Pass notebook_eid (a journal:... eid from list_notebooks()) so the experiment is created inside a notebook.")
         body = {"data": {"type": "experiment",
                          "attributes": {"name": name, **({"description": description} if description else {})},
                          "relationships": {"ancestors": {"data": [{"type": "journal", "id": nb}]}}}}

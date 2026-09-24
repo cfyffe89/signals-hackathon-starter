@@ -471,7 +471,7 @@ class Seeder:
         path = outdir / f"seed_report_{host.split('.')[0]}_{rep['mode']}_{stamp}.json"
         path.write_text(json.dumps(rep, indent=2), encoding="utf-8")
         if self.apply and self.out["teams"]:
-            lines = ["| Team | SIGNALS_NOTEBOOK_EID | Bench-notes experiment |", "|---|---|---|"]
+            lines = ["| Team | Notebook | Bench-notes experiment |", "|---|---|---|"]
             lines += [f"| {k} | `{v['notebook']}` | `{v['experiment']}` |" for k, v in self.out["teams"].items()]
             (outdir / f"team_sheet_{host.split('.')[0]}.md").write_text(
                 f"# Team table sheet ({host}, prefix {self.a.prefix})\n\nSIGNALS_BASE_URL=https://{host}/api/rest/v1.0\n\n" + "\n".join(lines) + "\n",

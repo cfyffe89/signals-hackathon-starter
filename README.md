@@ -10,7 +10,6 @@ A ready-to-hack Codespace with **two working apps** on the Signals REST API, **A
    ```
    SIGNALS_BASE_URL=https://<your-tenant>/api/rest/v1.0
    SIGNALS_API_KEY=...
-   SIGNALS_NOTEBOOK_EID=journal:...       # your team notebook: experiments are created here
    GEMINI_API_KEY=...                     # or AI_GATEWAY_URL + AI_GATEWAY_KEY
    ```
 3. Restart the apps: `./scripts/start.sh`, then check everything: `python scripts/check_setup.py`.

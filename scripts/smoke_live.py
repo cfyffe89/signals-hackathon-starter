@@ -1,15 +1,16 @@
 """Live smoke test for backend/signals_client.py against a real Signals tenant.
 
-    SIGNALS_BASE_URL=... SIGNALS_API_KEY=... SIGNALS_NOTEBOOK_EID=journal:... \
-    SIGNALS_SAMPLE_TEMPLATE_EID=sample:... python scripts/smoke_live.py [--write]
+    SIGNALS_BASE_URL=... SIGNALS_API_KEY=... SIGNALS_SAMPLE_TEMPLATE_EID=sample:... \
+    python scripts/smoke_live.py [--write --notebook journal:...]
 
-Read-only by default. With --write it creates one experiment (+ a sample and an HTML note) in
-SIGNALS_NOTEBOOK_EID and moves it to the trash at the end. Never prints the API key.
+Read-only by default. With --write it creates one experiment (+ a sample and an HTML note) in the
+--notebook you name and moves it to the trash at the end. Never prints the API key.
 """
 import os, sys, time, uuid
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from backend import config  # noqa: E402,F401  (loads .env / Codespaces secrets)
 from backend.signals_client import SignalsClient, SignalsError  # noqa: E402
 
 WRITE = "--write" in sys.argv
@@ -49,9 +50,11 @@ step("list_material_libraries", lambda: f"{len(sc.list_material_libraries())} li
 step("search_containers (IVT)", lambda: f"{len(sc.search_containers('', 5))} containers")
 
 if WRITE:
-    nb, tpl = sc.notebook_eid, os.getenv("SIGNALS_SAMPLE_TEMPLATE_EID", "")
+    nb = sys.argv[sys.argv.index("--notebook") + 1] if "--notebook" in sys.argv else ""
+    assert nb.startswith("journal:"), "--write needs --notebook journal:... (a notebook you may write in)"
+    tpl = os.getenv("SIGNALS_SAMPLE_TEMPLATE_EID", "")
     created = {}
-    step("create_experiment", lambda: created.setdefault("exp", sc.create_experiment(f"ZZ smoke {uuid.uuid4().hex[:6]}", "starter smoke test"))["id"])
+    step("create_experiment", lambda: created.setdefault("exp", sc.create_experiment(f"ZZ smoke {uuid.uuid4().hex[:6]}", nb, "starter smoke test"))["id"])
     if created.get("exp"):
         eid = created["exp"]["id"]
         step("  ...is inside the notebook", lambda: [a["id"] for a in sc.get_entity(eid)["relationships"]["ancestors"]["data"]] and "ok")

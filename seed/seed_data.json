@@ -39,7 +39,7 @@
     },
     "team": {
       "name": "{P} Team {NN}",
-      "description": "Team {NN} notebook. Your API key writes here (SIGNALS_NOTEBOOK_EID)."
+      "description": "Team {NN} notebook. Choose it in the starter's notebook picker; your experiments go here."
     },
     "team_experiment": {
       "name": "Team {NN} bench notes",

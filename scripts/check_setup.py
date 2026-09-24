@@ -37,7 +37,11 @@ from backend.knowledge import search_knowledge, find_endpoints  # noqa: E402
 sc, ai = SignalsClient(), AIClient()
 print(f"\n2. Signals client ({'MOCK' if sc.mock_mode else 'LIVE: ' + sc.base_url})")
 check("connection", lambda: sc.check_connection()["status"])
+nbs = []
+check("list_notebooks", lambda: (nbs.extend(sc.list_notebooks(100)), f"{len(nbs)} notebooks")[1])
 check("list_experiments", lambda: len(sc.list_experiments(3)))
+if nbs:
+    check("list_notebook_experiments", lambda: len(sc.list_notebook_experiments(nbs[0]["eid"])))
 check("list_chemical_drawings", lambda: len(sc.list_chemical_drawings(2)))
 check("search_materials", lambda: len(sc.search_materials("", 3)))
 print(f"\n3. AI client ({ai.check_status()})")
@@ -50,6 +54,7 @@ from backend.app import app  # noqa: E402
 
 client = TestClient(app)
 check("GET /api/health", lambda: client.get("/api/health").json()["signals"]["status"])
+check("GET /api/notebooks", lambda: len(client.get("/api/notebooks").json()))
 exps = client.get("/api/experiments?limit=3").json()
 check("GET /api/experiments", lambda: len(exps))
 check("GET /api/knowledge", lambda: len(client.get("/api/knowledge", params={"q": "search keyword mode"}).json()["chunks"]))
@@ -76,7 +81,7 @@ if "--demo" in sys.argv:
     import requests
     from backend.config import is_placeholder
     print("\n6. Demo readiness")
-    names = ["SIGNALS_BASE_URL", "SIGNALS_API_KEY", "SIGNALS_NOTEBOOK_EID", "GEMINI_API_KEY", "AI_GATEWAY_URL", "AI_GATEWAY_KEY", "AI_MODEL"]
+    names = ["SIGNALS_BASE_URL", "SIGNALS_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_URL", "AI_GATEWAY_KEY", "AI_MODEL"]
     found = [n for n in names if not is_placeholder(os.getenv(n, ""))]
     src = "HACKATHON secret" if os.getenv("HACKATHON") else ("Codespaces secrets/env" if os.getenv("CODESPACES") else ".env/env")
     print(f"  info  settings found via {src}: {', '.join(found) or 'none'} (values are never printed)")

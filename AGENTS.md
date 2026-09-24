@@ -23,4 +23,4 @@ You are pair-programming on the **Revvity Signals EMEA Hackathon 2026 starter**.
 Ground every answer in data: `experiment_context(sc, eid)` for records, `knowledge_block(question)` for API/integration knowledge, and `ai.ask(question, records=..., knowledge=...)`. Tell the model to cite and to say when the context doesn't contain the answer.
 
 ## Secrets & safety
-Keys come from `.env` / Codespaces secrets (`SIGNALS_API_KEY`, `GEMINI_API_KEY`, …). Never hard-code or print them, never commit `.env`. Write only into the team notebook (`SIGNALS_NOTEBOOK_EID`).
+Keys come from `.env` / Codespaces secrets (`SIGNALS_API_KEY`, `GEMINI_API_KEY`, …). Never hard-code or print them, never commit `.env`. Write only into your team notebook (there's no default: pick it with `sc.list_notebooks()` or the Streamlit sidebar, and pass its eid).

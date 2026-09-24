@@ -28,6 +28,13 @@ with st.sidebar:
     if sc.mock_mode or status["mockMode"]:
         st.info("Mock mode is on for anything without a key. Fill in `.env` (see README) to go live.")
     st.divider()
+    try:
+        notebooks = sorted(sc.list_notebooks(100), key=lambda n: (n["name"] or "").lower())
+    except SignalsError as e:
+        st.error(e); notebooks = []
+    notebook = st.selectbox("Notebook (you write here)", notebooks, index=None,
+                            placeholder="Choose your team notebook", format_func=lambda n: n["name"])
+    st.divider()
     st.caption("Code: `app_streamlit.py` · API client: `backend/signals_client.py` · Knowledge: `docs/signals/`")
 
 
@@ -41,9 +48,11 @@ tab_exp, tab_chem, tab_mat, tab_expert = st.tabs(["🧾 Experiments", "⚗️ Ch
 # ------------------------------------------------------------------ experiments
 with tab_exp:
     try:
-        exps = sc.list_experiments(25)
+        exps = sc.list_notebook_experiments(notebook["eid"]) if notebook else sc.list_experiments(25)
     except SignalsError as e:
         st.error(e); exps = []
+    st.caption(f"Experiments in **{notebook['name']}**" if notebook
+               else "Most recently modified experiments you can see. Choose a notebook in the sidebar to narrow this.")
     if exps:
         pick = st.selectbox("Experiment", exps, format_func=lambda x: f"{x['name']}  ·  {x['modifiedAt'][:10]}")
         with st.spinner("Reading the experiment…"):
@@ -58,13 +67,16 @@ with tab_exp:
             with st.spinner("Thinking…"):
                 show_answer(ai.ask(q, records=ctx["text"]))
     with st.expander("➕ Create an experiment in your notebook"):
-        name = st.text_input("Name", "Hackathon test experiment")
-        if st.button("Create"):
-            try:
-                new = sc.create_experiment(name, "Created from the hackathon starter")
-                st.success(f"Created {new.get('id')}")
-            except SignalsError as e:
-                st.error(e)
+        if not notebook:
+            st.info("Choose your notebook in the sidebar first.")
+        else:
+            name = st.text_input("Name", "Hackathon test experiment")
+            if st.button("Create"):
+                try:
+                    new = sc.create_experiment(name, notebook["eid"], "Created from the hackathon starter")
+                    st.success(f"Created {new.get('id')} in {notebook['name']}")
+                except SignalsError as e:
+                    st.error(e)
 
 # ------------------------------------------------------------------ chemistry
 with tab_chem:
@@ -124,8 +136,9 @@ with tab_mat:
         try:
             rows = sc.search_materials(mq, 25)
             st.dataframe([{"id": r.get("id"), "name": r.get("attributes", {}).get("name", r.get("name")),
-                           **{k: v for k, v in (r.get("attributes", {}).get("tags") or {}).items() if k.startswith("materials.")}}
-                          for r in rows], use_container_width=True)
+                           **{k: ", ".join(map(str, v)) if isinstance(v, list) else v   # some tags are lists
+                              for k, v in (r.get("attributes", {}).get("tags") or {}).items() if k.startswith("materials.")}}
+                          for r in rows], width="stretch")
         except SignalsError as e:
             st.error(e)
     with c2:

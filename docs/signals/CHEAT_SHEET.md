@@ -4,7 +4,7 @@
 
 ```python
 from backend.signals_client import SignalsClient
-sc = SignalsClient()   # reads SIGNALS_BASE_URL, SIGNALS_API_KEY, SIGNALS_NOTEBOOK_EID
+sc = SignalsClient()   # reads SIGNALS_BASE_URL, SIGNALS_API_KEY (no default notebook: pass notebook eids explicitly)
 ```
 
 | Task | Client method | HTTP |
@@ -14,7 +14,8 @@ sc = SignalsClient()   # reads SIGNALS_BASE_URL, SIGNALS_API_KEY, SIGNALS_NOTEBO
 | Recent experiments | `sc.list_experiments(15)` | `POST /entities/search` `$match type=experiment (keyword)` + sort modifiedAt desc |
 | Any entity | `sc.get_entity(eid)` | `GET /entities/{eid}` |
 | What's inside an experiment | `sc.list_child_entities(eid)` | `GET /entities/{eid}/children` |
-| Create an experiment (in your notebook) | `sc.create_experiment(name, desc)` | `POST /entities?digest=<notebook digest>` + `ancestors` |
+| Experiments in a notebook | `sc.list_notebook_experiments(nb)` | `GET /entities/{nb}/children` (type experiment) |
+| Create an experiment (in your notebook) | `sc.create_experiment(name, nb, desc)` | `POST /entities?digest=<notebook digest>` + `ancestors` |
 | Add a sample | `sc.create_sample(exp_eid, template_eid, {field_id: value})` | `POST /entities?digest=<exp digest>` + `ancestors` + `template` |
 | Attach a file / HTML note | `sc.upload_child_attachment(eid, "note.html", b"<p>..</p>", "text/html")` | `POST /entities/{eid}/children/{filename}?digest=` |
 | Recent chemical drawings | `sc.list_chemical_drawings(20)` | search `type=chemicalDrawing` + export |

@@ -42,9 +42,15 @@ def health():
 
 
 # ------------------------------------------------------------------ Signals reads
+@app.get("/api/notebooks")
+def notebooks(limit: int = 100):
+    return _signals(sc.list_notebooks, limit)
+
+
 @app.get("/api/experiments")
-def experiments(limit: int = 15):
-    return _signals(sc.list_experiments, limit)
+def experiments(limit: int = 15, notebook: str = ""):
+    """Recent experiments, or the experiments in one notebook (?notebook=journal:...)."""
+    return _signals(sc.list_notebook_experiments, notebook) if notebook else _signals(sc.list_experiments, limit)
 
 
 @app.get("/api/experiments/{eid}/context")
