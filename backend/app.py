@@ -365,32 +365,53 @@ def test_signals():
 def test_ai(req: AIPromptRequest):
     """
     Executes an AI synthesis prompt against Gemini / Hackathon Gateway.
-    By default, incorporates live Signals Notebook experiment data retrieved via API as grounding context.
+    By default, incorporates live Signals Notebook experiment or chemical drawing data retrieved via API as grounding context.
     """
     try:
         prompt_to_send = req.prompt
         if req.include_experiments:
-            try:
-                exps = signals_client.list_experiments(limit=10)
-                exp_lines = []
-                for e in exps:
-                    exp_lines.append(f"- Experiment [{e.get('eid', 'N/A')}]: '{e.get('name', 'Untitled')}' (Modified: {e.get('modifiedAt', 'N/A')})")
-                context_str = "\n".join(exp_lines)
-                prompt_to_send = (
-                    f"{req.prompt}\n\n"
-                    f"### Ground-Truth Signals Notebook API Experiment Data (POST /entities/search):\n"
-                    f"{context_str}\n\n"
-                    f"Please synthesize these active lab experiments into an executive overview highlighting project focus areas and actionable next steps."
-                )
-            except Exception as ex_err:
-                logger.warning(f"Could not load experiments context for AI: {ex_err}")
+            prompt_lower = req.prompt.lower()
+            # If the prompt is asking about chemical drawings, molecules, or structures
+            if any(k in prompt_lower for k in ["drawing", "smiles", "chemical", "molecule", "structure", "medicinal", "reaction"]):
+                try:
+                    drawings = signals_client.list_chemical_drawings(limit=5)
+                    draw_lines = [
+                        f"- Drawing [{d.get('id', 'N/A')}]: '{d.get('name', '')}', SMILES: {d.get('smiles', '')}, Formula: {d.get('formula', '')}"
+                        for d in drawings
+                    ]
+                    context_str = "\n".join(draw_lines)
+                    prompt_to_send = (
+                        f"{req.prompt}\n\n"
+                        f"### Ground-Truth Signals Notebook Chemical Drawings Data:\n"
+                        f"{context_str}\n\n"
+                        f"Please provide a complete, well-structured scientific analysis. Ensure all sections and points conclude cleanly."
+                    )
+                except Exception as ex_err:
+                    logger.warning(f"Could not load chemical drawings context for AI: {ex_err}")
+            else:
+                try:
+                    exps = signals_client.list_experiments(limit=10)
+                    exp_lines = [
+                        f"- Experiment [{e.get('eid', 'N/A')}]: '{e.get('name', 'Untitled')}' (Modified: {e.get('modifiedAt', 'N/A')})"
+                        for e in exps
+                    ]
+                    context_str = "\n".join(exp_lines)
+                    prompt_to_send = (
+                        f"{req.prompt}\n\n"
+                        f"### Ground-Truth Signals Notebook API Experiment Data (POST /entities/search):\n"
+                        f"{context_str}\n\n"
+                        f"Please synthesize these active lab experiments into an executive overview highlighting project focus areas and actionable next steps. Ensure the report concludes cleanly."
+                    )
+                except Exception as ex_err:
+                    logger.warning(f"Could not load experiments context for AI: {ex_err}")
 
         res = ai_client.generate_text(
             prompt=prompt_to_send,
             system_instruction=(
                 "You are an expert scientific lab informatics copilot for Revvity Signals Notebook. "
-                "Analyze experimental data accurately, highlighting key findings, active chemistry/biology workflows, and actionable next steps."
-            )
+                "Analyze experimental and chemical data accurately, delivering thorough and complete insights without trailing off."
+            ),
+            max_tokens=4096
         )
         return {"status": "success", "result": res}
     except Exception as e:

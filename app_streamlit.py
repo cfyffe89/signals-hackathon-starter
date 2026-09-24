@@ -447,16 +447,19 @@ Please analyze the following chemical drawing entity retrieved from Signals Note
 - H-Bond Acceptors: {hba}
 - Rotatable Bonds: {rotb}
 
-Please provide a structured, rigorous medicinal chemistry report with the following 4 sections:
+Please provide a structured, rigorous, and complete medicinal chemistry report with the following 4 sections:
 1. **Chemical Classification & Pharmacophore**: Primary scaffold, heterocycles, key functional groups, and known biological targets / mechanism of action.
 2. **Lipinski & Veber Drug-Likeness**: Evaluation against Lipinski Rule of 5 and Veber bioavailability metrics (violations, oral bioavailability prediction).
 3. **ADMET & Safety Profile**: Predicted membrane permeability, metabolic clearance liabilities (CYP/esterase sites), blood-brain barrier tendencies, and structural alerts (PAINS).
 4. **Lead Optimization & Synthetic SAR Strategies**: 2-3 specific, actionable chemical modifications to improve potency, metabolic stability, or target selectivity.
+
+Provide concise, high-density scientific analysis for each section and ensure all 4 sections conclude completely without cutting off.
 """
             try:
                 ai_res = ai_client.generate_text(
                     prompt=chem_prompt,
-                    system_instruction="You are a senior medicinal chemistry AI assistant in Revvity Signals Notebook. Deliver concise, scientifically precise insights formatted in clean Markdown."
+                    system_instruction="You are a senior medicinal chemistry AI assistant in Revvity Signals Notebook. Deliver concise, scientifically precise insights formatted in clean Markdown. Ensure all sections are fully articulated.",
+                    max_tokens=4096
                 )
                 st.session_state[f"ai_chem_{current_id}"] = ai_res
             except Exception as e:
@@ -632,7 +635,8 @@ with tab_ai:
                 try:
                     ai_res = ai_client.generate_text(
                         prompt=user_query,
-                        system_instruction="You are an expert cheminformatics and electronic lab notebook AI copilot for the Revvity Signals EMEA Hackathon 2026."
+                        system_instruction="You are an expert cheminformatics and electronic lab notebook AI copilot for the Revvity Signals EMEA Hackathon 2026. Provide thorough, complete answers.",
+                        max_tokens=4096
                     )
                     st.markdown("### AI Analysis")
                     st.markdown(ai_res.get("text", "No response text received."))

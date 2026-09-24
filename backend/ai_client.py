@@ -57,11 +57,16 @@ class AIClient:
             "keyConfigured": bool(self.api_key and not self.mock_mode)
         }
 
-    def generate_text(self, prompt: str, system_instruction: str = "You are an expert scientific lab copilot.") -> Dict[str, Any]:
-        """Generates a text completion."""
+    def generate_text(
+        self,
+        prompt: str,
+        system_instruction: str = "You are an expert scientific lab copilot.",
+        max_tokens: int = 4096
+    ) -> Dict[str, Any]:
+        """Generates a text completion with generous output budget to prevent truncation."""
         if self.mock_mode:
             prompt_lower = prompt.lower()
-            if any(k in prompt_lower for k in ["drawing", "smiles", "chemical", "medicinal", "lipinski", "pharmacophore"]):
+            if any(k in prompt_lower for k in ["drawing", "smiles", "chemical", "medicinal", "lipinski", "pharmacophore", "molecule"]):
                 return {
                     "source": "mock_simulator (medicinal chemistry)",
                     "text": (
@@ -118,10 +123,13 @@ class AIClient:
             payload = {
                 "system_instruction": {"parts": [{"text": system_instruction}]},
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 2048}
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "maxOutputTokens": max_tokens
+                }
             }
             try:
-                res = requests.post(url, json=payload, timeout=30)
+                res = requests.post(url, json=payload, timeout=45)
                 if res.status_code == 200:
                     text_out = res.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
                     return {"source": f"{self.model} (native)", "text": text_out}
@@ -133,16 +141,19 @@ class AIClient:
         # 2. OpenAI / LiteLLM Gateway
         try:
             from openai import OpenAI
-            client = OpenAI(base_url=self.gateway_url, api_key=self.api_key, timeout=25.0)
+            client = OpenAI(base_url=self.gateway_url, api_key=self.api_key, timeout=45.0)
             res = client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_instruction},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.2
+                temperature=0.2,
+                max_tokens=max_tokens
             )
-            return {"source": f"{self.model} (gateway)", "text": res.choices[0].message.content}
+            choice = res.choices[0]
+            text_out = choice.message.content or ""
+            return {"source": f"{self.model} (gateway)", "text": text_out}
         except Exception as e:
             logger.error(f"Gateway failed: {e}. Falling back to mock simulation.")
             return {
