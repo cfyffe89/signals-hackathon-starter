@@ -2,9 +2,11 @@
 
 Env:  GEMINI_API_KEY  (Gemini)          or  AI_GATEWAY_URL + AI_GATEWAY_KEY  (OpenAI-compatible)
       AI_MODEL        (default gemini-3.5-flash)
+      AI_FALLBACK_MODEL  optional, comma-separated: used when AI_MODEL stays busy (429/500/503) after 3 tries
 No key -> mock mode: returns an honest placeholder that shows the context it would have sent.
 """
 import os
+import time
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -13,6 +15,23 @@ import requests
 from .config import is_placeholder
 
 logger = logging.getLogger("ai_client")
+
+
+class TransientAIError(RuntimeError):
+    """The model service is busy or briefly unavailable (429 / 500 / 503): worth retrying."""
+
+
+def _raise_for_status(r: requests.Response) -> None:
+    """Raise with the provider's own error message (e.g. Gemini's "The model is overloaded")."""
+    if r.status_code < 400:
+        return
+    try:
+        err = r.json().get("error", {})
+        msg = err.get("message") if isinstance(err, dict) else str(err)
+    except ValueError:
+        msg = r.text[:200]
+    text = f"{r.status_code} {msg or r.reason}"
+    raise (TransientAIError if r.status_code in (429, 500, 503) else RuntimeError)(text)
 
 SIGNALS_EXPERT = (
     "You are a Revvity Signals expert helping a scientist or integration developer.\n"
@@ -56,34 +75,48 @@ class AIClient:
             return {"source": "mock", "text": (
                 "**AI is not configured** (set `GEMINI_API_KEY`, or `AI_GATEWAY_URL` + `AI_GATEWAY_KEY`, in `.env`).\n\n"
                 f"This is the prompt that would be sent ({len(prompt):,} characters):\n\n```\n{prompt[:1500]}\n```")}
-        try:
-            if self.gemini_key:
-                r = requests.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
-                    headers={"x-goog-api-key": self.gemini_key},
-                    json={"system_instruction": {"parts": [{"text": system_instruction}]},
-                          "contents": [{"parts": [{"text": prompt}]}],
-                          "generationConfig": {"temperature": 0.2, "maxOutputTokens": max_tokens}},
-                    timeout=90)
-                r.raise_for_status()
-                body = r.json()
-                cand = (body.get("candidates") or [{}])[0]
-                text = "".join(p.get("text", "") for p in cand.get("content", {}).get("parts", [])).strip()
-                if not text:
-                    # e.g. finishReason MAX_TOKENS: thinking models can spend the whole output budget before answering
-                    raise RuntimeError(f"no text returned (finishReason={cand.get('finishReason')}, "
-                                       f"promptFeedback={body.get('promptFeedback')}); try a larger max_tokens")
-                return {"source": f"{self.model} (gemini)", "text": text}
-            url, key = self.gateway
-            r = requests.post(f"{url.rstrip('/')}/chat/completions", headers={"Authorization": f"Bearer {key}"},
-                              json={"model": self.model, "temperature": 0.2, "max_tokens": max_tokens,
-                                    "messages": [{"role": "system", "content": system_instruction},
-                                                 {"role": "user", "content": prompt}]}, timeout=90)
-            r.raise_for_status()
-            return {"source": f"{self.model} (gateway)", "text": r.json()["choices"][0]["message"]["content"].strip()}
-        except Exception as e:
-            logger.warning(f"AI call failed: {e}")
-            return {"source": "error", "text": f"AI call failed: {str(e)[:300]}"}
+        # Busy/overloaded (429/500/503) is common on shared models: retry with backoff, then try AI_FALLBACK_MODEL.
+        models = [self.model] + [m.strip() for m in os.getenv("AI_FALLBACK_MODEL", "").split(",") if m.strip()]
+        last = ""
+        for model in models:
+            for wait in (0, 2, 5):
+                time.sleep(wait)
+                try:
+                    return self._call(model, prompt, system_instruction, max_tokens)
+                except TransientAIError as e:
+                    last = str(e)
+                    logger.warning(f"AI busy ({model}), retrying: {last}")
+                except Exception as e:  # noqa: BLE001
+                    logger.warning(f"AI call failed: {e}")
+                    return {"source": "error", "text": f"AI call failed ({model}): {str(e)[:300]}"}
+        return {"source": "error", "text": f"AI call failed after retries ({', '.join(models)}): {last[:300].rstrip('.')}. "
+                                           "The model service is busy; try again, or set AI_FALLBACK_MODEL."}
+
+    def _call(self, model: str, prompt: str, system_instruction: str, max_tokens: int) -> Dict[str, Any]:
+        if self.gemini_key:
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                headers={"x-goog-api-key": self.gemini_key},
+                json={"system_instruction": {"parts": [{"text": system_instruction}]},
+                      "contents": [{"parts": [{"text": prompt}]}],
+                      "generationConfig": {"temperature": 0.2, "maxOutputTokens": max_tokens}},
+                timeout=90)
+            _raise_for_status(r)
+            body = r.json()
+            cand = (body.get("candidates") or [{}])[0]
+            text = "".join(p.get("text", "") for p in cand.get("content", {}).get("parts", [])).strip()
+            if not text:
+                # e.g. finishReason MAX_TOKENS: thinking models can spend the whole output budget before answering
+                raise RuntimeError(f"no text returned (finishReason={cand.get('finishReason')}, "
+                                   f"promptFeedback={body.get('promptFeedback')}); try a larger max_tokens")
+            return {"source": f"{model} (gemini)", "text": text}
+        url, key = self.gateway
+        r = requests.post(f"{url.rstrip('/')}/chat/completions", headers={"Authorization": f"Bearer {key}"},
+                          json={"model": model, "temperature": 0.2, "max_tokens": max_tokens,
+                                "messages": [{"role": "system", "content": system_instruction},
+                                             {"role": "user", "content": prompt}]}, timeout=90)
+        _raise_for_status(r)
+        return {"source": f"{model} (gateway)", "text": r.json()["choices"][0]["message"]["content"].strip()}
 
     def ask(self, question: str, records: str = "", knowledge: str = "",
             extra_instruction: str = "") -> Dict[str, Any]:

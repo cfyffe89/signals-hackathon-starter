@@ -15,10 +15,12 @@ gemini = os.getenv("GEMINI_API_KEY", "")
 gw_url, gw_key = os.getenv("AI_GATEWAY_URL", ""), os.getenv("AI_GATEWAY_KEY", "")
 
 models = []
+fallbacks = [m.strip() for m in os.getenv("AI_FALLBACK_MODEL", "").split(",") if m.strip()]
 if gemini and not config.is_placeholder(gemini):
-    models.append(f"""  - name: {model} (Gemini)
+    for m in [model] + fallbacks:   # fallbacks appear in Continue's model dropdown for when the first is busy
+        models.append(f"""  - name: {m} (Gemini)
     provider: gemini
-    model: {model}
+    model: {m}
     apiKey: "{gemini}"
     roles: [chat, edit, apply]""")
 if gw_url and gw_key and not config.is_placeholder(gw_key):
