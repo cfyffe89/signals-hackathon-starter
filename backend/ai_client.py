@@ -1,7 +1,7 @@
 """AI client for the starter: Google Gemini (native REST) or any OpenAI-compatible gateway (e.g. LiteLLM).
 
 Env:  GEMINI_API_KEY  (Gemini)          or  AI_GATEWAY_URL + AI_GATEWAY_KEY  (OpenAI-compatible)
-      AI_MODEL        (default gemini-3.5-flash)
+      AI_MODEL        (default gemini-3.6-flash)
       AI_FALLBACK_MODEL  optional, comma-separated: used when AI_MODEL stays busy (429/500/503) after 3 tries
 No key -> mock mode: returns an honest placeholder that shows the context it would have sent.
 """
@@ -49,7 +49,7 @@ class AIClient:
 
     @property
     def model(self) -> str:
-        return self._model or os.getenv("AI_MODEL", "gemini-3.5-flash")
+        return self._model or os.getenv("AI_MODEL", "gemini-3.6-flash")
 
     @property
     def gemini_key(self) -> str:
@@ -109,14 +109,20 @@ class AIClient:
                 # e.g. finishReason MAX_TOKENS: thinking models can spend the whole output budget before answering
                 raise RuntimeError(f"no text returned (finishReason={cand.get('finishReason')}, "
                                    f"promptFeedback={body.get('promptFeedback')}); try a larger max_tokens")
-            return {"source": f"{model} (gemini)", "text": text}
+            u = body.get("usageMetadata", {})
+            usage = {"input": u.get("promptTokenCount", 0), "output": u.get("candidatesTokenCount", 0),
+                     "thinking": u.get("thoughtsTokenCount", 0)}  # thinking tokens are billed as output
+            return {"source": f"{model} (gemini)", "text": text, "usage": usage}
         url, key = self.gateway
         r = requests.post(f"{url.rstrip('/')}/chat/completions", headers={"Authorization": f"Bearer {key}"},
                           json={"model": model, "temperature": 0.2, "max_tokens": max_tokens,
                                 "messages": [{"role": "system", "content": system_instruction},
                                              {"role": "user", "content": prompt}]}, timeout=90)
         _raise_for_status(r)
-        return {"source": f"{model} (gateway)", "text": r.json()["choices"][0]["message"]["content"].strip()}
+        body = r.json()
+        u = body.get("usage", {})
+        return {"source": f"{model} (gateway)", "text": body["choices"][0]["message"]["content"].strip(),
+                "usage": {"input": u.get("prompt_tokens", 0), "output": u.get("completion_tokens", 0), "thinking": 0}}
 
     def ask(self, question: str, records: str = "", knowledge: str = "",
             extra_instruction: str = "") -> Dict[str, Any]:

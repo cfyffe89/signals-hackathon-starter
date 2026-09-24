@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from backend import config  # noqa: E402,F401  (loads .env)
 import os  # noqa: E402
 
-model = os.getenv("AI_MODEL", "gemini-3.5-flash")
+model = os.getenv("AI_MODEL", "gemini-3.6-flash")
 gemini = os.getenv("GEMINI_API_KEY", "")
 gw_url, gw_key = os.getenv("AI_GATEWAY_URL", ""), os.getenv("AI_GATEWAY_KEY", "")
 

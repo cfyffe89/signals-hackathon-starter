@@ -10,3 +10,6 @@ __pycache__/
 
 # seed script run reports + team sheets (contain tenant EIDs)
 seed/output/
+
+# model comparison reports (scripts/compare_models.py)
+model-compare/
