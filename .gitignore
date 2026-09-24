@@ -7,3 +7,6 @@ __pycache__/
 .DS_Store
 *.egg-info/
 .continue/config.yaml
+
+# seed script run reports + team sheets (contain tenant EIDs)
+seed/output/

@@ -17,6 +17,9 @@
 - **Samples:** `POST /entities?digest=<experiment digest>`, type `sample`, `ancestors` = the experiment, `relationships.template` = a sample template (`sample:...`), `attributes.fields` = a **list** `[{"id":"<field id>","content":{"value":...}}]`. The samples table is auto-created. `relationships.parent` → 400.
 - **Uploads:** `POST /entities/{eid}/children/{filename}?digest=<parent digest>` with the file's own MIME type (`text/html` → an editable text element). `?force=true` instead of a digest also works (it skips the concurrency check and allows duplicate names). Neither → 400.
 - **Delete is soft:** `DELETE /entities/{eid}?digest=` or `?force=true` → 204, the entity gets `flags.isTrashed: true`, and it's still readable. Wrong digest → 428. Deleting it again → 403.
+- **Tasks:** `POST /entities?digest=<experiment digest>`, type `task`, `ancestors` = the experiment (the task container is found for you), `relationships.template` = a task template, `attributes.fields` = `[{"id":"<field id>","content":{...}}]`. Field ids: `GET /tasks/{template eid}/properties` (e.g. `Required By` = `{"value":"2026-10-21T09:00:00.000Z"}`). `Experiment Link` is system-managed (400 "not editable"); to point at another entity use `Reference ID` = `{"values":[{"eid":"experiment:..."}]}`.
+- **Text elements:** the upload filename becomes the element name. `Procedure` (no extension) reads better than `Procedure.html`.
+- Sample `Amount` accepts only the units the template's field allows (on one tenant, mass only: `"150 g"` works, `"100 item"` / `"1 mL"` → 400 "Wrong input value").
 
 ## Listing & search (`POST /entities/search`)
 - **List by type:** `GET /entities?includeTypes=experiment`. ⚠️ `filter[type]=` is **silently ignored** (returns every type).
@@ -29,12 +32,16 @@
 - **Structure search:** `{"$chemsearch":{"molecule":"<smiles>","mime":"chemical/x-daylight-smiles"}}` = **substructure**. Add `"options":"full=true"` for exact. (`"options":"substructure"` → 400. There's no `/chemistry/search`.)
 - Paging: `page[limit]` ≤ 100, `page[offset]` ≤ 5000 (both hard 400). To go beyond, **keyset-page** on `createdAt` (`$gt`, sorted ascending).
 - For incremental sync, use `$gt modifiedAt` or `GET /entities?includeOptions=nontemplate&start=<ISO>`. Modification times cascade from children.
+- **Tag fields** (e.g. `materials.Chemical Name`, `fields.Barcode`): `{"$match":{"field":"materials.Chemical Name","value":"Toluene","in":"tags","as":"text","mode":"keyword"}}`. `"as":"string"` → 400. A material's `name` is its **material ID** (`Reagents-005`), not the chemical name.
+- `source=IVT` results also include the location and container **types** (`isTemplate: true`). Add `{"$match":{"field":"isTemplate","value":false}}`.
 
 ## Chemistry & materials
 - Structure of a notebook element: `GET /entities/{eid}/export?format=smiles|svg|mol|mol-v3000|cdxml|inchi`. Of a registered material: `GET /materials/{id}/drawing?format=...`. Stoichiometry: `GET /stoichiometry/{eid}`.
 - Materials search: `$match type = asset` (materials) or `batch`. Libraries: `GET /materials/libraries`.
 - `POST /materials/{lib}/assets` accepts SMILES / InChI / CDXML / HELM, **not molfile** (400). For MOL V3000, use a bulkImport ZIP with an SDF, or upload the `.mol` to an experiment and export it as CDXML.
 - `bulkImport`: no record-count cap, 300 MiB body limit. `bulkExport`: 25,000 assets / 100 MB per file (continue via `nextExport`).
+- **Build a reaction with a stoichiometry table:** upload a blank CDXML as a child (`chemical/x-cdxml`) → `POST /chemicaldrawings/{eid}/reaction/reactants` (and `/products`) with `{"data":{"attributes":{"dataType":"smiles","data":"<smiles>"}}}` → `PATCH /stoichiometry/{eid}/{row_id}` with `{"data":{"attributes":{"values":{"eq":"1.2"}}}}` or `{"values":{"sm":"1.82 g","limit":{"value":true}}}` (moles and the other masses are calculated) → `POST /stoichiometry/{eid}/solvents` with `{"values":{"solvent":"Toluene","volume":"40 mL"}}`. An uploaded `.rxn` file becomes a drawing whose stoichiometry table is **empty** and can't be updated (403).
+- Inventory write endpoints take the bare UUID (`location:<uuid>:ivt` from search → `<uuid>`). Locations have no DELETE; containers can only be disposed.
 
 ## Bulk export & async jobs
 - `POST /entities/export/bulk?eid=...&depth=0|1|-1` (**`depth` is required**) → 202 job → poll `GET …/{jobId}` → `GET …/{jobId}/contents` (multipart/mixed). **The download is one-shot**: it's purged seconds after the first GET.

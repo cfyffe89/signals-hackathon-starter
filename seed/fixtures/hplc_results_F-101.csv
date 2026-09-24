@@ -1,0 +1,4 @@
+# SYNTHETIC DEMO DATA - Signals EMEA Hackathon 2026
+Sample,Lot,Replicate,Assay (% label claim),Largest impurity (%),Total impurities (%),Injected,Result
+F-101,26-0917,1,99.4,0.08,0.21,2026-10-19T10:12:00Z,PASS
+F-101,26-0917,2,99.8,0.07,0.19,2026-10-19T10:31:00Z,PASS

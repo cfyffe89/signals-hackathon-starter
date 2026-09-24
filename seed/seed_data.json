@@ -1,0 +1,509 @@
+{
+  "_about": "Seed content for the hackathon tenant. Used by scripts/seed_tenant.py. All data is SYNTHETIC demo data. Tenant-specific IDs (templates, types, field ids) are resolved by NAME at run time; the names are in 'tenant' below.",
+  "tenant": {
+    "sample_template": "Sample",
+    "sample_fields": {
+      "description": "Description",
+      "amount": "Amount",
+      "comments": "Comments",
+      "_note": "Amount on the colinsuite 'Sample' template accepts mass only ('150 g'); 'item'/'mL' give 400. Check on the hackathon tenant."
+    },
+    "task_template": "Test",
+    "task_fields": {
+      "required_by": "Required By",
+      "requestor_comment": "Requestor Comment",
+      "reference": "Reference ID"
+    },
+    "experiment_template": null,
+    "materials_library": "Reagents (SNB)",
+    "material_field_defaults": {
+      "_note": "Values for MANDATORY library fields the seed doesn't map (name, structure, CAS are mapped). Key = field display name; value is sent as-is, so use the format for that field type (see POST /materials/{lib}/assets). null = not set."
+    },
+    "location_types": {
+      "site": "Site",
+      "lab": "Lab",
+      "chamber": "Cabinet",
+      "stockroom": "Stockroom",
+      "shelf": "Shelf"
+    },
+    "container_type": "Bottle",
+    "container_defaults": {
+      "Status": "AVAILABLE",
+      "Inventory Security": null
+    }
+  },
+  "notebooks": {
+    "reference": {
+      "name": "{P} Reference Data",
+      "description": "Example experiments for every hackathon use case. Read them, copy from them; build in your team notebook."
+    },
+    "team": {
+      "name": "{P} Team {NN}",
+      "description": "Team {NN} notebook. Your API key writes here (SIGNALS_NOTEBOOK_EID)."
+    },
+    "team_experiment": {
+      "name": "Team {NN} bench notes",
+      "description": "A starting experiment for notes, photos and voice memos."
+    }
+  },
+  "experiments": [
+    {
+      "key": "stability",
+      "use_cases": [
+        "UC1 Stability study & test scheduling",
+        "Event: automating repetitive lab setup"
+      ],
+      "name": "Stability study request: ibuprofen 200 mg tablets F-101 to F-103",
+      "description": "3 formulations x 3 conditions x 5 timepoints. Teams generate containers, locations and tasks from this.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Support shelf-life assignment for three ibuprofen 200 mg tablet formulations (F-101 wet granulation, F-102 direct compression, F-103 direct compression with 2% crospovidone) under ICH Q1A(R2) long-term, intermediate and accelerated conditions.</p>"
+        },
+        {
+          "name": "Study design",
+          "html": "<h3>Conditions</h3><ul><li>25 &deg;C / 60% RH (long term)</li><li>30 &deg;C / 65% RH (intermediate)</li><li>40 &deg;C / 75% RH (accelerated)</li></ul><h3>Timepoints</h3><p>T0, 1, 3, 6 and 12 months (accelerated: T0, 1, 3, 6 months only). Study start: 2026-10-21.</p><h3>Tests per timepoint</h3><table border='1'><tr><th>Test</th><th>Method</th><th>Destructive</th><th>Units per test</th></tr><tr><td>Appearance</td><td>Visual, SOP-QC-001</td><td>No</td><td>10 tablets</td></tr><tr><td>Assay and related substances</td><td>HPLC, SOP-QC-014</td><td>Yes</td><td>10 tablets</td></tr><tr><td>Dissolution</td><td>USP II, 50 rpm, pH 7.2</td><td>Yes</td><td>6 tablets</td></tr><tr><td>Water content</td><td>Karl Fischer, SOP-QC-022</td><td>Yes</td><td>5 tablets</td></tr><tr><td>Hardness</td><td>Tablet tester</td><td>Yes</td><td>10 tablets</td></tr></table><p>Non-destructive tests reuse the same container and return it to its chamber. Destructive tests consume a dedicated container per timepoint.</p>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>Pending. Study not started.</p>"
+        }
+      ],
+      "samples": [
+        {
+          "description": "F-101 ibuprofen 200 mg tablet, wet granulation, lot 26-0917",
+          "amount": "150 g"
+        },
+        {
+          "description": "F-102 ibuprofen 200 mg tablet, direct compression, lot 26-0918",
+          "amount": "150 g"
+        },
+        {
+          "description": "F-103 ibuprofen 200 mg tablet, DC + 2% crospovidone, lot 26-0919",
+          "amount": "150 g"
+        }
+      ]
+    },
+    {
+      "key": "synthesis_step1",
+      "use_cases": [
+        "UC2 Next-step synthesis linker",
+        "Event: linking synthesis steps"
+      ],
+      "name": "Step 1: Suzuki coupling to 4-cyanobiphenyl",
+      "description": "Completed step 1. Its product is the reactant of step 2 (for teams to create).",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Prepare 4-cyanobiphenyl as the intermediate for biphenyl-4-carboxylic acid (step 2: nitrile hydrolysis).</p>"
+        },
+        {
+          "name": "Procedure",
+          "html": "<ol><li>Charge 4-bromobenzonitrile (1.82 g, 10.0 mmol), phenylboronic acid (1.46 g, 12.0 mmol) and K<sub>2</sub>CO<sub>3</sub> (2.76 g, 20.0 mmol) to a 100 mL flask.</li><li>Add toluene (40 mL) and water (10 mL). Degas with N<sub>2</sub> for 15 min.</li><li>Add Pd(PPh<sub>3</sub>)<sub>4</sub> (0.23 g, 2 mol%). Heat to 90 &deg;C for 4 h.</li><li>Cool to room temperature, separate layers, wash organics with brine, dry over MgSO<sub>4</sub>, concentrate.</li><li>Recrystallise from ethanol.</li></ol>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>Isolated 1.54 g (86%) of 4-cyanobiphenyl as a white solid. LCMS purity 99.1% (254 nm), m/z 180.1 [M+H]<sup>+</sup>. Proceed to step 2.</p>"
+        }
+      ],
+      "reaction": {
+        "name": "Suzuki coupling",
+        "reactants": [
+          "Brc1ccc(C#N)cc1",
+          "OB(O)c1ccccc1"
+        ],
+        "products": [
+          "N#Cc1ccc(-c2ccccc2)cc1"
+        ],
+        "limiting": {
+          "smiles": "Brc1ccc(C#N)cc1",
+          "sm": "1.82 g"
+        },
+        "solvents": [
+          {
+            "solvent": "Toluene",
+            "volume": "40 mL"
+          },
+          {
+            "solvent": "Water",
+            "volume": "10 mL"
+          }
+        ],
+        "equivalents": {
+          "OB(O)c1ccccc1": 1.2
+        }
+      },
+      "attachments": [
+        {
+          "file": "fixtures/LCMS_report_4-cyanobiphenyl.pdf",
+          "mime": "application/pdf"
+        }
+      ]
+    },
+    {
+      "key": "synthesis_amide",
+      "use_cases": [
+        "UC2 Next-step synthesis linker"
+      ],
+      "name": "Step 1: amide coupling to N-benzylbenzamide",
+      "description": "A second, independent starting point for the step linker.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Prepare N-benzylbenzamide from benzoic acid and benzylamine.</p>"
+        },
+        {
+          "name": "Procedure",
+          "html": "<ol><li>Dissolve benzoic acid (1.22 g, 10.0 mmol) in DCM (30 mL). Add EDC&middot;HCl (2.30 g, 12.0 mmol) and HOBt (1.62 g, 12.0 mmol). Stir 15 min at 0 &deg;C.</li><li>Add benzylamine (1.18 g, 11.0 mmol) and triethylamine (2.8 mL, 20 mmol). Stir 16 h at room temperature.</li><li>Wash with 1 M HCl, sat. NaHCO<sub>3</sub>, brine. Dry, concentrate.</li></ol>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>Isolated 1.86 g (88%) of N-benzylbenzamide.</p>"
+        }
+      ],
+      "reaction": {
+        "name": "Amide coupling",
+        "reactants": [
+          "OC(=O)c1ccccc1",
+          "NCc1ccccc1"
+        ],
+        "products": [
+          "O=C(NCc1ccccc1)c1ccccc1"
+        ],
+        "limiting": {
+          "smiles": "OC(=O)c1ccccc1",
+          "sm": "1.22 g"
+        },
+        "solvents": [
+          {
+            "solvent": "Dichloromethane",
+            "volume": "30 mL"
+          }
+        ],
+        "equivalents": {
+          "NCc1ccccc1": 1.1
+        }
+      }
+    },
+    {
+      "key": "dilution",
+      "use_cases": [
+        "UC7 Serial dilution & pipetting calculator"
+      ],
+      "name": "IC50 plate prep: caffeine 10-point 1:3 dilution",
+      "description": "Inputs for a dilution calculator: stock, target top concentration, factor, points, final volume.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Prepare a 10-point, 1:3 serial dilution of caffeine for a 96-well IC50 assay, in duplicate.</p>"
+        },
+        {
+          "name": "Dilution parameters",
+          "html": "<table border='1'><tr><th>Parameter</th><th>Value</th></tr><tr><td>Stock</td><td>10 mM in DMSO</td></tr><tr><td>Top concentration in well</td><td>100 &micro;M</td></tr><tr><td>Dilution factor</td><td>3</td></tr><tr><td>Points</td><td>10</td></tr><tr><td>Replicates</td><td>2</td></tr><tr><td>Final well volume</td><td>100 &micro;L</td></tr><tr><td>Max DMSO in well</td><td>1%</td></tr><tr><td>Diluent</td><td>Assay buffer (PBS, 0.01% Tween-20)</td></tr></table>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>Pending.</p>"
+        }
+      ],
+      "samples": [
+        {
+          "description": "Caffeine 10 mM stock in DMSO",
+          "amount": "1.94 mg"
+        }
+      ]
+    },
+    {
+      "key": "analytical",
+      "use_cases": [
+        "UC11 Instrument PDF / raw report parser"
+      ],
+      "name": "Analytical results: 4-cyanobiphenyl lot 26-S1-001",
+      "description": "Vendor-style LCMS and NMR PDF reports to parse into Signals tables.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Identity and purity release of 4-cyanobiphenyl, lot 26-S1-001. Reports attached as PDFs from the instrument software.</p>"
+        }
+      ],
+      "attachments": [
+        {
+          "file": "fixtures/LCMS_report_4-cyanobiphenyl.pdf",
+          "mime": "application/pdf"
+        },
+        {
+          "file": "fixtures/NMR_report_4-cyanobiphenyl.pdf",
+          "mime": "application/pdf"
+        }
+      ]
+    },
+    {
+      "key": "grignard",
+      "use_cases": [
+        "UC14 Reaction hazard advisor",
+        "UC9 Smart SOP copilot & timers"
+      ],
+      "name": "Grignard addition: triphenylmethanol from benzophenone",
+      "description": "Exothermic, moisture-sensitive, ether solvent: a hazard review and a timed procedure.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Prepare triphenylmethanol by addition of phenylmagnesium bromide to benzophenone.</p>"
+        },
+        {
+          "name": "Procedure",
+          "html": "<ol><li>Flame-dry a 250 mL three-neck flask under N<sub>2</sub>. Add magnesium turnings (0.29 g, 12.0 mmol) and one crystal of iodine.</li><li>Add 5 mL of a solution of bromobenzene (1.73 g, 11.0 mmol) in anhydrous THF (20 mL). Warm gently until initiation (colour fades, reflux starts). Wait 5 min.</li><li>Add the rest of the bromobenzene solution dropwise over 20 min to keep a gentle reflux.</li><li>Reflux for 30 min. Cool to 0 &deg;C in an ice bath for 10 min.</li><li>Add benzophenone (1.82 g, 10.0 mmol) in THF (15 mL) dropwise over 15 min, keeping the internal temperature below 10 &deg;C.</li><li>Stir 1 h at room temperature.</li><li>Quench slowly with saturated NH<sub>4</sub>Cl (30 mL) at 0 &deg;C. Stir 10 min.</li><li>Extract with diethyl ether (3 &times; 30 mL), dry over MgSO<sub>4</sub>, concentrate. Recrystallise from hexane.</li></ol>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>Isolated 2.21 g (85%) of triphenylmethanol, mp 160-162 &deg;C.</p>"
+        }
+      ],
+      "reaction": {
+        "name": "Grignard addition",
+        "reactants": [
+          "Brc1ccccc1",
+          "[Mg]",
+          "O=C(c1ccccc1)c1ccccc1"
+        ],
+        "products": [
+          "OC(c1ccccc1)(c1ccccc1)c1ccccc1"
+        ],
+        "limiting": {
+          "smiles": "O=C(c1ccccc1)c1ccccc1",
+          "sm": "1.82 g"
+        },
+        "solvents": [
+          {
+            "solvent": "Tetrahydrofuran",
+            "volume": "35 mL"
+          }
+        ],
+        "equivalents": {
+          "Brc1ccccc1": 1.1,
+          "[Mg]": 1.2
+        }
+      }
+    },
+    {
+      "key": "loop_requester",
+      "use_cases": [
+        "Event: closing the loop on results",
+        "Event: pushing tasks into Outlook / Google Calendar"
+      ],
+      "name": "Release testing request: F-101 lot 26-0917",
+      "description": "Requester experiment with test tasks (Required By dates). Results arrive in a separate test experiment.",
+      "texts": [
+        {
+          "name": "Purpose",
+          "html": "<p>Request release testing of F-101 lot 26-0917. Results should come back into this experiment.</p>"
+        }
+      ],
+      "samples": [
+        {
+          "description": "F-101 lot 26-0917 release sample",
+          "amount": "30 g"
+        }
+      ],
+      "tasks": [
+        {
+          "requestor_comment": "HPLC assay and related substances",
+          "required_by_days": 0,
+          "link_to": "loop_test"
+        },
+        {
+          "requestor_comment": "Karl Fischer water content",
+          "required_by_days": 1
+        },
+        {
+          "requestor_comment": "Dissolution, 6 units, pH 7.2",
+          "required_by_days": 2
+        }
+      ]
+    },
+    {
+      "key": "loop_test",
+      "use_cases": [
+        "Event: closing the loop on results"
+      ],
+      "name": "HPLC assay: F-101 lot 26-0917",
+      "description": "Downstream test experiment. Its results belong back in the requester experiment.",
+      "texts": [
+        {
+          "name": "Results",
+          "html": "<table border='1'><tr><th>Replicate</th><th>Assay (% label claim)</th><th>Largest impurity (%)</th><th>Total impurities (%)</th></tr><tr><td>1</td><td>99.4</td><td>0.08</td><td>0.21</td></tr><tr><td>2</td><td>99.8</td><td>0.07</td><td>0.19</td></tr><tr><td>Mean</td><td>99.6</td><td>0.08</td><td>0.20</td></tr></table><p>Specification: 95.0-105.0% label claim; total impurities NMT 1.0%. Result: PASS.</p>"
+        },
+        {
+          "name": "Conclusion",
+          "html": "<p>F-101 lot 26-0917 meets the assay and related-substances specification.</p>"
+        }
+      ],
+      "attachments": [
+        {
+          "file": "fixtures/hplc_results_F-101.csv",
+          "mime": "text/csv"
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "4-Bromobenzonitrile",
+      "cas": "623-00-7",
+      "smiles": "Brc1ccc(C#N)cc1"
+    },
+    {
+      "name": "Phenylboronic acid",
+      "cas": "98-80-6",
+      "smiles": "OB(O)c1ccccc1"
+    },
+    {
+      "name": "Potassium carbonate",
+      "cas": "584-08-7",
+      "smiles": "[K+].[K+].[O-]C([O-])=O"
+    },
+    {
+      "name": "Toluene",
+      "cas": "108-88-3",
+      "smiles": "Cc1ccccc1"
+    },
+    {
+      "name": "Bromobenzene",
+      "cas": "108-86-1",
+      "smiles": "Brc1ccccc1"
+    },
+    {
+      "name": "Magnesium turnings",
+      "cas": "7439-95-4",
+      "smiles": "[Mg]"
+    },
+    {
+      "name": "Benzophenone",
+      "cas": "119-61-9",
+      "smiles": "O=C(c1ccccc1)c1ccccc1"
+    },
+    {
+      "name": "Tetrahydrofuran, anhydrous",
+      "cas": "109-99-9",
+      "smiles": "C1CCOC1"
+    },
+    {
+      "name": "Caffeine",
+      "cas": "58-08-2",
+      "smiles": "Cn1cnc2c1c(=O)n(C)c(=O)n2C"
+    },
+    {
+      "name": "Dimethyl sulfoxide",
+      "cas": "67-68-5",
+      "smiles": "CS(C)=O"
+    }
+  ],
+  "inventory": {
+    "locations": [
+      {
+        "key": "site",
+        "name": "{P} Site Frankfurt",
+        "type": "site"
+      },
+      {
+        "key": "stab_lab",
+        "name": "{P} Stability Lab",
+        "type": "lab",
+        "parent": "site"
+      },
+      {
+        "key": "ch25",
+        "name": "{P} Chamber 25C-60RH",
+        "type": "chamber",
+        "parent": "stab_lab"
+      },
+      {
+        "key": "ch30",
+        "name": "{P} Chamber 30C-65RH",
+        "type": "chamber",
+        "parent": "stab_lab"
+      },
+      {
+        "key": "ch40",
+        "name": "{P} Chamber 40C-75RH",
+        "type": "chamber",
+        "parent": "stab_lab"
+      },
+      {
+        "key": "stockroom",
+        "name": "{P} Stockroom",
+        "type": "stockroom",
+        "parent": "site"
+      },
+      {
+        "key": "shelf_a",
+        "name": "{P} Stockroom Shelf A",
+        "type": "shelf",
+        "parent": "stockroom"
+      }
+    ],
+    "_containers_note": "One container per registered reagent on Shelf A. expiry_days is relative to the event date (2026-10-21), so the expiry use case has expired, due-this-week and due-this-month items.",
+    "containers": [
+      {
+        "material": "4-Bromobenzonitrile",
+        "amount": 25,
+        "unit": "g",
+        "expiry_days": 400
+      },
+      {
+        "material": "Phenylboronic acid",
+        "amount": 25,
+        "unit": "g",
+        "expiry_days": 5
+      },
+      {
+        "material": "Potassium carbonate",
+        "amount": 500,
+        "unit": "g",
+        "expiry_days": 700
+      },
+      {
+        "material": "Toluene",
+        "amount": 1000,
+        "unit": "ml",
+        "expiry_days": -10
+      },
+      {
+        "material": "Bromobenzene",
+        "amount": 100,
+        "unit": "ml",
+        "expiry_days": 14
+      },
+      {
+        "material": "Magnesium turnings",
+        "amount": 50,
+        "unit": "g",
+        "expiry_days": 365
+      },
+      {
+        "material": "Benzophenone",
+        "amount": 100,
+        "unit": "g",
+        "expiry_days": 2
+      },
+      {
+        "material": "Tetrahydrofuran, anhydrous",
+        "amount": 500,
+        "unit": "ml",
+        "expiry_days": 30
+      },
+      {
+        "material": "Caffeine",
+        "amount": 10,
+        "unit": "g",
+        "expiry_days": -1
+      },
+      {
+        "material": "Dimethyl sulfoxide",
+        "amount": 250,
+        "unit": "ml",
+        "expiry_days": 90
+      }
+    ]
+  }
+}

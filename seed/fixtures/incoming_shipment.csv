@@ -1,0 +1,102 @@
+# SYNTHETIC DEMO DATA - Signals EMEA Hackathon 2026. Supplier names are fictional.
+Line,PO number,Supplier,Catalog no,Name,CAS,SMILES,Lot,Quantity,Unit,Container type,Received,Expiry date,Destination
+1,PO-2026-10-0412,Acme Fine Chemicals,AC-94829,Toluene,108-88-3,Cc1ccccc1,L207622,1000,mL,Bottle,2026-10-20,2028-09-17,Stockroom
+2,PO-2026-10-0412,Rhine Lab Supply,RH-74343,Tetrahydrofuran,109-99-9,C1CCOC1,L887507,500,mL,Bottle,2026-10-20,2029-10-18,Stockroom
+3,PO-2026-10-0412,Nordic Reagents,NO-20580,Methanol,67-56-1,CO,L216115,2500,mL,Bottle,2026-10-20,2027-01-20,Stockroom
+4,PO-2026-10-0412,Acme Fine Chemicals,AC-99807,Ethanol,64-17-5,CCO,L614102,1000,mL,Bottle,2026-10-20,2027-08-01,Stockroom
+5,PO-2026-10-0412,Rhine Lab Supply,RH-55568,Acetone,67-64-1,CC(C)=O,L473960,2500,mL,Bottle,2026-10-20,2027-07-09,Stockroom
+6,PO-2026-10-0412,Nordic Reagents,NO-21752,Acetonitrile,75-05-8,CC#N,L684529,2500,mL,Bottle,2026-10-20,2027-12-11,Stockroom
+7,PO-2026-10-0412,Acme Fine Chemicals,AC-94514,Dichloromethane,75-09-2,ClCCl,L838171,1000,mL,Bottle,2026-10-20,2028-08-05,Stockroom
+8,PO-2026-10-0412,Rhine Lab Supply,RH-57650,Dimethyl sulfoxide,67-68-5,CS(C)=O,L583469,500,mL,Bottle,2026-10-20,2027-12-12,Stockroom
+9,PO-2026-10-0412,Nordic Reagents,NO-82672,"N,N-Dimethylformamide",68-12-2,CN(C)C=O,L622668,1000,mL,Bottle,2026-10-20,2027-07-19,Stockroom
+10,PO-2026-10-0412,Acme Fine Chemicals,AC-88664,Ethyl acetate,141-78-6,CCOC(C)=O,L614883,1000,mL,Bottle,2026-10-20,2029-09-26,Stockroom
+11,PO-2026-10-0412,Rhine Lab Supply,RH-72808,Diethyl ether,60-29-7,CCOCC,L637866,500,mL,Bottle,2026-10-20,2028-07-19,Stockroom
+12,PO-2026-10-0412,Nordic Reagents,NO-16407,n-Hexane,110-54-3,CCCCCC,L838892,1000,mL,Bottle,2026-10-20,2027-03-27,Stockroom
+13,PO-2026-10-0412,Acme Fine Chemicals,AC-73191,2-Propanol,67-63-0,CC(C)O,L340047,1000,mL,Bottle,2026-10-20,2029-08-05,Stockroom
+14,PO-2026-10-0412,Rhine Lab Supply,RH-81517,Acetic acid,64-19-7,CC(O)=O,L363199,500,mL,Bottle,2026-10-20,2029-11-16,Stockroom
+15,PO-2026-10-0412,Nordic Reagents,NO-94785,Triethylamine,121-44-8,CCN(CC)CC,L626279,250,mL,Bottle,2026-10-20,2028-09-26,Stockroom
+16,PO-2026-10-0412,Acme Fine Chemicals,AC-45263,Sodium hydroxide,1310-73-2,[Na+].[OH-],L109727,1000,g,Can,2026-10-20,2029-04-10,Stockroom
+17,PO-2026-10-0412,Rhine Lab Supply,RH-57177,Sodium chloride,7647-14-5,[Na+].[Cl-],L309544,1000,g,Bottle,2026-10-20,2029-09-16,Stockroom
+18,PO-2026-10-0412,Nordic Reagents,NO-75163,Potassium carbonate,584-08-7,[K+].[K+].[O-]C([O-])=O,L947206,500,g,Can,2026-10-20,2029-09-25,Stockroom
+19,PO-2026-10-0412,Acme Fine Chemicals,AC-22894,Sodium bicarbonate,144-55-8,[Na+].OC([O-])=O,L559749,1000,g,Bottle,2026-10-20,2028-06-15,Stockroom
+20,PO-2026-10-0412,Rhine Lab Supply,RH-72802,Magnesium sulfate,7487-88-9,[Mg+2].[O-]S([O-])(=O)=O,L167418,500,g,Can,2026-10-20,2027-07-27,Stockroom
+21,PO-2026-10-0412,Nordic Reagents,NO-63911,Sodium sulfate,7757-82-6,[Na+].[Na+].[O-]S([O-])(=O)=O,L253468,500,g,Can,2026-10-20,2028-02-07,Stockroom
+22,PO-2026-10-0412,Acme Fine Chemicals,AC-86105,Phenylboronic acid,98-80-6,OB(O)c1ccccc1,L673141,100,g,Bottle,2026-10-20,2027-01-15,Stockroom
+23,PO-2026-10-0412,Rhine Lab Supply,RH-15853,4-Bromobenzonitrile,623-00-7,Brc1ccc(C#N)cc1,L888377,25,g,Bottle,2026-10-20,2027-02-20,Stockroom
+24,PO-2026-10-0412,Nordic Reagents,NO-51083,Bromobenzene,108-86-1,Brc1ccccc1,L796864,100,mL,Bottle,2026-10-20,2028-03-01,Stockroom
+25,PO-2026-10-0412,Acme Fine Chemicals,AC-27198,Benzophenone,119-61-9,O=C(c1ccccc1)c1ccccc1,L727191,100,g,Bottle,2026-10-20,2027-08-19,Stockroom
+26,PO-2026-10-0412,Rhine Lab Supply,RH-27740,Iodine,7553-56-2,II,L921494,100,g,Bottle,2026-10-20,2029-11-06,Stockroom
+27,PO-2026-10-0412,Nordic Reagents,NO-35781,Caffeine,58-08-2,Cn1cnc2c1c(=O)n(C)c(=O)n2C,L494271,50,g,Can,2026-10-20,2029-03-17,Stockroom
+28,PO-2026-10-0412,Acme Fine Chemicals,AC-55484,Acetylsalicylic acid,50-78-2,CC(=O)Oc1ccccc1C(O)=O,L777665,100,g,Bottle,2026-10-20,2029-02-02,Stockroom
+29,PO-2026-10-0412,Rhine Lab Supply,RH-52960,Paracetamol,103-90-2,CC(=O)Nc1ccc(O)cc1,L815961,100,g,Bottle,2026-10-20,2027-09-16,Stockroom
+30,PO-2026-10-0412,Nordic Reagents,NO-71155,Benzoic acid,65-85-0,OC(=O)c1ccccc1,L699385,500,g,Can,2026-10-20,2028-02-16,Stockroom
+31,PO-2026-10-0412,Acme Fine Chemicals,AC-37130,Benzylamine,100-46-9,NCc1ccccc1,L554670,100,mL,Bottle,2026-10-20,2027-10-17,Stockroom
+32,PO-2026-10-0412,Rhine Lab Supply,RH-98932,Toluene,108-88-3,Cc1ccccc1,L845414,2500,mL,Bottle,2026-10-20,2029-10-08,Stockroom
+33,PO-2026-10-0412,Nordic Reagents,NO-94833,Tetrahydrofuran,109-99-9,C1CCOC1,L281785,500,mL,Bottle,2026-10-20,2029-01-07,Stockroom
+34,PO-2026-10-0412,Acme Fine Chemicals,AC-93997,Methanol,67-56-1,CO,L297687,1000,mL,Bottle,2026-10-20,2027-08-28,Stockroom
+35,PO-2026-10-0412,Rhine Lab Supply,RH-79459,Ethanol,64-17-5,CCO,L329348,1000,mL,Bottle,2026-10-20,2027-03-21,Stockroom
+36,PO-2026-10-0412,Nordic Reagents,NO-34380,Acetone,67-64-1,CC(C)=O,L508914,1000,mL,Bottle,2026-10-20,2027-11-28,Stockroom
+37,PO-2026-10-0412,Acme Fine Chemicals,AC-20309,Acetonitrile,75-05-8,CC#N,L501798,2500,mL,Bottle,2026-10-20,2029-09-14,Stockroom
+38,PO-2026-10-0412,Rhine Lab Supply,RH-44530,Dichloromethane,75-09-2,ClCCl,L586450,1000,mL,Bottle,2026-10-20,2027-06-06,Stockroom
+39,PO-2026-10-0412,Nordic Reagents,NO-33194,Dimethyl sulfoxide,67-68-5,CS(C)=O,L441614,500,mL,Bottle,2026-10-20,2029-05-15,Stockroom
+40,PO-2026-10-0412,Acme Fine Chemicals,AC-78773,"N,N-Dimethylformamide",68-12-2,CN(C)C=O,L935413,1000,mL,Bottle,2026-10-20,2029-02-17,Stockroom
+41,PO-2026-10-0412,Rhine Lab Supply,RH-10643,Ethyl acetate,141-78-6,CCOC(C)=O,L197642,2500,mL,Bottle,2026-10-20,2027-04-08,Stockroom
+42,PO-2026-10-0412,Nordic Reagents,NO-97870,Diethyl ether,60-29-7,CCOCC,L291314,500,mL,Bottle,2026-10-20,2028-07-18,Stockroom
+43,PO-2026-10-0412,Acme Fine Chemicals,AC-83662,n-Hexane,110-54-3,CCCCCC,L820536,1000,mL,Bottle,2026-10-20,2028-03-12,Stockroom
+44,PO-2026-10-0412,Rhine Lab Supply,RH-46762,2-Propanol,67-63-0,CC(C)O,L682798,1000,mL,Bottle,2026-10-20,2027-10-23,Stockroom
+45,PO-2026-10-0412,Nordic Reagents,NO-97858,Acetic acid,64-19-7,CC(O)=O,L682729,500,mL,Bottle,2026-10-20,2028-10-09,Stockroom
+46,PO-2026-10-0412,Acme Fine Chemicals,AC-67154,Triethylamine,121-44-8,CCN(CC)CC,L279594,250,mL,Bottle,2026-10-20,2027-05-04,Stockroom
+47,PO-2026-10-0412,Rhine Lab Supply,RH-34313,Sodium hydroxide,1310-73-2,[Na+].[OH-],L777321,500,g,Bottle,2026-10-20,2028-12-26,Stockroom
+48,PO-2026-10-0412,Nordic Reagents,NO-18377,Sodium chloride,7647-14-5,[Na+].[Cl-],L405173,1000,g,Can,2026-10-20,2028-10-27,Stockroom
+49,PO-2026-10-0412,Acme Fine Chemicals,AC-11818,Potassium carbonate,584-08-7,[K+].[K+].[O-]C([O-])=O,L531638,500,g,Bottle,2026-10-20,2028-05-03,Stockroom
+50,PO-2026-10-0412,Rhine Lab Supply,RH-40831,Sodium bicarbonate,144-55-8,[Na+].OC([O-])=O,L124093,1000,g,Can,2026-10-20,2027-01-04,Stockroom
+51,PO-2026-10-0412,Nordic Reagents,NO-85560,Magnesium sulfate,7487-88-9,[Mg+2].[O-]S([O-])(=O)=O,L999091,500,g,Bottle,2026-10-20,2027-11-18,Stockroom
+52,PO-2026-10-0412,Acme Fine Chemicals,AC-95815,Sodium sulfate,7757-82-6,[Na+].[Na+].[O-]S([O-])(=O)=O,L848910,500,g,Can,2026-10-20,2029-10-21,Stockroom
+53,PO-2026-10-0412,Rhine Lab Supply,RH-87864,Phenylboronic acid,98-80-6,OB(O)c1ccccc1,L585144,25,g,Can,2026-10-20,2028-10-07,Stockroom
+54,PO-2026-10-0412,Nordic Reagents,NO-42974,4-Bromobenzonitrile,623-00-7,Brc1ccc(C#N)cc1,L507945,25,g,Bottle,2026-10-20,2028-09-22,Stockroom
+55,PO-2026-10-0412,Acme Fine Chemicals,AC-67244,Bromobenzene,108-86-1,Brc1ccccc1,L124812,100,mL,Bottle,2026-10-20,2028-01-24,Stockroom
+56,PO-2026-10-0412,Rhine Lab Supply,RH-26032,Benzophenone,119-61-9,O=C(c1ccccc1)c1ccccc1,L411366,100,g,Can,2026-10-20,2028-12-25,Stockroom
+57,PO-2026-10-0412,Nordic Reagents,NO-35879,Iodine,7553-56-2,II,L688107,100,g,Can,2026-10-20,2027-09-11,Stockroom
+58,PO-2026-10-0412,Acme Fine Chemicals,AC-25503,Caffeine,58-08-2,Cn1cnc2c1c(=O)n(C)c(=O)n2C,L139131,10,g,Bottle,2026-10-20,2027-10-04,Stockroom
+59,PO-2026-10-0412,Rhine Lab Supply,RH-85776,Acetylsalicylic acid,50-78-2,CC(=O)Oc1ccccc1C(O)=O,L232432,100,g,Can,2026-10-20,2028-01-14,Stockroom
+60,PO-2026-10-0412,Nordic Reagents,NO-65179,Paracetamol,103-90-2,CC(=O)Nc1ccc(O)cc1,L794779,100,g,Can,2026-10-20,2029-07-08,Stockroom
+61,PO-2026-10-0412,Acme Fine Chemicals,AC-96712,Benzoic acid,65-85-0,OC(=O)c1ccccc1,L852108,100,g,Bottle,2026-10-20,2027-09-01,Stockroom
+62,PO-2026-10-0412,Rhine Lab Supply,RH-13062,Benzylamine,100-46-9,NCc1ccccc1,L117401,100,mL,Bottle,2026-10-20,2028-03-08,Stockroom
+63,PO-2026-10-0412,Nordic Reagents,NO-51254,Toluene,108-88-3,Cc1ccccc1,L245392,2500,mL,Bottle,2026-10-20,2029-07-09,Stockroom
+64,PO-2026-10-0412,Acme Fine Chemicals,AC-95224,Tetrahydrofuran,109-99-9,C1CCOC1,L963800,500,mL,Bottle,2026-10-20,2027-09-02,Stockroom
+65,PO-2026-10-0412,Rhine Lab Supply,RH-51615,Methanol,67-56-1,CO,L158988,2500,mL,Bottle,2026-10-20,2028-11-17,Stockroom
+66,PO-2026-10-0412,Nordic Reagents,NO-39076,Ethanol,64-17-5,CCO,L812133,1000,mL,Bottle,2026-10-20,2027-08-02,Stockroom
+67,PO-2026-10-0412,Acme Fine Chemicals,AC-40475,Acetone,67-64-1,CC(C)=O,L688870,1000,mL,Bottle,2026-10-20,2029-12-12,Stockroom
+68,PO-2026-10-0412,Rhine Lab Supply,RH-57069,Acetonitrile,75-05-8,CC#N,L581577,2500,mL,Bottle,2026-10-20,2028-04-12,Stockroom
+69,PO-2026-10-0412,Nordic Reagents,NO-50919,Dichloromethane,75-09-2,ClCCl,L297029,1000,mL,Bottle,2026-10-20,2029-11-19,Stockroom
+70,PO-2026-10-0412,Acme Fine Chemicals,AC-10696,Dimethyl sulfoxide,67-68-5,CS(C)=O,L471649,250,mL,Bottle,2026-10-20,2029-03-16,Stockroom
+71,PO-2026-10-0412,Rhine Lab Supply,RH-21037,"N,N-Dimethylformamide",68-12-2,CN(C)C=O,L413562,1000,mL,Bottle,2026-10-20,2027-11-06,Stockroom
+72,PO-2026-10-0412,Nordic Reagents,NO-23205,Ethyl acetate,141-78-6,CCOC(C)=O,L119243,2500,mL,Bottle,2026-10-20,2028-03-23,Stockroom
+73,PO-2026-10-0412,Acme Fine Chemicals,AC-61547,Diethyl ether,60-29-7,CCOCC,L499069,500,mL,Bottle,2026-10-20,2028-10-02,Stockroom
+74,PO-2026-10-0412,Rhine Lab Supply,RH-61014,n-Hexane,110-54-3,CCCCCC,L449815,1000,mL,Bottle,2026-10-20,2027-02-05,Stockroom
+75,PO-2026-10-0412,Nordic Reagents,NO-87689,2-Propanol,67-63-0,CC(C)O,L794435,1000,mL,Bottle,2026-10-20,2028-01-24,Stockroom
+76,PO-2026-10-0412,Acme Fine Chemicals,AC-80931,Acetic acid,64-19-7,CC(O)=O,L399451,500,mL,Bottle,2026-10-20,2027-05-10,Stockroom
+77,PO-2026-10-0412,Rhine Lab Supply,RH-92551,Triethylamine,121-44-8,CCN(CC)CC,L109907,250,mL,Bottle,2026-10-20,2027-07-07,Stockroom
+78,PO-2026-10-0412,Nordic Reagents,NO-77658,Sodium hydroxide,1310-73-2,[Na+].[OH-],L130946,1000,g,Can,2026-10-20,2028-09-06,Stockroom
+79,PO-2026-10-0412,Acme Fine Chemicals,AC-25295,Sodium chloride,7647-14-5,[Na+].[Cl-],L640008,1000,g,Can,2026-10-20,2027-03-01,Stockroom
+80,PO-2026-10-0412,Rhine Lab Supply,RH-38336,Potassium carbonate,584-08-7,[K+].[K+].[O-]C([O-])=O,L657980,500,g,Can,2026-10-20,2027-06-10,Stockroom
+81,PO-2026-10-0412,Nordic Reagents,NO-73512,Sodium bicarbonate,144-55-8,[Na+].OC([O-])=O,L212610,500,g,Bottle,2026-10-20,2027-02-11,Stockroom
+82,PO-2026-10-0412,Acme Fine Chemicals,AC-94875,Magnesium sulfate,7487-88-9,[Mg+2].[O-]S([O-])(=O)=O,L223259,500,g,Can,2026-10-20,2028-10-10,Stockroom
+83,PO-2026-10-0412,Rhine Lab Supply,RH-78019,Sodium sulfate,7757-82-6,[Na+].[Na+].[O-]S([O-])(=O)=O,L359026,500,g,Can,2026-10-20,2029-02-18,Stockroom
+84,PO-2026-10-0412,Nordic Reagents,NO-21516,Phenylboronic acid,98-80-6,OB(O)c1ccccc1,L947688,100,g,Can,2026-10-20,2028-02-03,Stockroom
+85,PO-2026-10-0412,Acme Fine Chemicals,AC-32064,4-Bromobenzonitrile,623-00-7,Brc1ccc(C#N)cc1,L440789,25,g,Can,2026-10-20,2028-11-08,Stockroom
+86,PO-2026-10-0412,Rhine Lab Supply,RH-96120,Bromobenzene,108-86-1,Brc1ccccc1,L998893,100,mL,Bottle,2026-10-20,2028-06-24,Stockroom
+87,PO-2026-10-0412,Nordic Reagents,NO-70687,Benzophenone,119-61-9,O=C(c1ccccc1)c1ccccc1,L330865,100,g,Can,2026-10-20,2028-03-07,Stockroom
+88,PO-2026-10-0412,Acme Fine Chemicals,AC-37902,Iodine,7553-56-2,II,L261877,100,g,Can,2026-10-20,2029-10-13,Stockroom
+89,PO-2026-10-0412,Rhine Lab Supply,RH-25446,Caffeine,58-08-2,Cn1cnc2c1c(=O)n(C)c(=O)n2C,L435580,50,g,Bottle,2026-10-20,2029-05-11,Stockroom
+90,PO-2026-10-0412,Nordic Reagents,NO-92165,Acetylsalicylic acid,50-78-2,CC(=O)Oc1ccccc1C(O)=O,L381203,100,g,Can,2026-10-20,2028-03-18,Stockroom
+91,PO-2026-10-0412,Acme Fine Chemicals,AC-26152,Paracetamol,103-90-2,CC(=O)Nc1ccc(O)cc1,L380924,100,g,Can,2026-10-20,2027-09-25,Stockroom
+92,PO-2026-10-0412,Rhine Lab Supply,RH-82054,Benzoic acid,65-85-0,OC(=O)c1ccccc1,L851265,500,g,Can,2026-10-20,2029-07-01,Stockroom
+93,PO-2026-10-0412,Nordic Reagents,NO-99020,Benzylamine,100-46-9,NCc1ccccc1,L904419,100,mL,Bottle,2026-10-20,2029-06-04,Stockroom
+94,PO-2026-10-0412,Acme Fine Chemicals,AC-94964,Toluene,108-88-3,Cc1ccccc1,L446497,2500,mL,Bottle,2026-10-20,2027-07-12,Stockroom
+95,PO-2026-10-0412,Rhine Lab Supply,RH-11378,Tetrahydrofuran,109-99-9,C1CCOC1,L380027,500,mL,Bottle,2026-10-20,2029-12-06,Stockroom
+96,PO-2026-10-0412,Nordic Reagents,NO-94458,Methanol,67-56-1,CO,L741426,2500,mL,Bottle,2026-10-20,2027-06-19,Stockroom
+97,PO-2026-10-0412,Acme Fine Chemicals,AC-11540,Ethanol,64-17-5,CCO,L139316,1000,mL,Bottle,2026-10-20,2029-08-11,Stockroom
+98,PO-2026-10-0412,Rhine Lab Supply,RH-45211,Acetone,67-64-1,CC(C)=O,L442479,1000,mL,Bottle,2026-10-20,2027-11-28,Stockroom
+99,PO-2026-10-0412,Nordic Reagents,NO-46295,Acetonitrile,75-05-8,CC#N,L753080,1000,mL,Bottle,2026-10-20,2027-08-17,Stockroom
+100,PO-2026-10-0412,Acme Fine Chemicals,AC-34596,Dichloromethane,75-09-2,ClCCl,L665141,1000,mL,Bottle,2026-10-20,2027-09-23,Stockroom

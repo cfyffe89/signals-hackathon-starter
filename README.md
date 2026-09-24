@@ -53,5 +53,8 @@ Continue (Ctrl+L chat, Ctrl+I inline edit) is configured from your `.env` (`pyth
 - **External Actions** open your page in the user's browser. Register `https://<codespace>-8000.app.github.dev/action` (GET, parameter `__eid`, open in a dialog).
 - **External Data Sources / webhooks** are called by Signals' servers, so set port 8000 to **Public** (it is by default here).
 
-## 6. Rules
+## 6. Example data
+The `<prefix> Reference Data` notebook on the hackathon tenant has one example experiment per use case (reactions with stoichiometry, samples, tasks, instrument PDFs). Read and copy from it; write only in your team notebook. Organisers seed it with `scripts/seed_tenant.py` (see `seed/README.md`).
+
+## 7. Rules
 Write only into your team notebook. Never commit `.env` or keys. Record a 60-second screencast of your working prototype before judging.
