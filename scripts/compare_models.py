@@ -108,7 +108,7 @@ def main():
     out.mkdir(exist_ok=True)
     path = out / f"report_{datetime.now():%Y%m%d-%H%M%S}.md"
     path.write_text("\n".join(lines), encoding="utf-8")
-    print("\n" + "\n".join(lines[2:3 + len(models)]))
+    print("\n" + "\n".join(lines[2:4 + len(models)]))  # header + separator + one row per model
     print(f"\nFull answers: {path.relative_to(ROOT)}")
 
 
