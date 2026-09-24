@@ -8,5 +8,4 @@ invokable: true
 - Reaction tables: get_stoichiometry(eid).
 - RDKit: Chem.MolFromSmiles (handle None), descriptors as in backend/context.py structure_context(). In Streamlit show SVG with st.image(svg.encode()).
 
-User request:
-{{{ input }}}
+Apply this to the request the user types after the slash command.

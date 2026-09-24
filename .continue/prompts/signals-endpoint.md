@@ -8,5 +8,4 @@ Find the exact Signals endpoint for the request.
 - Answer with METHOD + path + spec file, the required params/body (from the lookup script), the matching SignalsClient method if any, and any relevant gotcha from docs/signals/GOTCHAS.md.
 - If nothing matches, say the endpoint does not exist and suggest the closest real one.
 
-User request:
-{{{ input }}}
+Apply this to the request the user types after the slash command.

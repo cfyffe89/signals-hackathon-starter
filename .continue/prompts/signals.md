@@ -9,5 +9,4 @@ Follow AGENTS.md. Before writing code:
 3. Check docs/signals/GOTCHAS.md for traps on that endpoint (media types, keyword mode, ancestors + digest, source=IVT, ...).
 Write FastAPI routes in backend/app.py or Streamlit UI in app_streamlit.py. Add new API calls as methods on SignalsClient.
 
-User request:
-{{{ input }}}
+Apply this to the request the user types after the slash command.

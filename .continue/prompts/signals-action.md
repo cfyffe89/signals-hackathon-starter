@@ -10,5 +10,4 @@ Build an External Action as a FastAPI GET route that returns HTML (see the /acti
 - To write back, use SignalsClient methods (e.g. upload_child_attachment, or PATCH /stoichiometry/{eid}/{rowid} for a stoichiometry row) with the parent digest.
 - Register it in Signals Configuration › External Actions with the Codespaces port-8000 URL.
 
-User request:
-{{{ input }}}
+Apply this to the request the user types after the slash command.

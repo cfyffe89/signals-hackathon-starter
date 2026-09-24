@@ -9,5 +9,4 @@ Add an AI feature that is grounded:
 - Call ai.ask(question, records=..., knowledge=...). It already tells the model to cite and not to invent.
 - Show the answer plus what context was used, so users can check it.
 
-User request:
-{{{ input }}}
+Apply this to the request the user types after the slash command.

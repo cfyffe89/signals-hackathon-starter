@@ -1,12 +1,16 @@
 """Check the starter works:  python scripts/check_setup.py
 Runs in whatever mode your .env gives (mock if keys are missing). Exercises the knowledge pack,
 the Signals client, the AI client and every FastAPI route. Exit code 1 if anything fails.
+
+    python scripts/check_setup.py --demo    # also: a real AI round trip, the Continue config, running apps, Codespace URLs
 """
+import os
 import sys
 import traceback
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 results = []
 
 
@@ -52,6 +56,39 @@ check("GET /api/knowledge", lambda: len(client.get("/api/knowledge", params={"q"
 check("POST /api/ask", lambda: client.post("/api/ask", json={"question": "How do I list experiments?"}).json()["source"])
 if exps and isinstance(exps, list):
     check("GET /action", lambda: client.get("/action", params={"__eid": exps[0]["eid"]}).status_code)
+
+
+def ai_round_trip():
+    r = ai.generate_text("Reply with the single word OK.", max_tokens=20)
+    if r["source"] in ("mock", "error"):
+        raise RuntimeError(r["text"][:150])
+    return f"{r['source']}: {r['text'][:20]}"
+
+
+def continue_config():
+    path = Path.home() / ".continue" / "config.yaml"
+    if not path.exists():
+        raise FileNotFoundError("run: python scripts/setup_continue.py, then Developer: Reload Window")
+    return f"{path.read_text(encoding='utf-8').count('provider:')} model(s)"
+
+
+if "--demo" in sys.argv:
+    import requests
+    from backend.config import is_placeholder
+    print("\n6. Demo readiness")
+    names = ["SIGNALS_BASE_URL", "SIGNALS_API_KEY", "SIGNALS_NOTEBOOK_EID", "GEMINI_API_KEY", "AI_GATEWAY_URL", "AI_GATEWAY_KEY", "AI_MODEL"]
+    found = [n for n in names if not is_placeholder(os.getenv(n, ""))]
+    src = "HACKATHON secret" if os.getenv("HACKATHON") else ("Codespaces secrets/env" if os.getenv("CODESPACES") else ".env/env")
+    print(f"  info  settings found via {src}: {', '.join(found) or 'none'} (values are never printed)")
+    check("AI round trip", ai_round_trip)
+    check("Continue config", continue_config)
+    check("Continue slash prompts", lambda: sorted(p.stem for p in (ROOT / ".continue" / "prompts").glob("*.md")))
+    for port, path in ((8000, "/api/health"), (8501, "/")):
+        check(f"app running on port {port}", lambda port=port, path=path: requests.get(f"http://localhost:{port}{path}", timeout=5).status_code)
+    if os.getenv("CODESPACE_NAME"):
+        dom = os.getenv("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN", "app.github.dev")
+        print(f"  info  Streamlit:    https://{os.environ['CODESPACE_NAME']}-8501.{dom}")
+        print(f"  info  FastAPI docs: https://{os.environ['CODESPACE_NAME']}-8000.{dom}/docs")
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)
