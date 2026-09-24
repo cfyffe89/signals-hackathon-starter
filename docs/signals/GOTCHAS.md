@@ -6,7 +6,7 @@
 - `POST /entities` with `Content-Type: application/json` → **415**. Use `application/vnd.api+json`. (`POST /entities/search` accepts either.)
 - Payloads are JSON:API: `{"data": {"type": "...", "attributes": {...}, "relationships": {...}}}`.
 - Base path `/api/rest/v1.0`. Auth: the `x-api-key` header, or an OAuth bearer token (Auth Code + PKCE or Implicit). The request runs **as the key's user** (their permissions).
-- `GET /users/me` doesn't exist (400). There's no endpoint that returns the release version.
+- Current user: `GET /profiles/me` (`GET /users/me` → 400). Release: `GET /version` → `{"release":"26.8.0"}`.
 - `curl`: add `-g` / `--globoff` when a URL has `page[limit]` (otherwise the shell eats the brackets).
 
 ## Creating & editing
@@ -42,6 +42,21 @@
 - `bulkImport`: no record-count cap, 300 MiB body limit. `bulkExport`: 25,000 assets / 100 MB per file (continue via `nextExport`).
 - **Build a reaction with a stoichiometry table:** upload a blank CDXML as a child (`chemical/x-cdxml`) → `POST /chemicaldrawings/{eid}/reaction/reactants` (and `/products`) with `{"data":{"attributes":{"dataType":"smiles","data":"<smiles>"}}}` → `PATCH /stoichiometry/{eid}/{row_id}` with `{"data":{"attributes":{"values":{"eq":"1.2"}}}}` or `{"values":{"sm":"1.82 g","limit":{"value":true}}}` (moles and the other masses are calculated) → `POST /stoichiometry/{eid}/solvents` with `{"values":{"solvent":"Toluene","volume":"40 mL"}}`. An uploaded `.rxn` file becomes a drawing whose stoichiometry table is **empty** and can't be updated (403).
 - Inventory write endpoints take the bare UUID (`location:<uuid>:ivt` from search → `<uuid>`). Locations have no DELETE; containers can only be disposed.
+
+## Inventory containers
+- **Create** `POST /inventory/containers` needs `typeId` (from `GET /inventory/types?entityType=container`; without `entityType` → 400), **`contents`** (a `batch:` or `sample:` eid; a sample in a closed/voided experiment → 403) **and every field the type marks required** (the 400 names it, e.g. "Missed required field Inventory Security(<id>) of type Vial"). The response `data` is a **one-element list**.
+- `unit` enum: g, ml, kg, mg, l, mug, ng, mul, nl, kl, item. `status` on create must be valid (e.g. `AVAILABLE`).
+- **Amount:** `PATCH /inventory/containers/{uuid}/amount?digest=<container digest>` with `{"amount":"4 g"}` (a string with a unit; a number → 400). Read `displayAmount`: after a unit change, `amount` and `unit` can disagree.
+- **Status:** `POST /inventory/containers/{uuid}/status/{checkout|checkin|dispose|restore|finalDispose}?digest=…` with `{"data":{"type":"inventoryContainer","attributes":{"location":{"id":…}}}}` (finalDispose: no body). The container digest comes from `GET /inventory/containers/{uuid}`.
+- **By barcode:** `POST /inventory/containers/search` `{"data":{"type":"containerSearch","attributes":{"barcodes":[…]}}}`: `Content-Type: application/vnd.api+json` only (JSON → 415), **fewer than 100** barcodes per call, unknown barcodes skipped silently.
+- **By attributes:** `POST /entities/search?source=IVT` with tags `fields.Path`, `fields.Barcode`, `fields.Status`, `container.Contents Name`, `container.Container Type`, `container.Expiration Date` (`as:"date"`), `container.Amount` (`as:"double"`).
+- **Bulk update** `POST /inventory/containers/bulkUpdate/jobs`: one field per job (`amount` needs `containerDigestMap`). Poll `…/status` until `pendingCount` is 0; `…/report` (CSV) returns 400 until then. Build the URLs yourself: the job's `links.self` are malformed.
+
+## Plates
+- `POST /plates?digest=<experiment digest>` with `numberOfRows`/`numberOfColumns` (1–48) and `numberOfPlates` (1–500), `ancestors` = the experiment. **No `name`** (400). Plates are `Plate-1`, `Plate-2`…
+- Write wells with `PATCH /plates/{pc}/plates/Plate-1?digest=<plate container digest>`: **one annotation layer per call**; layer ids differ per plate container (`GET …/settings/annotationLayers`).
+- ⚠️ **Concentration units are words:** `molar`, `mmolar`, `umolar`, `nmolar` (`10 uM` → 400), and **one unit per plate**.
+- CSV: `GET /entities/{plateContainer}/export?format=csv` (one row per well).
 
 ## Bulk export & async jobs
 - `POST /entities/export/bulk?eid=...&depth=0|1|-1` (**`depth` is required**) → 202 job → poll `GET …/{jobId}` → `GET …/{jobId}/contents` (multipart/mixed). **The download is one-shot**: it's purged seconds after the first GET.

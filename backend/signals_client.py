@@ -399,6 +399,18 @@ class SignalsClient:
             logger.warning(f"Signals connectivity check failed: {e}")
             return {"status": "error", "tenant": self.base_url, "error": str(e)}
 
+    def get_current_user(self) -> Dict[str, Any]:
+        """GET /profiles/me: the user behind the API key (userId, email, names, roles, licenses). /users/me -> 400."""
+        if self.mock_mode:
+            return {"userId": "100", "email": "mock.user@example.com", "firstName": "Mock", "lastName": "User", "roles": []}
+        return self._request("GET", "/profiles/me").json().get("data", {}).get("attributes", {})
+
+    def get_version(self) -> str:
+        """GET /version: the tenant's Signals release, e.g. '26.8.0'."""
+        if self.mock_mode:
+            return "mock"
+        return self._request("GET", "/version").json()["data"]["attributes"]["release"]
+
     # ---------------------------------------------------------------- 2. search & discovery
     def search_entities(self, query: Dict[str, Any], options: Optional[Dict[str, Any]] = None,
                         limit: int = 20, source: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -611,13 +623,144 @@ class SignalsClient:
         return self._request("GET", "/materials/libraries").json().get("data", [])
 
     def search_containers(self, query: str = "", limit: int = 20) -> List[Dict[str, Any]]:
-        """Inventory containers live in the IVT index: search with source=IVT (SN returns 0)."""
+        """
+        Inventory containers live in the IVT index: search with source=IVT (SN returns 0).
+        Container TYPES are also in IVT (isTemplate: true), so they are filtered out.
+        Filter by tag fields for precise lookups, e.g. {"$match": {"field": "fields.Path", "in": "tags", "as": "text",
+        "value": "/Stock Room A"}}; others: fields.Barcode, fields.Status, container.Contents Name,
+        container.Container Type, container.Expiration Date (as "date"), container.Amount (as "double").
+        """
         if self.mock_mode:
-            return [{"id": "container:mock-1", "attributes": {"type": "container", "name": "Vial FZ7-001 (mock)"}}]
-        clauses: List[Dict[str, Any]] = [{"$match": {"field": "type", "value": "container", "mode": "keyword"}}]
+            return [{"id": "container:mock-1:ivt", "attributes": {"type": "container", "name": "Vial FZ7-001 (mock)"}}]
+        clauses: List[Dict[str, Any]] = [{"$match": {"field": "type", "value": "container", "mode": "keyword"}},
+                                         {"$match": {"field": "isTemplate", "value": False}}]
         if query:
             clauses.append({"$simple": {"query": query, "operator": "and"}})
         return self.search_entities({"$and": clauses}, limit=limit, source="IVT")
+
+    @staticmethod
+    def _inv_id(container_id: str) -> str:
+        """Inventory endpoints take the bare UUID; search returns container:<uuid>:ivt."""
+        return container_id.split(":")[1] if container_id.startswith(("container:", "location:")) else container_id
+
+    def list_inventory_types(self, entity_type: str = "container") -> List[Dict[str, Any]]:
+        """GET /inventory/types?entityType=container|location -> [{id, name}] (the param is required, 400 without it)."""
+        if self.mock_mode:
+            return [{"id": "vial-type-mock", "name": "Vial"}, {"id": "bottle-type-mock", "name": "Bottle"}]
+        data = self._request("GET", "/inventory/types", params={"entityType": entity_type}).json().get("data", [])
+        return [{"id": d["id"], "name": d.get("attributes", {}).get("name")} for d in data]
+
+    def get_container(self, container_id: str) -> Dict[str, Any]:
+        """
+        GET /inventory/containers/{uuid}: barcode, status, state, amount, unit, displayAmount, contents, fields, digest.
+        Read displayAmount ("500 mg"): after a unit change `amount` can be in a different unit from `unit`.
+        """
+        if self.mock_mode:
+            return {"id": container_id, "barcode": "0000000001", "status": "AVAILABLE", "state": "PRESENT",
+                    "displayAmount": "5 g", "contents": [], "fields": [], "digest": "0"}
+        return self._request("GET", f"/inventory/containers/{self._inv_id(container_id)}").json()["data"]["attributes"]
+
+    def find_containers_by_barcode(self, barcodes: List[str]) -> List[Dict[str, Any]]:
+        """
+        POST /inventory/containers/search by barcode (unknown barcodes are skipped silently).
+        The endpoint takes fewer than 100 barcodes per call, so this sends batches of 99.
+        """
+        if self.mock_mode:
+            return [{"id": f"mock-{b}", "attributes": {"barcode": b, "status": "AVAILABLE"}} for b in barcodes]
+        out: List[Dict[str, Any]] = []
+        for i in range(0, len(barcodes), 99):
+            body = {"data": {"type": "containerSearch", "attributes": {"barcodes": barcodes[i:i + 99]}}}
+            out += self._request("POST", "/inventory/containers/search", json_body=body).json().get("data", [])
+        return out
+
+    def create_container(self, type_id: str, location_id: str, contents_eid: str, amount: float, unit: str = "g",
+                         fields: Optional[Dict[str, Any]] = None, status: Optional[str] = None) -> Dict[str, Any]:
+        """
+        POST /inventory/containers. Signals requires, beyond the type:
+        - contents: a batch:... or sample:... eid (a sample in a closed/voided experiment -> 403)
+        - every field the container type marks required, e.g. {"<Inventory Security field id>": "Default"}
+          (the 400 names the missing field and its id). Field ids: get_container() on an existing container.
+        unit: g, ml, kg, mg, l, mug, ng, mul, nl, kl, item. status: omit or a valid status such as "AVAILABLE".
+        type_id / location_id: from list_inventory_types() and search results (bare UUIDs).
+        """
+        if self.mock_mode:
+            return {"id": str(uuid.uuid4()), "attributes": {"barcode": "0000000099", "status": "AVAILABLE", "displayAmount": f"{amount} {unit}"}}
+        attrs: Dict[str, Any] = {"typeId": type_id, "location": {"id": self._inv_id(location_id)},
+                                 "contents": [{"entityId": contents_eid}], "amount": amount, "unit": unit,
+                                 "fields": [{"id": str(k), "content": {"value": v}} for k, v in (fields or {}).items()]}
+        if status:
+            attrs["status"] = status
+        data = self._request("POST", "/inventory/containers",
+                             json_body={"data": {"type": "inventoryContainer", "attributes": attrs}}).json().get("data")
+        return data[0] if isinstance(data, list) else data  # create returns data as a one-element list
+
+    def update_container_amount(self, container_id: str, amount: str) -> Dict[str, Any]:
+        """PATCH /inventory/containers/{uuid}/amount?digest=... with a string amount + unit, e.g. "4 g" or "500 mg"."""
+        if self.mock_mode:
+            return {"id": container_id, "displayAmount": amount}
+        cid = self._inv_id(container_id)
+        body = {"data": {"type": "inventoryContainer", "attributes": {"amount": amount}}}
+        return self._request("PATCH", f"/inventory/containers/{cid}/amount", params={"digest": self.get_container(cid)["digest"]},
+                             json_body=body).json().get("data", {})
+
+    CONTAINER_ACTIONS = ("checkout", "checkin", "dispose", "restore", "finalDispose")
+
+    def set_container_status(self, container_id: str, action: str, location_id: Optional[str] = None,
+                             owner_user_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        POST /inventory/containers/{uuid}/status/{action}?digest=...
+        checkout -> IN_USE, checkin -> AVAILABLE, dispose -> DISPOSED, restore -> AVAILABLE,
+        finalDispose -> FINAL_DISPOSED (no body; the record stays). There is no container DELETE.
+        """
+        if action not in self.CONTAINER_ACTIONS:
+            raise SignalsError(f"action must be one of {self.CONTAINER_ACTIONS}")
+        if self.mock_mode:
+            return {"id": container_id, "action": action}
+        cid = self._inv_id(container_id)
+        c = self.get_container(cid)
+        body = None
+        if action != "finalDispose":
+            attrs: Dict[str, Any] = {"location": {"id": self._inv_id(location_id) if location_id else c["location"]["id"]}}
+            if owner_user_id:
+                attrs["owner"] = {"userId": owner_user_id}
+            body = {"data": {"type": "inventoryContainer", "attributes": attrs}}
+        return self._request("POST", f"/inventory/containers/{cid}/status/{action}", params={"digest": c["digest"]},
+                             json_body=body).json().get("data", {})
+
+    # ---------------------------------------------------------------- 6. plates
+    def create_plate_container(self, experiment_eid: str, rows: int = 8, columns: int = 12, plates: int = 1) -> str:
+        """
+        POST /plates?digest=<experiment digest>: returns the plateContainer:... eid. Plates are 'Plate-1', 'Plate-2', ...
+        rows/columns 1-48, plates 1-500. Don't send a name (400 "Name is not required").
+        """
+        if self.mock_mode:
+            return f"plateContainer:{uuid.uuid4()}"
+        body = {"data": {"type": "plateContainer", "attributes": {"numberOfRows": rows, "numberOfColumns": columns, "numberOfPlates": plates},
+                         "relationships": {"ancestors": {"data": [{"type": "experiment", "id": experiment_eid}]}}}}
+        return self._request("POST", "/plates", params={"digest": self.get_digest(experiment_eid)}, json_body=body).json()["data"]["id"]
+
+    def set_plate_wells(self, plate_container_eid: str, layer_name: str, wells: Dict[str, Any], plate_id: str = "Plate-1") -> Dict[str, Any]:
+        """
+        Write one annotation layer (e.g. "Concentration", "Well Format") on one plate: {"A1": "10 umolar", "B2": "10 umolar"}.
+        - One layer per call (Signals rejects two). Layer ids differ per plate container, so they are looked up by name.
+        - Concentration units are words: molar, mmolar, umolar, nmolar ("10 uM" -> 400), and one unit per plate.
+        """
+        if self.mock_mode:
+            return {"id": plate_id, "layer": layer_name, "wells": len(wells)}
+        layers = self._request("GET", f"/plates/{plate_container_eid}/settings/annotationLayers").json().get("data", [])
+        layer = next((l for l in layers if l.get("attributes", {}).get("name", "").lower() == layer_name.lower()), None)
+        if not layer:
+            raise SignalsError(f"No annotation layer '{layer_name}'. Available: {[l['attributes'].get('name') for l in layers]}")
+        body = {"data": {"type": "plate", "id": plate_id, "attributes": {"annotationLayers": [
+            {"id": layer["id"], "wells": [{"wellId": w, "content": {"value": v}} for w, v in wells.items()]}]}}}
+        return self._request("PATCH", f"/plates/{plate_container_eid}/plates/{plate_id}",
+                             params={"digest": self.get_digest(plate_container_eid)}, json_body=body).json().get("data", {})
+
+    def export_plates_csv(self, plate_container_eid: str) -> str:
+        """GET /entities/{plateContainer}/export?format=csv: one row per well, one column per layer."""
+        if self.mock_mode:
+            return "Well ID,Row,Column,Plate,Plate ID,Well Format,Concentration\nA1,A,1,Plate-1,,Sample,10 umolar\n"
+        return self._request("GET", f"/entities/{plate_container_eid}/export", params={"format": "csv"}, accept="text/csv, */*").text
 
     # ---------------------------------------------------------------- mock helpers
     def _mock_search(self, query: Dict[str, Any], limit: int) -> List[Dict[str, Any]]:

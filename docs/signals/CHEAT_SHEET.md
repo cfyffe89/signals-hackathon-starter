@@ -24,7 +24,17 @@ sc = SignalsClient()   # reads SIGNALS_BASE_URL, SIGNALS_API_KEY (no default not
 | Substructure / exact search | `sc.chemistry_search("c1ccccc1", exact=False)` | search `$chemsearch` |
 | Registered materials | `sc.search_materials("benz*")` | search `type=asset` + `$simple` |
 | Material libraries | `sc.list_material_libraries()` | `GET /materials/libraries` |
-| Inventory containers | `sc.search_containers("FZ7")` | search `source=IVT`, `type=container` |
+| Inventory containers | `sc.search_containers("FZ7")` | search `source=IVT`, `type=container`, not templates |
+| Container by barcode | `sc.find_containers_by_barcode(["0000000014"])` | `POST /inventory/containers/search` (<100 per call) |
+| One container | `sc.get_container(id)` | `GET /inventory/containers/{uuid}` |
+| Container types | `sc.list_inventory_types("container")` | `GET /inventory/types?entityType=container` |
+| New container | `sc.create_container(type_id, loc_id, "batch:…", 5, "g", {field_id: value})` | `POST /inventory/containers` (contents + required fields) |
+| Change amount | `sc.update_container_amount(id, "4 g")` | `PATCH /inventory/containers/{uuid}/amount?digest=` |
+| Check out / in, dispose | `sc.set_container_status(id, "checkout", owner_user_id="100")` | `POST /inventory/containers/{uuid}/status/{action}?digest=` |
+| Plates in an experiment | `sc.create_plate_container(exp_eid, 8, 12, 1)` | `POST /plates?digest=<exp digest>` |
+| Fill wells | `sc.set_plate_wells(pc, "Concentration", {"A1": "10 umolar"})` | `PATCH /plates/{pc}/plates/Plate-1?digest=` |
+| Plates as CSV | `sc.export_plates_csv(pc)` | `GET /entities/{pc}/export?format=csv` |
+| Who am I / which release | `sc.get_current_user()`, `sc.get_version()` | `GET /profiles/me`, `GET /version` |
 | Any search | `sc.search_entities(query, options, limit, source)` | `POST /entities/search` |
 
 ## Raw call template

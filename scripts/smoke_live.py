@@ -3,7 +3,7 @@
     SIGNALS_BASE_URL=... SIGNALS_API_KEY=... SIGNALS_SAMPLE_TEMPLATE_EID=sample:... \
     python scripts/smoke_live.py [--write --notebook journal:...]
 
-Read-only by default. With --write it creates one experiment (+ a sample and an HTML note) in the
+Read-only by default. With --write it creates one experiment (+ a sample, an HTML note and a plate container) in the
 --notebook you name and moves it to the trash at the end. Never prints the API key.
 """
 import os, sys, time, uuid
@@ -30,6 +30,8 @@ def step(name, fn):
 
 assert not sc.mock_mode, "Set SIGNALS_BASE_URL and SIGNALS_API_KEY (mock mode is on)"
 step("check_connection", lambda: sc.check_connection()["status"])
+step("get_current_user", lambda: sc.get_current_user().get("userId"))
+step("get_version", lambda: sc.get_version())
 step("list_notebooks", lambda: f"{len(sc.list_notebooks(5))} notebooks")
 exps = []
 step("list_experiments", lambda: (exps.extend(sc.list_experiments(5)), f"{len(exps)}: {exps[0]['name'][:40] if exps else ''}")[1])
@@ -48,6 +50,11 @@ step("chemistry_search exact", lambda: f"{len(sc.chemistry_search('c1ccccc1', ex
 step("search_materials", lambda: f"{len(sc.search_materials('', 5))} assets")
 step("list_material_libraries", lambda: f"{len(sc.list_material_libraries())} libraries")
 step("search_containers (IVT)", lambda: f"{len(sc.search_containers('', 5))} containers")
+step("list_inventory_types", lambda: f"{len(sc.list_inventory_types())} container types")
+cont = []
+step("get_container", lambda: (cont.extend(sc.search_containers("", 1)), sc.get_container(cont[0]["id"])["barcode"] if cont else "no containers")[1])
+if cont:
+    step("find_containers_by_barcode", lambda: f"{len(sc.find_containers_by_barcode([sc.get_container(cont[0]['id'])['barcode'], 'NOPE-000']))} found")
 
 if WRITE:
     nb = sys.argv[sys.argv.index("--notebook") + 1] if "--notebook" in sys.argv else ""
@@ -61,6 +68,11 @@ if WRITE:
         step("upload_child_attachment html", lambda: sc.upload_child_attachment(eid, "note.html", b"<p>smoke</p>", "text/html")["data"]["id"][:30])
         if tpl:
             step("create_sample (template)", lambda: sc.create_sample(eid, tpl)["id"][:30])
+        pcs = []
+        step("create_plate_container", lambda: pcs.append(sc.create_plate_container(eid, 8, 12, 1)) or pcs[0][:30])
+        if pcs:
+            step("set_plate_wells (umolar)", lambda: sc.set_plate_wells(pcs[0], "Concentration", {"A1": "10 umolar", "A2": "5 umolar"}) and "ok")
+            step("export_plates_csv", lambda: sc.export_plates_csv(pcs[0]).splitlines()[1][:40])
         step("cleanup: trash experiment", lambda: sc._request("DELETE", f"/entities/{eid}", params={"force": "true"}).status_code)
 
 fails = [r for r in results if r[0] == "FAIL"]
