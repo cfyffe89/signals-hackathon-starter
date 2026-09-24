@@ -28,5 +28,5 @@
     }
   },
   "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r backend/requirements.txt && git update-index --assume-unchanged .continue/config.json || true && chmod +x restart-server.sh || true && python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import init_env_file, sync_continue_config; init_env_file(); sync_continue_config()\" || true",
-  "postStartCommand": "python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import init_env_file, sync_continue_config; init_env_file(); sync_continue_config()\" || true && nohup python3 -m uvicorn backend.app:app --host 0.0.0.0 --port 8000 --reload > /tmp/uvicorn.log 2>&1 &"
+  "postStartCommand": "python3 -c \"import sys; sys.path.insert(0, '.'); from backend.app import init_env_file, sync_continue_config; init_env_file(); sync_continue_config()\" || true && nohup python3 -m uvicorn backend.app:app --host 0.0.0.0 --port 8000 --reload > /tmp/uvicorn.log 2>&1 & nohup python3 -m streamlit run app_streamlit.py --server.port 8501 --server.headless true > /tmp/streamlit.log 2>&1 &"
 }
