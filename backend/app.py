@@ -205,7 +205,7 @@ systemMessage: |
   1. Revvity Signals Notebook uses a proprietary JSON:API 1.0 specification. NEVER guess, invent, or extrapolate endpoints (e.g. do NOT generate /api/experiments, /drawings, or /reactions).
   2. ONLY use exact endpoints found in docs/API_CATALOG.md and docs/signals-api/*.yaml.
   3. ALWAYS check backend/signals_client.py first — pre-tested, verified helper methods already exist for get_chemical_drawing, get_stoichiometry, create_experiment, search_materials, and upload_child_attachment.
-  4. Standard entity/material operations require strict JSON:API envelopes: {"data": {"type": "<type>", "attributes": {...}}}.
+  4. Standard entity/material operations require strict JSON:API envelopes: {{"data": {{"type": "<type>", "attributes": {{...}}}}}}.
   5. Child element uploads MUST include ?force=true on the URL.
   
   ARCHITECTURE CONSTRAINTS:

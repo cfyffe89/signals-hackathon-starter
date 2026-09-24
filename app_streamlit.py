@@ -293,26 +293,26 @@ with tab_sandbox:
         st.markdown("#### Generated cURL Command")
         base = signals_client.base_url
         if "drawing" in selected_op:
-            curl_cmd = f"curl -X GET '{base}/materials/{target_id}/drawing?format={format_p}' \
-  -H 'x-api-key: $SIGNALS_API_KEY'"
+            curl_cmd = f"""curl -X GET '{base}/materials/{target_id}/drawing?format={format_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY'"""
         elif "stoichiometry" in selected_op:
-            curl_cmd = f"curl -X GET '{base}/stoichiometry/{target_id}' \
-  -H 'x-api-key: $SIGNALS_API_KEY' \
-  -H 'Accept: application/vnd.api+json'"
+            curl_cmd = f"""curl -X GET '{base}/stoichiometry/{target_id}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY' \\
+  -H 'Accept: application/vnd.api+json'"""
         elif "bulk" in selected_op:
-            curl_cmd = f"curl -X GET '{base}/materials/bulk?filter[query]={query_str}&page[limit]={limit_p}' \
-  -H 'x-api-key: $SIGNALS_API_KEY'"
+            curl_cmd = f"""curl -X GET '{base}/materials/bulk?filter[query]={query_str}&page[limit]={limit_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY'"""
         elif "children" in selected_op:
-            curl_cmd = f"curl -X GET '{base}/entities/{target_id}/children' \
-  -H 'x-api-key: $SIGNALS_API_KEY'"
+            curl_cmd = f"""curl -X GET '{base}/entities/{target_id}/children' \\
+  -H 'x-api-key: $SIGNALS_API_KEY'"""
         elif "POST /entities" in selected_op:
-            curl_cmd = f"curl -X POST '{base}/entities' \
-  -H 'x-api-key: $SIGNALS_API_KEY' \
-  -H 'Content-Type: application/vnd.api+json' \
-  -d '{{"data": {{"type": "experiment", "attributes": {{"name": "{exp_name}"}}}}}}'"
+            curl_cmd = f"""curl -X POST '{base}/entities' \\
+  -H 'x-api-key: $SIGNALS_API_KEY' \\
+  -H 'Content-Type: application/vnd.api+json' \\
+  -d '{{"data": {{"type": "experiment", "attributes": {{"name": "{exp_name}"}}}}}}'"""
         else:
-            curl_cmd = f"curl -X GET '{base}/entities?filter[type]=experiment&page[limit]={limit_p}' \
-  -H 'x-api-key: $SIGNALS_API_KEY'"
+            curl_cmd = f"""curl -X GET '{base}/entities?filter[type]=experiment&page[limit]={limit_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY'"""
 
         st.code(curl_cmd, language="bash")
 
