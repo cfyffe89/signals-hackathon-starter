@@ -15,7 +15,7 @@ pydantic>=2.6.0
 pyyaml>=6.0
 
 # Scientific, Chemistry & Bioinformatics
-rdkit-pypi>=2022.9.5
+rdkit>=2023.9.0
 biopython>=1.83
 pandas>=2.2.0
 numpy>=1.26.0,<2.0.0

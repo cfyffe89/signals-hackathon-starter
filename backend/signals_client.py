@@ -19,6 +19,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: Aspirin (Acetylsalicylic acid)",
         "smiles": "CC(=O)Oc1ccccc1C(=O)O",
         "formula": "C9H8O4",
+        "mw": 180.16,
+        "logp": 1.19,
+        "tpsa": 63.60,
+        "hbd": 1,
+        "hba": 3,
+        "rotb": 3,
         "modifiedAt": "2026-09-23T16:20:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -28,6 +34,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: Ibuprofen (NSAID candidate)",
         "smiles": "CC(C)Cc1ccc(C(C)C(=O)O)cc1",
         "formula": "C13H18O2",
+        "mw": 206.28,
+        "logp": 3.50,
+        "tpsa": 37.30,
+        "hbd": 1,
+        "hba": 1,
+        "rotb": 4,
         "modifiedAt": "2026-09-23T15:45:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -37,6 +49,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-094: Caffeine (CNS reference stimulant)",
         "smiles": "Cn1cnc2c1c(=O)n(c(=O)n2C)C",
         "formula": "C8H10N4O2",
+        "mw": 194.19,
+        "logp": -0.07,
+        "tpsa": 58.44,
+        "hbd": 0,
+        "hba": 3,
+        "rotb": 0,
         "modifiedAt": "2026-09-23T15:10:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-094"
@@ -46,6 +64,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-094: Paracetamol (Acetaminophen)",
         "smiles": "CC(=O)Nc1ccc(O)cc1",
         "formula": "C8H9NO2",
+        "mw": 151.16,
+        "logp": 1.35,
+        "tpsa": 49.33,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 1,
         "modifiedAt": "2026-09-23T14:30:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-094"
@@ -55,6 +79,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: 4-Cyanobiphenyl (Suzuki coupling product)",
         "smiles": "N#Cc1ccc(-c2ccccc2)cc1",
         "formula": "C13H9N",
+        "mw": 179.22,
+        "logp": 3.14,
+        "tpsa": 23.79,
+        "hbd": 0,
+        "hba": 1,
+        "rotb": 1,
         "modifiedAt": "2026-09-23T14:00:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -64,6 +94,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: Phenylboronic Acid (Suzuki reactant)",
         "smiles": "OB(O)c1ccccc1",
         "formula": "C6H7BO2",
+        "mw": 121.93,
+        "logp": 0.94,
+        "tpsa": 40.46,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 1,
         "modifiedAt": "2026-09-23T13:40:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -73,6 +109,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: 4-Bromobenzonitrile (Suzuki halide)",
         "smiles": "N#Cc1ccc(Br)cc1",
         "formula": "C7H4BrN",
+        "mw": 182.02,
+        "logp": 2.22,
+        "tpsa": 23.79,
+        "hbd": 0,
+        "hba": 1,
+        "rotb": 0,
         "modifiedAt": "2026-09-23T13:15:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -82,6 +124,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Vanillin (Phenolic aldehyde)",
         "smiles": "O=Cc1ccc(O)c(OC)c1",
         "formula": "C8H8O3",
+        "mw": 152.15,
+        "logp": 1.17,
+        "tpsa": 46.53,
+        "hbd": 1,
+        "hba": 3,
+        "rotb": 2,
         "modifiedAt": "2026-09-23T12:50:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -91,6 +139,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Dopamine (Catecholamine scaffold)",
         "smiles": "NCCc1ccc(O)c(O)c1",
         "formula": "C8H11NO2",
+        "mw": 153.18,
+        "logp": 0.44,
+        "tpsa": 66.48,
+        "hbd": 3,
+        "hba": 3,
+        "rotb": 2,
         "modifiedAt": "2026-09-23T12:20:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -100,6 +154,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Serotonin (Indole ethylamine)",
         "smiles": "NCCc1c[nH]c2ccc(O)cc12",
         "formula": "C10H12N2O",
+        "mw": 176.21,
+        "logp": 0.81,
+        "tpsa": 56.23,
+        "hbd": 3,
+        "hba": 2,
+        "rotb": 2,
         "modifiedAt": "2026-09-23T11:55:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -109,6 +169,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-115: Nicotine (Pyridine alkaloid)",
         "smiles": "CN1CCC[C@H]1c2cccnc2",
         "formula": "C10H14N2",
+        "mw": 162.23,
+        "logp": 1.17,
+        "tpsa": 16.13,
+        "hbd": 0,
+        "hba": 2,
+        "rotb": 1,
         "modifiedAt": "2026-09-23T11:30:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-115"
@@ -118,6 +184,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-115: Metformin (Biguanide derivative)",
         "smiles": "CN(C)C(=N)NC(=N)N",
         "formula": "C4H11N5",
+        "mw": 129.16,
+        "logp": -1.33,
+        "tpsa": 88.99,
+        "hbd": 4,
+        "hba": 4,
+        "rotb": 0,
         "modifiedAt": "2026-09-23T11:00:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-115"
@@ -127,6 +199,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-081: Salicylic Acid (Aspirin metabolite)",
         "smiles": "Oc1ccccc1C(=O)O",
         "formula": "C7H6O3",
+        "mw": 138.12,
+        "logp": 1.34,
+        "tpsa": 57.53,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 1,
         "modifiedAt": "2026-09-23T10:30:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-081"
@@ -136,6 +214,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-115: Benzocaine (Ester anesthetic)",
         "smiles": "CCOC(=O)c1ccc(N)cc1",
         "formula": "C9H11NO2",
+        "mw": 165.19,
+        "logp": 1.86,
+        "tpsa": 52.32,
+        "hbd": 1,
+        "hba": 2,
+        "rotb": 3,
         "modifiedAt": "2026-09-23T10:00:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-115"
@@ -145,6 +229,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Warfarin (Coumarin anticoagulant)",
         "smiles": "CC(=O)CC(c1ccccc1)c2c(O)c3ccccc3oc2=O",
         "formula": "C19H16O4",
+        "mw": 308.33,
+        "logp": 2.70,
+        "tpsa": 67.51,
+        "hbd": 1,
+        "hba": 4,
+        "rotb": 3,
         "modifiedAt": "2026-09-23T09:40:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -154,6 +244,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-115: Ciprofloxacin (Broad-spectrum antibacterial)",
         "smiles": "O=C(O)c1cn(C2CC2)c3cc(N4CCNCC4)c(F)cc3c1=O",
         "formula": "C17H18FN3O3",
+        "mw": 331.34,
+        "logp": 0.40,
+        "tpsa": 74.57,
+        "hbd": 2,
+        "hba": 5,
+        "rotb": 3,
         "modifiedAt": "2026-09-23T09:15:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-115"
@@ -163,6 +259,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Omeprazole (Sulfinyl benzimidazole)",
         "smiles": "COc1ccc2[nH]c(S(=O)Cc3ncc(C)c(OC)c3C)nc2c1",
         "formula": "C17H19N3O3S",
+        "mw": 345.42,
+        "logp": 2.23,
+        "tpsa": 85.50,
+        "hbd": 1,
+        "hba": 6,
+        "rotb": 4,
         "modifiedAt": "2026-09-23T08:50:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -172,6 +274,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-094: Amoxicillin (Penicillin class antibiotic)",
         "smiles": "CC1(C)S[C@@H]2[C@H](NC(=O)[C@H](N)c3ccc(O)cc3)C(=O)N2[C@H]1C(=O)O",
         "formula": "C16H19N3O5S",
+        "mw": 365.40,
+        "logp": 0.87,
+        "tpsa": 128.84,
+        "hbd": 4,
+        "hba": 6,
+        "rotb": 4,
         "modifiedAt": "2026-09-23T08:20:00Z",
         "author": "Marcus Weber",
         "notebook": "EXP-2026-094"
@@ -181,6 +289,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-115: Atorvastatin Diol Core (Statin intermediate)",
         "smiles": "CC(C)c1c(C(=O)Nc2ccccc2)c(-c2ccccc2)c(-c2ccc(F)cc2)n1CC[C@@H](O)C[C@@H](O)CC(=O)O",
         "formula": "C33H35FN2O5",
+        "mw": 558.64,
+        "logp": 5.70,
+        "tpsa": 111.79,
+        "hbd": 3,
+        "hba": 5,
+        "rotb": 12,
         "modifiedAt": "2026-09-23T07:45:00Z",
         "author": "Dr. Sarah Chen",
         "notebook": "EXP-2026-115"
@@ -190,6 +304,12 @@ MOCK_CHEMICAL_DRAWINGS = [
         "name": "EXP-102: Sildenafil Pyrazolopyrimidinone Scaffold",
         "smiles": "CCCC1=NN(C)C2=C1N=C(NC2=O)C3=C(OCC)C=CC(=C3)S(=O)(=O)N4CCN(C)CC4",
         "formula": "C22H30N6O4S",
+        "mw": 474.58,
+        "logp": 1.50,
+        "tpsa": 111.45,
+        "hbd": 1,
+        "hba": 8,
+        "rotb": 7,
         "modifiedAt": "2026-09-23T07:15:00Z",
         "author": "Elena Rostova",
         "notebook": "EXP-2026-102"
@@ -296,6 +416,12 @@ class SignalsClient:
                             "name": d["name"],
                             "formula": d["formula"],
                             "smiles": d["smiles"],
+                            "mw": d.get("mw"),
+                            "logp": d.get("logp"),
+                            "tpsa": d.get("tpsa"),
+                            "hbd": d.get("hbd"),
+                            "hba": d.get("hba"),
+                            "rotb": d.get("rotb"),
                             "modifiedAt": d["modifiedAt"],
                             "author": d["author"],
                             "notebook": d["notebook"]
@@ -566,6 +692,12 @@ class SignalsClient:
                 "name": attr.get("name", "Untitled Chemical Drawing"),
                 "smiles": smiles,
                 "formula": attr.get("formula", ""),
+                "mw": attr.get("mw"),
+                "logp": attr.get("logp"),
+                "tpsa": attr.get("tpsa"),
+                "hbd": attr.get("hbd"),
+                "hba": attr.get("hba"),
+                "rotb": attr.get("rotb"),
                 "modifiedAt": attr.get("modifiedAt", ""),
                 "author": attr.get("author", "Scientist"),
                 "notebook": attr.get("notebook", "General")
@@ -594,18 +726,56 @@ class SignalsClient:
         """
         fmt = format.lower().strip()
         if self.mock_mode:
+            matched = next((d for d in MOCK_CHEMICAL_DRAWINGS if d["id"] == eid or d.get("eid") == eid), None)
+            matched_smiles = matched["smiles"] if matched else "CC(=O)Oc1ccccc1C(=O)O"
+            matched_name = matched["name"] if matched else eid
+            matched_formula = matched.get("formula", "") if matched else ""
+            matched_mw = matched.get("mw", "") if matched else ""
+
             if fmt == "svg":
-                svg_file = FIXTURES_DIR / "caffeine.svg"
-                if svg_file.exists():
-                    return svg_file.read_text(encoding="utf-8")
-                return "<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#00707d'/></svg>"
+                # Try RDKit MolDraw2DSVG if RDKit is installed
+                try:
+                    from rdkit import Chem
+                    from rdkit.Chem import Draw
+                    mol = Chem.MolFromSmiles(matched_smiles)
+                    if mol:
+                        drawer = Draw.rdMolDraw2D.MolDraw2DSVG(420, 280)
+                        drawer.DrawMolecule(mol)
+                        drawer.FinishDrawing()
+                        return drawer.GetDrawingText()
+                except Exception:
+                    pass
+
+                # Vector SVG depiction card for mock mode
+                return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad_{eid.replace(':', '_')}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grad_{eid.replace(':', '_')})" rx="10" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="18" y="16" width="384" height="42" fill="#f0fdfa" rx="8" stroke="#00707d" stroke-width="1.2"/>
+  <text x="210" y="42" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#00707d" text-anchor="middle">{matched_name[:40]}</text>
+  <circle cx="210" cy="135" r="50" fill="#ffffff" stroke="#00707d" stroke-width="2.5"/>
+  <text x="210" y="146" font-family="sans-serif" font-size="34" font-weight="bold" fill="#00707d" text-anchor="middle">⬡</text>
+  <rect x="30" y="195" width="360" height="30" fill="#ffffff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="210" y="215" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">{matched_smiles[:44]}</text>
+  <text x="210" y="242" font-family="sans-serif" font-size="11" fill="#475569" text-anchor="middle">{matched_formula} | MW: {matched_mw} g/mol | EID: {eid}</text>
+  <text x="210" y="262" font-family="sans-serif" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">✓ Exported via GET /entities/{eid}/export?format=svg</text>
+</svg>"""
             elif fmt in ("mol", "mol-v3000"):
-                return f"  Mock Molfile V2000\n  Signals EMEA Hackathon 2026\n  Entity: {eid}\n"
+                return f"""  Mock Molfile V2000
+  Signals EMEA Hackathon 2026
+  Entity: {eid}
+  Name: {matched_name}
+  SMILES: {matched_smiles}
+  M  END
+"""
+            elif fmt == "cdxml":
+                return f"""<?xml version="1.0" encoding="UTF-8" ?><CDXML><page id="1"><fragment id="2"><text><s font="Arial" size="10">{matched_smiles}</s></text></fragment></page></CDXML>"""
             else:
-                aspirin = (FIXTURES_DIR / "aspirin.smiles")
-                if aspirin.exists():
-                    return aspirin.read_text(encoding="utf-8").strip()
-                return "CC(=O)Oc1ccccc1C(=O)O"
+                return matched_smiles
 
         url = f"{self.base_url}/entities/{eid}/export"
         params = {"format": fmt}
