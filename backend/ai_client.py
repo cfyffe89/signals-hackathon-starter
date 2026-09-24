@@ -51,7 +51,7 @@ class AIClient:
         return {"mockMode": self.mock_mode, "provider": provider, "model": self.model}
 
     def generate_text(self, prompt: str, system_instruction: str = SIGNALS_EXPERT,
-                      max_tokens: int = 2048) -> Dict[str, Any]:
+                      max_tokens: int = 4096) -> Dict[str, Any]:  # thinking models spend part of this budget
         if self.mock_mode:
             return {"source": "mock", "text": (
                 "**AI is not configured** (set `GEMINI_API_KEY`, or `AI_GATEWAY_URL` + `AI_GATEWAY_KEY`, in `.env`).\n\n"
@@ -66,8 +66,14 @@ class AIClient:
                           "generationConfig": {"temperature": 0.2, "maxOutputTokens": max_tokens}},
                     timeout=90)
                 r.raise_for_status()
-                parts = r.json()["candidates"][0]["content"]["parts"]
-                return {"source": f"{self.model} (gemini)", "text": "".join(p.get("text", "") for p in parts).strip()}
+                body = r.json()
+                cand = (body.get("candidates") or [{}])[0]
+                text = "".join(p.get("text", "") for p in cand.get("content", {}).get("parts", [])).strip()
+                if not text:
+                    # e.g. finishReason MAX_TOKENS: thinking models can spend the whole output budget before answering
+                    raise RuntimeError(f"no text returned (finishReason={cand.get('finishReason')}, "
+                                       f"promptFeedback={body.get('promptFeedback')}); try a larger max_tokens")
+                return {"source": f"{self.model} (gemini)", "text": text}
             url, key = self.gateway
             r = requests.post(f"{url.rstrip('/')}/chat/completions", headers={"Authorization": f"Bearer {key}"},
                               json={"model": self.model, "temperature": 0.2, "max_tokens": max_tokens,

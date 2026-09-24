@@ -64,7 +64,7 @@ if exps and isinstance(exps, list):
 
 
 def ai_round_trip():
-    r = ai.generate_text("Reply with the single word OK.", max_tokens=20)
+    r = ai.generate_text("Reply with the single word OK.", max_tokens=1024)  # thinking models need headroom
     if r["source"] in ("mock", "error"):
         raise RuntimeError(r["text"][:150])
     return f"{r['source']}: {r['text'][:20]}"
@@ -74,7 +74,9 @@ def continue_config():
     path = Path.home() / ".continue" / "config.yaml"
     if not path.exists():
         raise FileNotFoundError("run: python scripts/setup_continue.py, then Developer: Reload Window")
-    return f"{path.read_text(encoding='utf-8').count('provider:')} model(s)"
+    text = path.read_text(encoding="utf-8")
+    models = text.split("\nmodels:", 1)[1].split("\ncontext:", 1)[0] if "\nmodels:" in text else ""
+    return f"{models.count('- name:')} model(s)"   # count models only, not the context providers
 
 
 if "--demo" in sys.argv:
@@ -90,6 +92,8 @@ if "--demo" in sys.argv:
     check("Continue slash prompts", lambda: sorted(p.stem for p in (ROOT / ".continue" / "prompts").glob("*.md")))
     for port, path in ((8000, "/api/health"), (8501, "/")):
         check(f"app running on port {port}", lambda port=port, path=path: requests.get(f"http://localhost:{port}{path}", timeout=5).status_code)
+    if not results[-1] or not results[-2]:
+        print("  hint  start the apps: ./scripts/start.sh   (logs: /tmp/api.log, /tmp/ui.log)")
     if os.getenv("CODESPACE_NAME"):
         dom = os.getenv("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN", "app.github.dev")
         print(f"  info  Streamlit:    https://{os.environ['CODESPACE_NAME']}-8501.{dom}")
