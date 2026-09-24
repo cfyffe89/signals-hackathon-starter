@@ -426,7 +426,8 @@ with tab_sandbox:
     endpoint_presets = [
         "POST /entities/search (Search API - Experiments)",
         "POST /entities/search (Search API - Chemical Drawings)",
-        "GET /materials/{assetBatchId}/drawing (Chemical Drawing)",
+        "GET /entities/{eid}/export (Export Chemical Drawing: SMILES/MOL/SVG/CDXML)",
+        "GET /materials/{assetBatchId}/drawing (Material Drawing)",
         "GET /stoichiometry/{eid} (Reaction Reactants & Products)",
         "GET /materials/bulk (Search Inventory & Reagents)",
         "GET /entities/{eid}/children (List Child Elements)",
@@ -443,9 +444,14 @@ with tab_sandbox:
         elif "Search API - Chemical Drawings" in selected_op:
             limit_p = st.number_input("page[limit]", min_value=1, max_value=50, value=20)
             st.info("Executes Search API query for non-template chemicalDrawing entities sorted by modifiedAt desc.")
+        elif "GET /entities/{eid}/export" in selected_op:
+            target_id = st.text_input("entity eid", value="chemicalDrawing:e323ff17-15c4-4706-9bf3-7f2e12a00099")
+            format_p = st.selectbox("format parameter", ["smiles", "svg", "mol", "mol-v3000", "cdxml", "inchi"])
+            st.caption("Exports notebook entity content (chemicalDrawing, sample, grid, etc.) in the requested representation.")
         elif "drawing" in selected_op:
             target_id = st.text_input("assetBatchId / Material ID", value="material:aspirin-batch-001")
             format_p = st.selectbox("format query param", ["smiles", "svg", "mol", "cdxml", "inchi"])
+            st.caption("Exports inventory material drawing from the materials inventory system.")
         elif "stoichiometry" in selected_op:
             target_id = st.text_input("drawing_eid", value="chemicalDrawing:e323ff17-15c4-4706-9bf3-7f2e12a00099")
         elif "bulk" in selected_op:
@@ -488,6 +494,9 @@ with tab_sandbox:
   }},
   "options": {{ "sort": {{ "modifiedAt": "desc" }} }}
 }}'"""
+        elif "GET /entities/{eid}/export" in selected_op:
+            curl_cmd = f"""curl -X GET '{base}/entities/{target_id}/export?format={format_p}' \\
+  -H 'x-api-key: $SIGNALS_API_KEY'"""
         elif "drawing" in selected_op:
             curl_cmd = f"""curl -X GET '{base}/materials/{target_id}/drawing?format={format_p}' \\
   -H 'x-api-key: $SIGNALS_API_KEY'"""
@@ -519,6 +528,8 @@ with tab_sandbox:
                     res_payload = signals_client.list_experiments(limit=limit_p)
                 elif "Search API - Chemical Drawings" in selected_op:
                     res_payload = signals_client.list_chemical_drawings(limit=limit_p)
+                elif "GET /entities/{eid}/export" in selected_op:
+                    res_payload = signals_client.export_entity(target_id, format=format_p)
                 elif "drawing" in selected_op:
                     res_payload = signals_client.get_chemical_drawing(target_id, format=format_p)
                 elif "stoichiometry" in selected_op:

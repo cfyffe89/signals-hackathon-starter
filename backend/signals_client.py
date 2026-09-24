@@ -555,7 +555,7 @@ class SignalsClient:
                         smiles = f_v.get("value")
             if not smiles and eid and not self.mock_mode:
                 try:
-                    smiles = self.get_chemical_drawing(eid, format="smiles")
+                    smiles = self.export_entity(eid, format="smiles")
                 except Exception:
                     smiles = "CC(=O)Oc1ccccc1C(=O)O"
             elif not smiles:
@@ -574,11 +574,73 @@ class SignalsClient:
 
 
     # ---------------------------------------------------------
-    def get_chemical_drawing(self, asset_batch_id: str, format: str = "smiles") -> str:
+    # Chemical Structure Retrieval & Export Endpoints
+    # ---------------------------------------------------------
+    def export_entity(self, eid: str, format: str = "smiles") -> str:
         """
-        Fetch a 2D chemical drawing for a material/batch.
-        Supported formats: 'smiles', 'mol', 'mol-v3000', 'svg', 'cdxml', 'inchi'.
+        Fetch/export content of an entity by EID using GET /entities/{eid}/export.
+        
+        This is the official Signals Notebook endpoint for exporting notebook entities
+        such as chemicalDrawing, sample, grid, text, etc.
+        
+        Supported formats for chemical structures:
+          - 'smiles': Daylight SMILES string
+          - 'mol': MDL V2000 molfile
+          - 'mol-v3000': MDL V3000 molfile
+          - 'svg': SVG vector image
+          - 'cdxml': ChemDraw XML
+          - 'inchi': InChI string
+          - 'rxn' / 'rxn-v3000': Reaction files
         """
+        fmt = format.lower().strip()
+        if self.mock_mode:
+            if fmt == "svg":
+                svg_file = FIXTURES_DIR / "caffeine.svg"
+                if svg_file.exists():
+                    return svg_file.read_text(encoding="utf-8")
+                return "<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#00707d'/></svg>"
+            elif fmt in ("mol", "mol-v3000"):
+                return f"  Mock Molfile V2000\n  Signals EMEA Hackathon 2026\n  Entity: {eid}\n"
+            else:
+                aspirin = (FIXTURES_DIR / "aspirin.smiles")
+                if aspirin.exists():
+                    return aspirin.read_text(encoding="utf-8").strip()
+                return "CC(=O)Oc1ccccc1C(=O)O"
+
+        url = f"{self.base_url}/entities/{eid}/export"
+        params = {"format": fmt}
+        headers = {"x-api-key": self.api_key}
+        if fmt == "svg":
+            headers["Accept"] = "image/svg+xml"
+        elif fmt in ("mol", "mol-v3000"):
+            headers["Accept"] = "chemical/x-mdl-molfile"
+        elif fmt == "smiles":
+            headers["Accept"] = "chemical/x-daylight-smiles, text/plain, */*"
+        elif fmt == "cdxml":
+            headers["Accept"] = "chemical/x-cdxml"
+        elif fmt == "inchi":
+            headers["Accept"] = "chemical/x-inchi"
+        else:
+            headers["Accept"] = "*/*"
+
+        res = requests.get(url, headers=headers, params=params, timeout=15)
+        res.raise_for_status()
+        return res.text
+
+    def get_chemical_drawing(self, id_or_eid: str, format: str = "smiles") -> str:
+        """
+        Fetch a 2D chemical drawing for an entity or material.
+        
+        Routing:
+        - If id_or_eid represents an entity (e.g., 'chemicalDrawing:...', 'sample:...'):
+          calls GET /entities/{eid}/export?format={format}
+        - If id_or_eid represents an inventory material/batch (e.g., 'material:...', 'asset:...', 'batch:...'):
+          calls GET /materials/{assetBatchId}/drawing?format={format}
+        """
+        # If it's an entity EID (starts with chemicalDrawing or contains standard entity prefixes)
+        if any(id_or_eid.startswith(prefix) for prefix in ("chemicalDrawing:", "sample:", "entity:", "draw:")):
+            return self.export_entity(id_or_eid, format=format)
+
         format = format.lower().strip()
         if self.mock_mode:
             if format == "svg":
@@ -587,7 +649,7 @@ class SignalsClient:
                     return svg_file.read_text(encoding="utf-8")
                 return "<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#00707d'/></svg>"
             elif format == "mol":
-                return "  Mock Molfile V2000\n  Signals EMEA Hackathon 2026\n"
+                return f"  Mock Molfile V2000\n  Signals EMEA Hackathon 2026\n  Material: {id_or_eid}\n"
             else:
                 # Default to SMILES
                 aspirin = (FIXTURES_DIR / "aspirin.smiles")
@@ -595,15 +657,17 @@ class SignalsClient:
                     return aspirin.read_text(encoding="utf-8").strip()
                 return "CC(=O)Oc1ccccc1C(=O)O"
 
-        url = f"{self.base_url}/materials/{asset_batch_id}/drawing"
+        url = f"{self.base_url}/materials/{id_or_eid}/drawing"
         params = {"format": format}
         headers = {"x-api-key": self.api_key}
         if format == "svg":
             headers["Accept"] = "image/svg+xml"
         elif format in ("mol", "mol-v3000"):
             headers["Accept"] = "chemical/x-mdl-molfile"
+        elif format == "smiles":
+            headers["Accept"] = "chemical/x-daylight-smiles, text/plain, */*"
         else:
-            headers["Accept"] = "text/plain"
+            headers["Accept"] = "*/*"
 
         res = requests.get(url, headers=headers, params=params, timeout=15)
         res.raise_for_status()
